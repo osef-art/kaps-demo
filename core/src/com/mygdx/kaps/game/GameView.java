@@ -7,24 +7,25 @@ import com.mygdx.kaps.renderer.Renderable;
 import com.mygdx.kaps.renderer.ShapeRendererAdapter;
 import com.mygdx.kaps.renderer.SpriteRendererAdapter;
 
+import java.util.stream.IntStream;
+
 public class GameView implements Renderable {
     private static class Dimensions {
         private final Rectangle gridZone;
         private final Rectangle sidekickZone;
         private final Rectangle infoZone;
+        private final Rectangle gridTile;
 
         private Dimensions(GameScene model, float screenWidth, float screenHeight) {
             Rectangle screen = new Rectangle(0, 0, screenWidth, screenHeight);
-            float topSpaceHeight = screenHeight * 0.7f;
+            float topSpaceHeight = screenHeight * 0.8f;
             float gridHeight = topSpaceHeight * 0.9f;
-            float tileSize = gridHeight / model.getGrid().getDimensions().y;
-            float gridWidth = model.getGrid().getDimensions().x * tileSize;
+            float tileSize = gridHeight / model.getGrid().getHeight();
+            float gridWidth = model.getGrid().getWidth() * tileSize;
             float infoZoneHeight = (screen.height - topSpaceHeight) / 2;
 
-//            System.out.println(topSpaceHeight + ", " + gridHeight + ", " + tileSize + ", " + gridWidth + ", " + infoZoneHeight);
-            System.out.println(model.getGrid().getDimensions());
-
-            gridZone = new Rectangle((screen.width - gridWidth) / 2, (topSpaceHeight - gridHeight )/ 2, gridWidth, gridHeight);
+            gridZone = new Rectangle((screen.width - gridWidth) / 2, (topSpaceHeight - gridHeight) / 2, gridWidth, gridHeight);
+            gridTile = new Rectangle(0, 0, tileSize, tileSize);
             sidekickZone = new Rectangle(0, topSpaceHeight, screen.width, infoZoneHeight);
             infoZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
         }
@@ -41,13 +42,21 @@ public class GameView implements Renderable {
     }
 
     private void renderLayout() {
-        sra.drawRect(dimensions.gridZone, new Color(.2f, .2f, .25f, 1f));
-        sra.drawRect(dimensions.sidekickZone, new Color(.3f, .3f, .35f, 1f));
-        sra.drawRect(dimensions.infoZone, new Color(.4f, .4f, .45f, 1f));
+        sra.drawRect(dimensions.sidekickZone, new Color(.3f, .3f, .375f, 1f));
+        sra.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
     }
 
     private void renderGrid() {
-
+        var gridZone = dimensions.gridZone;
+        var tile = dimensions.gridTile;
+        IntStream.range(0, model.getGrid().getWidth()).forEach(x -> {
+            IntStream.range(0, model.getGrid().getHeight()).forEach(y -> {
+                sra.drawRect(
+                  new Rectangle(gridZone.x + x * tile.width, gridZone.y + y * tile.height, tile.width, tile.height),
+                  x % 2 == y % 2 ? new Color(.15f, .15f, .225f, 1) : new Color(.175f, .175f, .25f, 1)
+                );
+            });
+        });
     }
 
     @Override
