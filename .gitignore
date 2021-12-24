@@ -1,3 +1,7 @@
+## assets
+/android/assets/sprites/*.py
+/android/assets/sprites/*.idea
+
 ## Java
 
 *.class
