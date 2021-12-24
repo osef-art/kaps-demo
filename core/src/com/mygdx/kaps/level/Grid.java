@@ -1,4 +1,4 @@
-package com.mygdx.kaps.game;
+package com.mygdx.kaps.level;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,26 +13,19 @@ public class Grid {
             this.tiles = new ArrayList<>(tiles);
             IntStream.range(0, tiles).forEach(c -> this.tiles.add(new Tile()));
         }
-
-        public int size() {
-            return tiles.size();
-        }
     }
-
     private final List<Column> columns;
+    private final Capsule.Position dimensions;
 
     public Grid(int columns, int rows) {
         if (columns < 2) throw new IllegalArgumentException("Insufficient grid width: " + columns);
         if (rows < 2) throw new IllegalArgumentException("Insufficient grid height: " + rows);
         this.columns = new ArrayList<>(rows);
         IntStream.range(0, columns).forEach(c -> this.columns.add(new Column(rows)));
+        dimensions = new Capsule.Position(columns, rows);
     }
 
-    public int getWidth() {
-        return columns.size();
-    }
-
-    public int getHeight() {
-        return columns.get(0).size();
+    public Capsule.Position getDimensions() {
+        return dimensions;
     }
 }

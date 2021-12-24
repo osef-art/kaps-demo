@@ -5,16 +5,20 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.kaps.controller.InputHandler;
-import com.mygdx.kaps.game.GameScene;
-import com.mygdx.kaps.game.GameView;
+import com.mygdx.kaps.level.Color;
+import com.mygdx.kaps.level.GameView;
+import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.sound.SoundStream;
+
+import java.util.Arrays;
+import java.util.HashSet;
 
 public class MainScreen extends ApplicationAdapter {
     public static OrthographicCamera camera;
     public static InputHandler inputHandler;
     public static SoundStream soundStream;
 
-    private GameScene game;
+    private Level game;
     private GameView view;
 
     @Override
@@ -28,7 +32,7 @@ public class MainScreen extends ApplicationAdapter {
 
         soundStream = new SoundStream();
 
-        game = new GameScene();
+        game = new Level(new HashSet<>(Arrays.asList(Color.COLOR_1, Color.COLOR_2)));
         view = new GameView(game);
     }
 
