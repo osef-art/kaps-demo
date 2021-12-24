@@ -29,8 +29,20 @@ public class Capsule {
         )));
     }
 
+    public void moveLeft() {
+        position.x -= 1;
+    }
+
+    public void moveRight() {
+        position.x += 1;
+    }
+
     public void flip() {
         orientation = orientation.flipped();
+    }
+
+    public void dip() {
+        position.y -= 1;
     }
 
     public Sprite getSprite() {

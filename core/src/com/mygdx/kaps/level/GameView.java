@@ -22,8 +22,8 @@ public class GameView implements Renderable {
             Rectangle screen = new Rectangle(0, 0, screenWidth, screenHeight);
             float topSpaceHeight = screenHeight * 0.8f;
             float gridHeight = topSpaceHeight * 0.9f;
-            float tileSize = gridHeight / model.getGrid().getDimensions().y;
-            float gridWidth = model.getGrid().getDimensions().x * tileSize;
+            float tileSize = gridHeight / model.getGrid().getHeight();
+            float gridWidth = model.getGrid().getWidth() * tileSize;
             float infoZoneHeight = (screen.height - topSpaceHeight) / 2;
 
             gridZone = new Rectangle((screen.width - gridWidth) / 2, (topSpaceHeight - gridHeight) / 2, gridWidth, gridHeight);
@@ -35,7 +35,7 @@ public class GameView implements Renderable {
         private Rectangle tileAt(int x, int y) {
             return new Rectangle(
               gridZone.x + x * gridTile.width,
-              (model.getGrid().getDimensions().y - 1) - gridZone.y + y * gridTile.height,
+              gridZone.y + ((model.getGrid().getHeight() - 1) - y) * gridTile.height,
               gridTile.width,
               gridTile.height
             );
@@ -58,8 +58,8 @@ public class GameView implements Renderable {
     }
 
     private void renderGrid() {
-        IntStream.range(0, model.getGrid().getDimensions().x).forEach(
-          x -> IntStream.range(0, model.getGrid().getDimensions().y).forEach(
+        IntStream.range(0, model.getGrid().getWidth()).forEach(
+          x -> IntStream.range(0, model.getGrid().getHeight()).forEach(
             y -> sra.drawRect(
               dimensions.tileAt(x, y),
               x % 2 == y % 2 ? new Color(.15f, .15f, .225f, 1) : new Color(.175f, .175f, .25f, 1)
@@ -73,7 +73,7 @@ public class GameView implements Renderable {
     }
 
     private void renderGelule() {
-        model.getGelule().ifPresent(g -> {
+        model.firstGelule().ifPresent(g -> {
             renderCapsule(g.getMainCapsule());
             renderCapsule(g.getSlaveCapsule());
         });
