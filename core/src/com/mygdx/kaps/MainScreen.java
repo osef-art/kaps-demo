@@ -27,13 +27,12 @@ public class MainScreen extends ApplicationAdapter {
         camera.setToOrtho(true);
         camera.translate(0, Gdx.graphics.getHeight());
 
-        inputHandler = new InputHandler();
-        Gdx.input.setInputProcessor(inputHandler);
-
-        soundStream = new SoundStream();
-
         game = new Level(new HashSet<>(Arrays.asList(Color.COLOR_1, Color.COLOR_2)));
         view = new GameView(game);
+        inputHandler = new InputHandler(game);
+
+        Gdx.input.setInputProcessor(inputHandler);
+        soundStream = new SoundStream();
     }
 
     @Override

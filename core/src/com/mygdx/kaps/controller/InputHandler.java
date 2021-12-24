@@ -1,6 +1,7 @@
 package com.mygdx.kaps.controller;
 
 import com.badlogic.gdx.InputProcessor;
+import com.mygdx.kaps.level.Level;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -13,8 +14,8 @@ public class InputHandler implements InputProcessor {
         RIGHT_KEY(22, 32), // D, RIGHT ARR.
         FLIP_KEY(19, 54), // Z, UP ARR.
         DOWN_KEY(20, 47), // S, DOWN ARR.
-        DROP_KEY(31, 40), // C, L
-        HOLD_KEY(50, 41), // V, M
+        DROP_KEY(62), // C, L
+        HOLD_KEY(31, 50, 30), // V, M
 
         ESCAPE_KEY(29, 131, 68), // A, ESC, !
         ;
@@ -35,12 +36,40 @@ public class InputHandler implements InputProcessor {
         }
     }
 
+    private final Level model;
+
+    public InputHandler(Level model) {
+        this.model = model;
+    }
+
     // input detection
     @Override
     public boolean keyDown(int keycode) {
-//        System.out.println(keycode); //debug
+        // debug
+//        System.out.println(keycode);
         Key.ofCode(keycode).ifPresent(key -> {
-            if (key == Key.ESCAPE_KEY) System.exit(0);
+            switch (key) {
+                case ESCAPE_KEY:
+                    System.exit(0);
+                case LEFT_KEY:
+                    model.moveGeluleLeft();
+                    break;
+                case RIGHT_KEY:
+                    model.moveGeluleRight();
+                    break;
+                case FLIP_KEY:
+                    model.flipGelule();
+                    break;
+                case DOWN_KEY:
+                    model.dipOrAcceptGelule();
+                    break;
+                case DROP_KEY:
+                    model.dropGelule();
+                    break;
+                case HOLD_KEY:
+                    model.holdGelule();
+                    break;
+            }
         });
         return true;
     }
