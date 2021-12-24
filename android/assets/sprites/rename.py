@@ -1,6 +1,5 @@
 import os
 
-
 def is_file(filename):
     return "." in filename
 
