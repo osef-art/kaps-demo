@@ -49,14 +49,14 @@ public class GameView implements Renderable {
     private void renderGrid() {
         var gridZone = dimensions.gridZone;
         var tile = dimensions.gridTile;
-        IntStream.range(0, model.getGrid().getWidth()).forEach(x -> {
-            IntStream.range(0, model.getGrid().getHeight()).forEach(y -> {
-                sra.drawRect(
-                  new Rectangle(gridZone.x + x * tile.width, gridZone.y + y * tile.height, tile.width, tile.height),
-                  x % 2 == y % 2 ? new Color(.15f, .15f, .225f, 1) : new Color(.175f, .175f, .25f, 1)
-                );
-            });
-        });
+        IntStream.range(0, model.getGrid().getWidth()).forEach(
+          x -> IntStream.range(0, model.getGrid().getHeight()).forEach(
+            y -> sra.drawRect(
+              new Rectangle(gridZone.x + x * tile.width, gridZone.y + y * tile.height, tile.width, tile.height),
+              x % 2 == y % 2 ? new Color(.15f, .15f, .225f, 1) : new Color(.175f, .175f, .25f, 1)
+            )
+          )
+        );
     }
 
     @Override
