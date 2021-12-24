@@ -1,6 +1,6 @@
 ## assets
 /android/assets/sprites/*.py
-/android/assets/sprites/*.idea
+/android/assets/*/.idea
 
 ## Java
 
@@ -64,14 +64,6 @@ com_crashlytics_export_strings.xml
 /html/nbproject/private/
 /ios/nbproject/private/
 /ios-moe/nbproject/private/
-
-/build/
-/android/build/
-/core/build/
-/desktop/build/
-/html/build/
-/ios/build/
-/ios-moe/build/
 
 /nbbuild/
 /android/nbbuild/
