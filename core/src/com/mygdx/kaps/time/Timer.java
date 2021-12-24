@@ -1,16 +1,26 @@
 package com.mygdx.kaps.time;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class Timer {
+    private final List<Runnable> jobs = new ArrayList<>();
     private final Chrono chrono;
     private double limit;
 
-    public Timer(double limit) {
+    public Timer(double limit, Runnable... jobs) {
         chrono = new Chrono();
         this.limit = limit;
+        this.jobs.addAll(Arrays.asList(jobs));
     }
 
-    public static Timer ofSeconds(double limit) {
-        return new Timer(limit * 1_000_000_000);
+    public static Timer ofSeconds(double limit, Runnable... jobs) {
+        return new Timer(limit * 1_000_000_000, jobs);
+    }
+
+    public static Timer ofMilliseconds(double limit, Runnable... jobs) {
+        return new Timer(limit * 1_000_000, jobs);
     }
 
     public boolean isExceeded() {
@@ -19,7 +29,7 @@ public class Timer {
 
     public boolean resetIfExceeds() {
         if (isExceeded()) {
-            chrono.reset();
+            reset();
             return true;
         }
         return false;
@@ -27,6 +37,7 @@ public class Timer {
 
     public void reset() {
         chrono.reset();
+        jobs.forEach(Runnable::run);
     }
 
     public void updateLimit(int newLimit) {
