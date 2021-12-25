@@ -3,12 +3,15 @@ package com.mygdx.kaps.level;
 
 import com.mygdx.kaps.time.Timer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class Level {
-    private final List<Gelule> droppingGelules = new ArrayList<>();
     private final List<Gelule> gelules = new ArrayList<>();
     private final List<Timer> timers = new ArrayList<>();
     private final Set<Color> colors;
@@ -31,65 +34,76 @@ public class Level {
         return colors;
     }
 
-    public Optional<Gelule> firstGelule() {
-        return Optional.ofNullable(gelules.get(0));
+    public List<Gelule> getGelules() {
+        return gelules;
     }
 
     public Grid getGrid() {
         return grid;
     }
 
-    private void spawnGelule() {
-        gelules.add(Gelule.randomNewInstance(this));
+    private Stream<Gelule> floatingGelulesStream() {
+        return gelules.stream().filter(Predicate.not(Gelule::isFalling));
     }
 
     private void dipAllDroppingGelules() {
-        // TODO: remove the ones who can't dip
-        droppingGelules.forEach(g -> {
-            if (g.bothVerify(c -> c.getPosition().y >= 1)) g.dip();
-            else {
-                droppingGelules.remove(g);
-                accept(g);
-            }
-        });
+        gelules.stream()
+          .filter(Gelule::isFalling)
+          .forEach(g -> {
+              if (g.bothVerify(c -> c.getCoordinates().y >= 1)) g.dip();
+              else accept(g);
+          });
     }
 
-    private void accept(Gelule gelule) {
-        gelule.forEachCapsule(grid::put);
-    }
-
-    private void performIfPossible(Consumer<Gelule> action, Predicate<Gelule> condition) {
-        firstGelule().ifPresent(g -> {
+    private void performIfPossibleElse(Predicate<Gelule> condition, Consumer<Gelule> action,
+                                       Consumer<Gelule> alternative) {
+        floatingGelulesStream().forEach(g -> {
             if (condition.test(g)) action.accept(g);
+            else alternative.accept(g);
         });
     }
 
+    private void performIfPossible(Predicate<Gelule> condition, Consumer<Gelule> action) {
+        performIfPossibleElse(condition, action, g -> {});
+    }
+
+    // moves
     public void dipOrAcceptGelule() {
-        performIfPossible(Gelule::dip, g -> g.bothVerify(c -> c.getPosition().y >= 1));
+        performIfPossibleElse(g -> g.bothVerify(c -> c.getCoordinates().y >= 1), Gelule::dip, this::accept);
     }
 
     public void flipGelule() {
-        firstGelule().ifPresent(Gelule::flip);
+        floatingGelulesStream().forEach(Gelule::flip);
     }
 
     public void moveGeluleLeft() {
-        performIfPossible(Gelule::moveLeft, g -> g.bothVerify(c -> c.getPosition().x >= 1));
+        performIfPossible(g -> g.bothVerify(c -> c.getCoordinates().x >= 1), Gelule::moveLeft);
     }
 
     public void moveGeluleRight() {
-        performIfPossible(Gelule::moveRight, g -> g.bothVerify(c -> c.getPosition().x < grid.getWidth() - 1));
+        performIfPossible(g -> g.bothVerify(c -> c.getCoordinates().x < grid.getWidth() - 1), Gelule::moveRight);
     }
 
     public void dropGelule() {
-        if (gelules.size() <= 0) return;
-        Gelule gelule = gelules.remove(0);
-        droppingGelules.add(gelule);
+        floatingGelulesStream().forEach(Gelule::startFalling);
     }
 
     public void holdGelule() {
     }
 
+    // update
+    private void spawnGelule() {
+        gelules.add(Gelule.randomNewInstance(this));
+    }
+
+    private void accept(Gelule gelule) {
+        gelule.forEachCapsule(grid::put);
+        gelule.freeze();
+    }
+
     public void update() {
+        gelules.removeIf(Gelule::isFrozen);
+        if (gelules.stream().noneMatch(Predicate.not(Gelule::isFalling))) spawnGelule();
         timers.forEach(Timer::resetIfExceeds);
     }
 }

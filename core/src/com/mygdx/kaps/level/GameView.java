@@ -59,21 +59,22 @@ public class GameView implements Renderable {
 
     private void renderGrid() {
         IntStream.range(0, model.getGrid().getWidth()).forEach(
-          x -> IntStream.range(0, model.getGrid().getHeight()).forEach(
-            y -> sra.drawRect(
-              dimensions.tileAt(x, y),
-              x % 2 == y % 2 ? new Color(.15f, .15f, .225f, 1) : new Color(.175f, .175f, .25f, 1)
-            )
-          )
+          x -> IntStream.range(0, model.getGrid().getHeight()).forEach(y -> {
+              sra.drawRect(
+                dimensions.tileAt(x, y),
+                x % 2 == y % 2 ? new Color(.15f, .15f, .225f, 1) : new Color(.175f, .175f, .25f, 1)
+              );
+              model.getGrid().get(x, y).ifPresent(c -> spra.render(c.getSprite(), dimensions.tileAt(x, y)));
+          })
         );
     }
 
     private void renderCapsule(Capsule caps) {
-        spra.render(caps.getSprite(), dimensions.tileAt(caps.getPosition().x, caps.getPosition().y));
+        spra.render(caps.getSprite(), dimensions.tileAt(caps.getCoordinates().x, caps.getCoordinates().y));
     }
 
-    private void renderGelule() {
-        model.firstGelule().ifPresent(g -> {
+    private void renderGelules() {
+        model.getGelules().forEach(g -> {
             renderCapsule(g.getMainCapsule());
             renderCapsule(g.getSlaveCapsule());
         });
@@ -83,7 +84,7 @@ public class GameView implements Renderable {
     public void render() {
         renderLayout();
         renderGrid();
-        renderGelule();
+        renderGelules();
     }
 
     public void dispose() {

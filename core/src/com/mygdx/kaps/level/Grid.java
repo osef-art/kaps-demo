@@ -22,6 +22,10 @@ public class Grid {
         public void set(int y, Capsule caps) {
             tiles.set(y, Optional.of(caps));
         }
+
+        public Optional<Capsule> get(int i) {
+            return tiles.get(i);
+        }
     }
 
     private final List<Column> columns;
@@ -33,6 +37,10 @@ public class Grid {
         IntStream.range(0, columns).forEach(c -> this.columns.add(new Column(rows)));
     }
 
+    public Optional<Capsule> get(int x, int y) {
+        return columns.get(x).get(y);
+    }
+
     public int getWidth() {
         return columns.size();
     }
@@ -42,7 +50,7 @@ public class Grid {
     }
 
     public void put(Capsule caps) {
-        set(caps.getPosition().x, caps.getPosition().y, caps);
+        set(caps.getCoordinates().x, caps.getCoordinates().y, caps);
     }
 
     private void set(int x, int y, Capsule caps) {

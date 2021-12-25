@@ -7,34 +7,30 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class Capsule {
-    static class Position {
-        int x, y;
-
-        public Position(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-    }
     private final HashMap<Orientation, Sprite> sprites = new HashMap<>();
     private Orientation orientation;
-    private final Position position;
+    private final Coordinates coordinates;
     private final Color color;
 
     public Capsule(int x, int y, Color color, Orientation orientation) {
-        position = new Position(x, y);
+        coordinates = new Coordinates(x, y);
         this.orientation = orientation;
         this.color = color;
-        Arrays.stream(Orientation.values()).forEach(o -> sprites.put(o, new Sprite(
-          new Texture("android/assets/sprites/" + color.id() + "/caps/" + o + ".png")
-        )));
+        Arrays.stream(Orientation.values()).forEach(o -> {
+            var sprite = new Sprite(
+              new Texture("android/assets/sprites/" + color.id() + "/caps/" + o + ".png")
+            );
+            sprite.flip(false, true);
+            sprites.put(o, sprite);
+        });
     }
 
     public void moveLeft() {
-        position.x -= 1;
+        coordinates.add(Orientation.LEFT.movingVector());
     }
 
     public void moveRight() {
-        position.x += 1;
+        coordinates.add(Orientation.RIGHT.movingVector());
     }
 
     public void flip() {
@@ -42,14 +38,23 @@ public class Capsule {
     }
 
     public void dip() {
-        position.y -= 1;
+        coordinates.add(Orientation.DOWN.movingVector());
     }
 
     public Sprite getSprite() {
         return sprites.get(orientation);
     }
 
-    public Position getPosition() {
-        return position;
+    public Coordinates getCoordinates() {
+        return coordinates;
+    }
+
+    private Coordinates facingCoordinates() {
+        return coordinates.addedTo(orientation.oppositeVector());
+    }
+
+    public void face(Capsule caps) {
+        orientation = caps.orientation.facing();
+        coordinates.set(caps.facingCoordinates());
     }
 }

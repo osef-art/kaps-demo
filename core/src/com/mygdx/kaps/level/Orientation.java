@@ -14,6 +14,7 @@ public enum Orientation {
         return path;
     }
 
+    @SuppressWarnings("DuplicatedCode")
     public Orientation flipped() {
         switch (this) {
             case LEFT:
@@ -27,5 +28,40 @@ public enum Orientation {
             default:
                 return NONE;
         }
+    }
+
+    @SuppressWarnings("DuplicatedCode")
+    public Orientation facing() {
+        switch (this) {
+            case LEFT:
+                return RIGHT;
+            case UP:
+                return DOWN;
+            case RIGHT:
+                return LEFT;
+            case DOWN:
+                return UP;
+            default:
+                return NONE;
+        }
+    }
+
+    public Coordinates movingVector() {
+        switch (this) {
+            case LEFT:
+                return new Coordinates(-1, 0);
+            case UP:
+                return new Coordinates(0, 1);
+            case RIGHT:
+                return new Coordinates(1, 0);
+            case DOWN:
+                return new Coordinates(0, -1);
+            default:
+                return new Coordinates(0, 0);
+        }
+    }
+
+    public Coordinates oppositeVector() {
+        return movingVector().mapped(x -> -x);
     }
 }

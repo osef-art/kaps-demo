@@ -19,6 +19,7 @@ public class Timer {
         return new Timer(limit * 1_000_000_000, jobs);
     }
 
+    // TODO: use delta time
     public static Timer ofMilliseconds(double limit, Runnable... jobs) {
         return new Timer(limit * 1_000_000, jobs);
     }

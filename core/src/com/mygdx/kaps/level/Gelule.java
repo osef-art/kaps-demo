@@ -8,6 +8,8 @@ import java.util.function.Predicate;
 public class Gelule {
     private final Capsule main;
     private final Capsule slave;
+    private boolean frozen;
+    private boolean falling;
 
     private Gelule(Capsule main, Capsule slave) {
         this.main = main;
@@ -38,6 +40,22 @@ public class Gelule {
         return condition.test(main) && condition.test(slave);
     }
 
+    public void freeze() {
+        frozen = true;
+    }
+
+    public void startFalling() {
+        falling = true;
+    }
+
+    public boolean isFrozen() {
+        return frozen;
+    }
+
+    public boolean isFalling() {
+        return falling;
+    }
+
     public Capsule getMainCapsule() {
         return main;
     }
@@ -47,7 +65,7 @@ public class Gelule {
     }
 
     private void updateSlave() {
-
+        slave.face(main);
     }
 
     public void dip() {
