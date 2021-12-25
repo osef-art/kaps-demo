@@ -71,18 +71,18 @@ public class Level {
         gelules.stream()
           .filter(Gelule::isFalling)
           .forEach(g -> {
-              if (g.bothVerify(c -> c.getCoordinates().y >= 1)) g.dip();
+              if (g.dipped().canStandIn(grid)) g.dip();
               else accept(g);
           });
     }
 
     public void dipOrAcceptGelule() {
-        performIfPossible(g -> g.dipped().isInGrid(grid), Gelule::dip, this::accept);
+        performIfPossible(g -> g.dipped().canStandIn(grid), Gelule::dip, this::accept);
     }
 
     public void flipGelule() {
-        performIfPossible(g -> g.flipped().isInGrid(grid), Gelule::flip,
-          g -> performIfPossible(f -> f.flipped().movedBack().isInGrid(grid), f -> {
+        performIfPossible(g -> g.flipped().canStandIn(grid), Gelule::flip,
+          g -> performIfPossible(f -> f.flipped().movedBack().canStandIn(grid), f -> {
               f.flip();
               f.moveBack();
           })
@@ -90,11 +90,11 @@ public class Level {
     }
 
     public void moveGeluleLeft() {
-        performIfPossible(g -> g.movedLeft().isInGrid(grid), Gelule::moveLeft);
+        performIfPossible(g -> g.movedLeft().canStandIn(grid), Gelule::moveLeft);
     }
 
     public void moveGeluleRight() {
-        performIfPossible(g -> g.movedRight().isInGrid(grid), Gelule::moveRight);
+        performIfPossible(g -> g.movedRight().canStandIn(grid), Gelule::moveRight);
     }
 
     public void dropGelule() {

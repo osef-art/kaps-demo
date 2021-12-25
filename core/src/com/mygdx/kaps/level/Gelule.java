@@ -45,8 +45,8 @@ class Gelule {
         return condition.test(main) && condition.test(slave);
     }
 
-    boolean isInGrid(Grid grid) {
-        return bothVerify(c -> c.isInGrid(grid));
+    boolean canStandIn(Grid grid) {
+        return bothVerify(c -> c.canStandIn(grid));
     }
 
     boolean isFalling() {

@@ -11,21 +11,21 @@ import java.util.stream.IntStream;
 
 public class GameView implements Renderable {
     private static class Dimensions {
-        private final Level model;
         private final Rectangle gridZone;
+        private final Rectangle gridTile;
         private final Rectangle sidekickZone;
         private final Rectangle infoZone;
-        private final Rectangle gridTile;
+        private final Level level;
 
-        private Dimensions(Level model, float screenWidth, float screenHeight) {
-            this.model = model;
+        private Dimensions(Level lvl, float screenWidth, float screenHeight) {
             Rectangle screen = new Rectangle(0, 0, screenWidth, screenHeight);
             float topSpaceHeight = screenHeight * 0.8f;
             float gridHeight = topSpaceHeight * 0.9f;
-            float tileSize = gridHeight / model.getGrid().getHeight();
-            float gridWidth = model.getGrid().getWidth() * tileSize;
+            float tileSize = gridHeight / lvl.getGrid().getHeight();
+            float gridWidth = lvl.getGrid().getWidth() * tileSize;
             float infoZoneHeight = (screen.height - topSpaceHeight) / 2;
 
+            level = lvl;
             gridZone = new Rectangle((screen.width - gridWidth) / 2, (topSpaceHeight - gridHeight) / 2, gridWidth, gridHeight);
             gridTile = new Rectangle(0, 0, tileSize, tileSize);
             sidekickZone = new Rectangle(0, topSpaceHeight, screen.width, infoZoneHeight);
@@ -35,7 +35,7 @@ public class GameView implements Renderable {
         private Rectangle tileAt(int x, int y) {
             return new Rectangle(
               gridZone.x + x * gridTile.width,
-              gridZone.y + ((model.getGrid().getHeight() - 1) - y) * gridTile.height,
+              gridZone.y + ((level.getGrid().getHeight() - 1) - y) * gridTile.height,
               gridTile.width,
               gridTile.height
             );
@@ -62,7 +62,7 @@ public class GameView implements Renderable {
           x -> IntStream.range(0, model.getGrid().getHeight()).forEach(y -> {
               sra.drawRect(
                 dimensions.tileAt(x, y),
-                x % 2 == y % 2 ? new Color(.15f, .15f, .225f, 1) : new Color(.175f, .175f, .25f, 1)
+                x % 2 == y % 2 ? new Color(.2f, .2f, .3f, 1) : new Color(.175f, .175f, .275f, 1)
               );
               model.getGrid().get(x, y).ifPresent(c -> spra.render(c.getSprite(), dimensions.tileAt(x, y)));
           })
