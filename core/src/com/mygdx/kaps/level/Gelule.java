@@ -5,11 +5,11 @@ import com.mygdx.kaps.Utils;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class Gelule {
-    private final Capsule main;
-    private final Capsule slave;
+class Gelule {
     private boolean frozen;
     private boolean falling;
+    private final Capsule main;
+    private final Capsule slave;
 
     private Gelule(Capsule main, Capsule slave) {
         this.main = main;
@@ -23,7 +23,7 @@ public class Gelule {
         );
     }
 
-    public static Gelule randomNewInstance(Level level) {
+    static Gelule randomNewInstance(Level level) {
         return new Gelule(
           level.getGrid().getWidth() / 2 - 1,
           level.getGrid().getHeight() - 1,
@@ -32,64 +32,91 @@ public class Gelule {
         );
     }
 
-    public boolean atLeastOneVerify(Predicate<Capsule> condition) {
-        return condition.test(main) || condition.test(slave);
+    private Gelule copy() {
+        return new Gelule(main.copy(), slave.copy());
     }
 
-    public boolean bothVerify(Predicate<Capsule> condition) {
+    boolean bothVerify(Predicate<Capsule> condition) {
         return condition.test(main) && condition.test(slave);
     }
 
-    public void freeze() {
+    boolean isInGrid(Grid grid) {
+        return bothVerify(c -> c.isInGrid(grid));
+    }
+
+    void freeze() {
         frozen = true;
     }
 
-    public void startFalling() {
+    void startFalling() {
         falling = true;
     }
 
-    public boolean isFrozen() {
+    boolean isFrozen() {
         return frozen;
     }
 
-    public boolean isFalling() {
+    boolean isFalling() {
         return falling;
     }
 
-    public Capsule getMainCapsule() {
-        return main;
-    }
-
-    public Capsule getSlaveCapsule() {
-        return slave;
+    void forEachCapsule(Consumer<Capsule> action) {
+        action.accept(main);
+        action.accept(slave);
     }
 
     private void updateSlave() {
         slave.face(main);
     }
 
-    public void dip() {
-        main.dip();
-        updateSlave();
-    }
-
-    public void flip() {
-        main.flip();
-        updateSlave();
-    }
-
-    public void moveLeft() {
-        main.moveLeft();
-        updateSlave();
-    }
-
-    public void moveRight() {
-        main.moveRight();
-        updateSlave();
-    }
-
-    public void forEachCapsule(Consumer<Capsule> action) {
+    private void shift(Consumer<Capsule> action) {
         action.accept(main);
-        action.accept(slave);
+        updateSlave();
+    }
+
+    void dip() {
+        shift(Capsule::dip);
+    }
+
+    void flip() {
+        shift(Capsule::flip);
+    }
+
+    void moveLeft() {
+        shift(Capsule::moveLeft);
+    }
+
+    void moveRight() {
+        shift(Capsule::moveRight);
+    }
+
+    void moveBack() {
+        shift(Capsule::moveInDirection);
+    }
+
+    private Gelule shifted(Consumer<Gelule> action) {
+        Gelule test = copy();
+        action.accept(test);
+        return test;
+    }
+
+    Gelule dipped() {
+        return shifted(Gelule::dip);
+    }
+
+    Gelule flipped() {
+        return shifted(Gelule::flip);
+    }
+
+    Gelule movedLeft() {
+        return shifted(Gelule::moveLeft);
+    }
+
+    Gelule movedRight() {
+        return shifted(Gelule::moveRight);
+    }
+
+    Gelule movedBack() {
+        return shifted(Gelule::moveBack);
     }
 }

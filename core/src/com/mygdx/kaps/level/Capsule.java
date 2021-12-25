@@ -6,13 +6,13 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class Capsule {
+class Capsule {
     private final HashMap<Orientation, Sprite> sprites = new HashMap<>();
-    private Orientation orientation;
     private final Coordinates coordinates;
+    private Orientation orientation;
     private final Color color;
 
-    public Capsule(int x, int y, Color color, Orientation orientation) {
+    Capsule(int x, int y, Color color, Orientation orientation) {
         coordinates = new Coordinates(x, y);
         this.orientation = orientation;
         this.color = color;
@@ -25,27 +25,15 @@ public class Capsule {
         });
     }
 
-    public void moveLeft() {
-        coordinates.add(Orientation.LEFT.movingVector());
+    Capsule copy() {
+        return new Capsule(coordinates.x, coordinates.y, color, orientation);
     }
 
-    public void moveRight() {
-        coordinates.add(Orientation.RIGHT.movingVector());
-    }
-
-    public void flip() {
-        orientation = orientation.flipped();
-    }
-
-    public void dip() {
-        coordinates.add(Orientation.DOWN.movingVector());
-    }
-
-    public Sprite getSprite() {
+    Sprite getSprite() {
         return sprites.get(orientation);
     }
 
-    public Coordinates getCoordinates() {
+    Coordinates getCoordinates() {
         return coordinates;
     }
 
@@ -53,7 +41,37 @@ public class Capsule {
         return coordinates.addedTo(orientation.oppositeVector());
     }
 
-    public void face(Capsule caps) {
+
+    boolean isInGrid(Grid grid) {
+        return 0 <= coordinates.x && coordinates.x < grid.getWidth() &&
+                 0 <= coordinates.y && coordinates.y < grid.getHeight();
+    }
+
+    private void moveTowards(Orientation orientation) {
+        coordinates.add(orientation.movingVector());
+    }
+
+    void moveInDirection() {
+        moveTowards(orientation);
+    }
+
+    void moveLeft() {
+        moveTowards(Orientation.LEFT);
+    }
+
+    void moveRight() {
+        moveTowards(Orientation.RIGHT);
+    }
+
+    void dip() {
+        moveTowards(Orientation.DOWN);
+    }
+
+    void flip() {
+        orientation = orientation.flipped();
+    }
+
+    void face(Capsule caps) {
         orientation = caps.orientation.facing();
         coordinates.set(caps.facingCoordinates());
     }

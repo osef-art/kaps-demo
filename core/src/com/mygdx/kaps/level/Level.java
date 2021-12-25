@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 public class Level {
     private final List<Gelule> gelules = new ArrayList<>();
@@ -26,24 +25,18 @@ public class Level {
         var dippingTimer = Timer.ofSeconds(1, this::dipOrAcceptGelule);
         var droppingTimer = Timer.ofMilliseconds(1, this::dipAllDroppingGelules);
         timers.addAll(Arrays.asList(dippingTimer, droppingTimer));
-
-        spawnGelule();
     }
 
-    public Set<Color> getColors() {
+    Set<Color> getColors() {
         return colors;
     }
 
-    public List<Gelule> getGelules() {
+    List<Gelule> getGelules() {
         return gelules;
     }
 
-    public Grid getGrid() {
+    Grid getGrid() {
         return grid;
-    }
-
-    private Stream<Gelule> floatingGelulesStream() {
-        return gelules.stream().filter(Predicate.not(Gelule::isFalling));
     }
 
     private void dipAllDroppingGelules() {
@@ -57,35 +50,43 @@ public class Level {
 
     private void performIfPossibleElse(Predicate<Gelule> condition, Consumer<Gelule> action,
                                        Consumer<Gelule> alternative) {
-        floatingGelulesStream().forEach(g -> {
-            if (condition.test(g)) action.accept(g);
-            else alternative.accept(g);
-        });
+        gelules.stream()
+          .filter(Predicate.not(Gelule::isFalling))
+          .forEach(g -> {
+              if (condition.test(g)) action.accept(g);
+              else alternative.accept(g);
+          });
     }
 
     private void performIfPossible(Predicate<Gelule> condition, Consumer<Gelule> action) {
-        performIfPossibleElse(condition, action, g -> {});
+        performIfPossibleElse(condition, action, g -> {
+        });
     }
 
-    // moves
+    // gelule moves
     public void dipOrAcceptGelule() {
-        performIfPossibleElse(g -> g.bothVerify(c -> c.getCoordinates().y >= 1), Gelule::dip, this::accept);
+        performIfPossibleElse(g -> g.dipped().isInGrid(grid), Gelule::dip, this::accept);
     }
 
     public void flipGelule() {
-        floatingGelulesStream().forEach(Gelule::flip);
+        performIfPossibleElse(g -> g.flipped().isInGrid(grid), Gelule::flip,
+          g -> performIfPossible(f -> f.flipped().movedBack().isInGrid(grid), f -> {
+              f.flip();
+              f.moveBack();
+          })
+        );
     }
 
     public void moveGeluleLeft() {
-        performIfPossible(g -> g.bothVerify(c -> c.getCoordinates().x >= 1), Gelule::moveLeft);
+        performIfPossible(g -> g.movedLeft().isInGrid(grid), Gelule::moveLeft);
     }
 
     public void moveGeluleRight() {
-        performIfPossible(g -> g.bothVerify(c -> c.getCoordinates().x < grid.getWidth() - 1), Gelule::moveRight);
+        performIfPossible(g -> g.movedRight().isInGrid(grid), Gelule::moveRight);
     }
 
     public void dropGelule() {
-        floatingGelulesStream().forEach(Gelule::startFalling);
+        performIfPossible(g -> true, Gelule::startFalling);
     }
 
     public void holdGelule() {

@@ -15,7 +15,7 @@ import java.util.HashSet;
 
 public class MainScreen extends ApplicationAdapter {
     public static OrthographicCamera camera;
-    public static InputHandler inputHandler;
+    private InputHandler inputs;
     public static SoundStream soundStream;
 
     private Level game;
@@ -29,9 +29,9 @@ public class MainScreen extends ApplicationAdapter {
 
         game = new Level(new HashSet<>(Arrays.asList(Color.COLOR_1, Color.COLOR_2)));
         view = new GameView(game);
-        inputHandler = new InputHandler(game);
+        inputs = new InputHandler(game);
 
-        Gdx.input.setInputProcessor(inputHandler);
+        Gdx.input.setInputProcessor(inputs);
         soundStream = new SoundStream();
     }
 
@@ -40,6 +40,7 @@ public class MainScreen extends ApplicationAdapter {
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.15f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        inputs.update();
         game.update();
         view.render();
     }

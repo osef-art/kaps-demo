@@ -74,10 +74,7 @@ public class GameView implements Renderable {
     }
 
     private void renderGelules() {
-        model.getGelules().forEach(g -> {
-            renderCapsule(g.getMainCapsule());
-            renderCapsule(g.getSlaveCapsule());
-        });
+        model.getGelules().forEach(g -> g.forEachCapsule(this::renderCapsule));
     }
 
     @Override
