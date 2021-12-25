@@ -36,6 +36,11 @@ class Gelule {
         return new Gelule(main.copy(), slave.copy());
     }
 
+    void forEachCapsule(Consumer<Capsule> action) {
+        action.accept(main);
+        action.accept(slave);
+    }
+
     boolean bothVerify(Predicate<Capsule> condition) {
         return condition.test(main) && condition.test(slave);
     }
@@ -44,31 +49,30 @@ class Gelule {
         return bothVerify(c -> c.isInGrid(grid));
     }
 
-    void freeze() {
-        frozen = true;
-    }
-
-    void startFalling() {
-        falling = true;
+    boolean isFalling() {
+        return falling;
     }
 
     boolean isFrozen() {
         return frozen;
     }
 
-    boolean isFalling() {
-        return falling;
+    void startFalling() {
+        falling = true;
     }
 
-    void forEachCapsule(Consumer<Capsule> action) {
-        action.accept(main);
-        action.accept(slave);
+    void freeze() {
+        frozen = true;
     }
 
     private void updateSlave() {
         slave.face(main);
     }
 
+    /**
+     * Applies an atomic move to the main capsule and update its slave.
+     * @param action the move to apply on the main capsule
+     */
     private void shift(Consumer<Capsule> action) {
         action.accept(main);
         updateSlave();
@@ -94,6 +98,10 @@ class Gelule {
         shift(Capsule::moveInDirection);
     }
 
+    /**
+     * @param action the move to apply on the gelule
+     * @return a copy of the current instance peeked by {@param action}
+     */
     private Gelule shifted(Consumer<Gelule> action) {
         Gelule test = copy();
         action.accept(test);

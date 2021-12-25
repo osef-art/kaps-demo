@@ -41,12 +41,15 @@ class Capsule {
         return coordinates.addedTo(orientation.oppositeVector());
     }
 
-
     boolean isInGrid(Grid grid) {
         return 0 <= coordinates.x && coordinates.x < grid.getWidth() &&
                  0 <= coordinates.y && coordinates.y < grid.getHeight();
     }
 
+    /**
+     * Makes the instance move in the direction specified by {@param orientation}
+     * @param orientation the direction in which the movement is made
+     */
     private void moveTowards(Orientation orientation) {
         coordinates.add(orientation.movingVector());
     }
