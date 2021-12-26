@@ -25,6 +25,11 @@ class Capsule {
         });
     }
 
+    @Override
+    public String toString() {
+        return coordinates.toString();
+    }
+
     Capsule copy() {
         return new Capsule(coordinates.x, coordinates.y, color, orientation);
     }
@@ -33,7 +38,11 @@ class Capsule {
         return sprites.get(orientation);
     }
 
-    Coordinates getCoordinates() {
+    public Color color() {
+        return color;
+    }
+
+    Coordinates coordinates() {
         return coordinates;
     }
 
@@ -42,12 +51,11 @@ class Capsule {
     }
 
     private boolean isInGrid(Grid grid) {
-        return 0 <= coordinates.x && coordinates.x < grid.getWidth() &&
-                 0 <= coordinates.y && coordinates.y < grid.getHeight();
+        return grid.isInGrid(coordinates);
     }
 
     private boolean overlapsStack(Grid grid) {
-        return grid.get(coordinates.x, coordinates.y).isPresent();
+        return grid.get(coordinates).isPresent();
     }
 
     boolean canStandIn(Grid grid) {

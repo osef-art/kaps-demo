@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class InputHandler implements InputProcessor {
-    public enum Key {
+    private enum Key {
         LEFT_KEY(Level::moveGeluleLeft, 75.0, 21, 45), // Q, LEFT ARR.
         RIGHT_KEY(Level::moveGeluleRight, 75.0, 22, 32), // D, RIGHT ARR.
         DOWN_KEY(Level::dipOrAcceptGelule, 75.0, 20, 47), // S, DOWN ARR.

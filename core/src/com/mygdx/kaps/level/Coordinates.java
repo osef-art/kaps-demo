@@ -38,7 +38,7 @@ class Coordinates {
      * @param functionY the effect to apply on y
      * @return new coordinates mapped with both functions
      */
-    private Coordinates mapped(Function<Integer, Integer> functionX, Function<Integer, Integer> functionY) {
+    Coordinates mapped(Function<Integer, Integer> functionX, Function<Integer, Integer> functionY) {
         Coordinates coordinates = new Coordinates(x, y);
         coordinates.map(functionX, functionY);
         return coordinates;
@@ -49,6 +49,10 @@ class Coordinates {
     }
 
     Coordinates addedTo(Coordinates coordinates) {
-        return mapped(x -> x + coordinates.x, y -> y + coordinates.y);
+        return addedTo(coordinates.x, coordinates.y);
+    }
+
+    Coordinates addedTo(int addedX, int addedY) {
+        return mapped(x -> x + addedX, y -> y + addedY);
     }
 }

@@ -70,7 +70,7 @@ public class GameView implements Renderable {
     }
 
     private void renderCapsule(Capsule caps) {
-        spra.render(caps.getSprite(), dimensions.tileAt(caps.getCoordinates().x, caps.getCoordinates().y));
+        spra.render(caps.getSprite(), dimensions.tileAt(caps.coordinates().x, caps.coordinates().y));
     }
 
     private void renderGelules() {
