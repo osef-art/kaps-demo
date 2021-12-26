@@ -68,8 +68,13 @@ class CapsulePart extends GridObject {
         dropping = true;
     }
 
+    void stopDropping() {
+        dropping = false;
+    }
+
     void freeze() {
         frozen = true;
+        stopDropping();
     }
 
     private boolean isInGridBounds(Grid grid) {
