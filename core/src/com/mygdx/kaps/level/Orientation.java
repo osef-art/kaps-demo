@@ -31,7 +31,7 @@ public enum Orientation {
     }
 
     @SuppressWarnings("DuplicatedCode")
-    public Orientation facing() {
+    public Orientation opposite() {
         switch (this) {
             case LEFT:
                 return RIGHT;
@@ -46,7 +46,7 @@ public enum Orientation {
         }
     }
 
-    public Coordinates movingVector() {
+    public Coordinates directionVector() {
         switch (this) {
             case LEFT:
                 return new Coordinates(-1, 0);
@@ -62,6 +62,6 @@ public enum Orientation {
     }
 
     public Coordinates oppositeVector() {
-        return movingVector().mapped(x -> -x);
+        return directionVector().mapped(x -> -x);
     }
 }

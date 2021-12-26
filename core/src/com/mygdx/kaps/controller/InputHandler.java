@@ -13,12 +13,12 @@ import java.util.stream.Collectors;
 
 public class InputHandler implements InputProcessor {
     private enum Key {
-        LEFT_KEY(Level::moveGeluleLeft, 75.0, 21, 45), // Q, LEFT ARR.
-        RIGHT_KEY(Level::moveGeluleRight, 75.0, 22, 32), // D, RIGHT ARR.
-        DOWN_KEY(Level::dipOrAcceptGelule, 75.0, 20, 47), // S, DOWN ARR.
-        FLIP_KEY(Level::flipGelule, 100.0, 19, 54), // Z, UP ARR.
-        DROP_KEY(Level::dropGelule, 62), // C, L
-        HOLD_KEY(Level::holdGelule, 31, 50, 30), // V, M
+        LEFT_KEY(Level::moveCapsuleLeft, 75.0, 21, 45), // Q, LEFT ARR.
+        RIGHT_KEY(Level::moveCapsuleRight, 75.0, 22, 32), // D, RIGHT ARR.
+        DOWN_KEY(Level::dipOrAcceptCapsule, 75.0, 20, 47), // S, DOWN ARR.
+        FLIP_KEY(Level::flipCapsule, 100.0, 19, 54), // Z, UP ARR.
+        DROP_KEY(Level::dropCapsule, 62), // C, L
+        HOLD_KEY(Level::holdCapsule, 31, 50, 30), // V, M
 
         ESCAPE_KEY(m -> System.exit(0), 29, 131, 68), // A, ESC, !
         ;

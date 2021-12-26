@@ -73,15 +73,15 @@ public class GameView implements Renderable {
         spra.render(caps.getSprite(), dimensions.tileAt(caps.coordinates().x, caps.coordinates().y));
     }
 
-    private void renderGelules() {
-        model.getGelules().forEach(g -> g.forEachCapsule(this::renderCapsule));
+    private void renderFallingCapsules() {
+        model.fallingCapsules().forEach(g -> g.forEachCapsule(this::renderCapsule));
     }
 
     @Override
     public void render() {
         renderLayout();
         renderGrid();
-        renderGelules();
+        renderFallingCapsules();
     }
 
     public void dispose() {

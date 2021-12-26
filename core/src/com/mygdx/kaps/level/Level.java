@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class Level {
-    private final List<Gelule> gelules = new ArrayList<>();
+    private final List<FullCapsule> fallingCapsules = new ArrayList<>();
     private final List<Timer> timers = new ArrayList<>();
     private final Set<Color> colors;
     private final Grid grid;
@@ -22,8 +22,8 @@ public class Level {
         this.colors = colors;
         grid = new Grid(6, 15);
 
-        var dippingTimer = Timer.ofSeconds(1, this::dipOrAcceptGelule);
-        var droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingGelule);
+        var dippingTimer = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
+        var droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingCapsule);
         timers.addAll(Arrays.asList(dippingTimer, droppingTimer));
     }
 
@@ -31,96 +31,100 @@ public class Level {
         return colors;
     }
 
-    List<Gelule> getGelules() {
-        return gelules;
+    List<FullCapsule> fallingCapsules() {
+        return fallingCapsules;
     }
 
     Grid getGrid() {
         return grid;
     }
 
+    Coordinates spawnCoordinates() {
+        return new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1);
+    }
+
     /**
-     * Executes on each level's gelules matching {@param selection} the code conveyed by {@param action}
+     * Executes on each level's capsules matching {@param selection} the code conveyed by {@param action}
      * if {@param condition} is true, else executes {@param alternative} instead
      *
-     * @param selection   the gelules on which act
+     * @param selection   the capsules on which act
      * @param condition   the predicate to match to execute {@param action}
-     * @param action      the action to execute on each falling gelule
-     * @param alternative the action to execute on each falling gelule if {@param condition} is not matched
+     * @param action      the action to execute on each falling Capsule
+     * @param alternative the action to execute on each falling Capsule if {@param condition} is not matched
      */
-    private void performIfPossible(Predicate<Gelule> selection, Predicate<Gelule> condition,
-                                   Consumer<Gelule> action, Consumer<Gelule> alternative) {
-        gelules.stream()
+    private void performIfPossible(Predicate<FullCapsule> selection, Predicate<FullCapsule> condition,
+                                   Consumer<FullCapsule> action, Consumer<FullCapsule> alternative) {
+        fallingCapsules.stream()
           .filter(selection)
-          .forEach(g -> {
-              if (condition.test(g)) action.accept(g);
-              else alternative.accept(g);
+          .forEach(c -> {
+              if (condition.test(c)) action.accept(c);
+              else alternative.accept(c);
           });
     }
 
     /**
-     * Executes on each level's gelules matching {@param selection} the code conveyed by {@param action}
+     * Executes on each level's capsules matching {@param selection} the code conveyed by {@param action}
      * if  {@param condition} is true
      *
-     * @param selection the gelules on which act
+     * @param selection the capsules on which act
      * @param condition the predicate to match to execute {@param action}
-     * @param action    the action to execute on each falling gelule
+     * @param action    the action to execute on each falling Capsule
      */
-    private void performIfPossible(Predicate<Gelule> selection, Predicate<Gelule> condition, Consumer<Gelule> action) {
-        performIfPossible(selection, condition, action, g -> {
+    private void performIfPossible(Predicate<FullCapsule> selection, Predicate<FullCapsule> condition, Consumer<FullCapsule> action) {
+        performIfPossible(selection, condition, action, c -> {
         });
     }
 
-    // gelule moves
-    public void moveGeluleLeft() {
-        performIfPossible(Predicate.not(Gelule::isFalling), g -> g.movedLeft().canStandIn(grid), Gelule::moveLeft);
+    // capsule moves
+    public void moveCapsuleLeft() {
+        performIfPossible(Predicate.not(FullCapsule::isFalling), c -> c.movedLeft().canStandIn(grid), FullCapsule::moveLeft);
     }
 
-    public void moveGeluleRight() {
-        performIfPossible(Predicate.not(Gelule::isFalling), g -> g.movedRight().canStandIn(grid), Gelule::moveRight);
+    public void moveCapsuleRight() {
+        performIfPossible(Predicate.not(FullCapsule::isFalling), c -> c.movedRight().canStandIn(grid), FullCapsule::moveRight);
     }
 
-    public void dipOrAcceptGelule() {
-        performIfPossible(Predicate.not(Gelule::isFalling), g -> g.dipped().canStandIn(grid), Gelule::dip, this::accept);
+    public void dipOrAcceptCapsule() {
+        performIfPossible(Predicate.not(FullCapsule::isFalling), c -> c.dipped().canStandIn(grid), FullCapsule::dip, this::accept);
     }
 
-    private void dipOrAcceptDroppingGelule() {
-        performIfPossible(Gelule::isFalling, g -> g.dipped().canStandIn(grid), Gelule::dip, this::accept);
+    private void dipOrAcceptDroppingCapsule() {
+        performIfPossible(FullCapsule::isFalling, c -> c.dipped().canStandIn(grid), FullCapsule::dip, this::accept);
     }
 
-    public void flipGelule() {
-        performIfPossible(Predicate.not(Gelule::isFalling), g -> g.flipped().canStandIn(grid), Gelule::flip,
+    public void flipCapsule() {
+        performIfPossible(Predicate.not(FullCapsule::isFalling), c -> c.flipped().canStandIn(grid), FullCapsule::flip,
           g -> performIfPossible(f -> true, f -> f.flipped().movedBack().canStandIn(grid), f -> {
               f.flip();
-              f.moveBack();
+              f.moveForward();
           })
         );
     }
 
-    public void dropGelule() {
-        performIfPossible(Predicate.not(Gelule::isFalling), g -> true, Gelule::startFalling);
+    public void dropCapsule() {
+        performIfPossible(Predicate.not(FullCapsule::isFalling), c -> true, FullCapsule::startFalling);
     }
 
-    public void holdGelule() {
+    public void holdCapsule() {
     }
 
     // update
-    private void spawnGelule() {
-        gelules.add(Gelule.randomNewInstance(this));
-        gelules.forEach(g -> {
+    private void spawnCapsule() {
+        fallingCapsules.add(FullCapsule.randomNewInstance(this));
+        fallingCapsules.forEach(g -> {
             if (!g.canStandIn(grid)) System.exit(0);
         });
     }
 
-    private void accept(Gelule gelule) {
-        gelule.forEachCapsule(grid::put);
-        gelule.freeze();
+    private void accept(FullCapsule fullCapsule) {
+        fullCapsule.forEachCapsule(grid::put);
+        fullCapsule.freeze();
         grid.deleteMatches();
     }
 
     public void update() {
-        gelules.removeIf(Gelule::isFrozen);
-        if (gelules.stream().noneMatch(Predicate.not(Gelule::isFalling))) spawnGelule();
+        fallingCapsules.removeIf(FullCapsule::isFrozen);
+        if (fallingCapsules.stream().noneMatch(Predicate.not(FullCapsule::isFalling))) spawnCapsule();
         timers.forEach(Timer::resetIfExceeds);
     }
 }

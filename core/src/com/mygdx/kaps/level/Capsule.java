@@ -12,9 +12,9 @@ class Capsule {
     private Orientation orientation;
     private final Color color;
 
-    Capsule(int x, int y, Color color, Orientation orientation) {
-        coordinates = new Coordinates(x, y);
+    Capsule(Coordinates coordinates, Color color, Orientation orientation) {
         this.orientation = orientation;
+        this.coordinates = coordinates.copy();
         this.color = color;
         Arrays.stream(Orientation.values()).forEach(o -> {
             var sprite = new Sprite(
@@ -31,7 +31,7 @@ class Capsule {
     }
 
     Capsule copy() {
-        return new Capsule(coordinates.x, coordinates.y, color, orientation);
+        return new Capsule(coordinates, color, orientation);
     }
 
     Sprite getSprite() {
@@ -40,6 +40,10 @@ class Capsule {
 
     public Color color() {
         return color;
+    }
+
+    Orientation orientation() {
+        return orientation;
     }
 
     Coordinates coordinates() {
@@ -68,7 +72,7 @@ class Capsule {
      * @param orientation the direction in which the movement is made
      */
     private void moveTowards(Orientation orientation) {
-        coordinates.add(orientation.movingVector());
+        coordinates.add(orientation.directionVector());
     }
 
     void moveForward() {
@@ -92,7 +96,7 @@ class Capsule {
     }
 
     void face(Capsule caps) {
-        orientation = caps.orientation.facing();
+        orientation = caps.orientation.opposite();
         coordinates.set(caps.facingCoordinates());
     }
 }

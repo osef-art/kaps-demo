@@ -48,6 +48,10 @@ class Coordinates {
         return mapped(function, function);
     }
 
+    Coordinates copy() {
+        return mapped(Function.identity());
+    }
+
     Coordinates addedTo(Coordinates coordinates) {
         return addedTo(coordinates.x, coordinates.y);
     }
