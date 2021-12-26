@@ -115,6 +115,7 @@ public class Level {
     private void accept(Gelule gelule) {
         gelule.forEachCapsule(grid::put);
         gelule.freeze();
+        grid.deleteMatches();
     }
 
     public void update() {
