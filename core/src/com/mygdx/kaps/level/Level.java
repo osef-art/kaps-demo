@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class Level {
-    private final List<FullCapsule> fallingCapsules = new ArrayList<>();
+    private final List<Capsule> fallingCapsules = new ArrayList<>();
     private final List<Timer> timers = new ArrayList<>();
     private final Set<Color> colors;
     private final Grid grid;
@@ -31,7 +31,7 @@ public class Level {
         return colors;
     }
 
-    List<FullCapsule> fallingCapsules() {
+    List<Capsule> fallingCapsules() {
         return fallingCapsules;
     }
 
@@ -52,8 +52,8 @@ public class Level {
      * @param action      the action to execute on each falling Capsule
      * @param alternative the action to execute on each falling Capsule if {@param condition} is not matched
      */
-    private void performIfPossible(Predicate<FullCapsule> selection, Predicate<FullCapsule> condition,
-                                   Consumer<FullCapsule> action, Consumer<FullCapsule> alternative) {
+    private void performIfPossible(Predicate<Capsule> selection, Predicate<Capsule> condition,
+                                   Consumer<Capsule> action, Consumer<Capsule> alternative) {
         fallingCapsules.stream()
           .filter(selection)
           .forEach(c -> {
@@ -70,30 +70,30 @@ public class Level {
      * @param condition the predicate to match to execute {@param action}
      * @param action    the action to execute on each falling Capsule
      */
-    private void performIfPossible(Predicate<FullCapsule> selection, Predicate<FullCapsule> condition, Consumer<FullCapsule> action) {
+    private void performIfPossible(Predicate<Capsule> selection, Predicate<Capsule> condition, Consumer<Capsule> action) {
         performIfPossible(selection, condition, action, c -> {
         });
     }
 
     // capsule moves
     public void moveCapsuleLeft() {
-        performIfPossible(Predicate.not(FullCapsule::isFalling), c -> c.movedLeft().canStandIn(grid), FullCapsule::moveLeft);
+        performIfPossible(Predicate.not(Capsule::isFalling), c -> c.movedLeft().canStandIn(grid), Capsule::moveLeft);
     }
 
     public void moveCapsuleRight() {
-        performIfPossible(Predicate.not(FullCapsule::isFalling), c -> c.movedRight().canStandIn(grid), FullCapsule::moveRight);
+        performIfPossible(Predicate.not(Capsule::isFalling), c -> c.movedRight().canStandIn(grid), Capsule::moveRight);
     }
 
     public void dipOrAcceptCapsule() {
-        performIfPossible(Predicate.not(FullCapsule::isFalling), c -> c.dipped().canStandIn(grid), FullCapsule::dip, this::accept);
+        performIfPossible(Predicate.not(Capsule::isFalling), c -> c.dipped().canStandIn(grid), Capsule::dip, this::accept);
     }
 
     private void dipOrAcceptDroppingCapsule() {
-        performIfPossible(FullCapsule::isFalling, c -> c.dipped().canStandIn(grid), FullCapsule::dip, this::accept);
+        performIfPossible(Capsule::isFalling, c -> c.dipped().canStandIn(grid), Capsule::dip, this::accept);
     }
 
     public void flipCapsule() {
-        performIfPossible(Predicate.not(FullCapsule::isFalling), c -> c.flipped().canStandIn(grid), FullCapsule::flip,
+        performIfPossible(Predicate.not(Capsule::isFalling), c -> c.flipped().canStandIn(grid), Capsule::flip,
           g -> performIfPossible(f -> true, f -> f.flipped().movedBack().canStandIn(grid), f -> {
               f.flip();
               f.moveForward();
@@ -102,7 +102,7 @@ public class Level {
     }
 
     public void dropCapsule() {
-        performIfPossible(Predicate.not(FullCapsule::isFalling), c -> true, FullCapsule::startFalling);
+        performIfPossible(Predicate.not(Capsule::isFalling), c -> true, Capsule::startFalling);
     }
 
     public void holdCapsule() {
@@ -110,21 +110,21 @@ public class Level {
 
     // update
     private void spawnCapsule() {
-        fallingCapsules.add(FullCapsule.randomNewInstance(this));
+        fallingCapsules.add(Capsule.randomNewInstance(this));
         fallingCapsules.forEach(g -> {
             if (!g.canStandIn(grid)) System.exit(0);
         });
     }
 
-    private void accept(FullCapsule fullCapsule) {
-        fullCapsule.forEachCapsule(grid::put);
-        fullCapsule.freeze();
+    private void accept(Capsule capsule) {
+        capsule.forEachCapsule(grid::put);
+        capsule.freeze();
         grid.deleteMatches();
     }
 
     public void update() {
-        fallingCapsules.removeIf(FullCapsule::isFrozen);
-        if (fallingCapsules.stream().noneMatch(Predicate.not(FullCapsule::isFalling))) spawnCapsule();
+        fallingCapsules.removeIf(Capsule::isFrozen);
+        if (fallingCapsules.stream().noneMatch(Predicate.not(Capsule::isFalling))) spawnCapsule();
         timers.forEach(Timer::resetIfExceeds);
     }
 }

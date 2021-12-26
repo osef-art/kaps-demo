@@ -4,25 +4,25 @@ import com.mygdx.kaps.Utils;
 
 import java.util.function.Consumer;
 
-class FullCapsule extends CapsulePart {
+class Capsule extends CapsulePart {
     private boolean frozen;
     private boolean falling;
     private final CapsulePart slave;
 
-    private FullCapsule(Coordinates coordinates, Color color, Orientation orientation, CapsulePart slave) {
+    private Capsule(Coordinates coordinates, Color color, Orientation orientation, CapsulePart slave) {
         super(coordinates, color, orientation);
         this.slave = slave;
     }
 
-    private FullCapsule(Coordinates coordinates, Color mainColor, Color slaveColor, Orientation orientation) {
+    private Capsule(Coordinates coordinates, Color mainColor, Color slaveColor, Orientation orientation) {
         this(
           coordinates, mainColor, orientation,
           new CapsulePart(coordinates.addedTo(orientation.oppositeVector()), slaveColor, orientation.opposite())
         );
     }
 
-    static FullCapsule randomNewInstance(Level level) {
-        return new FullCapsule(
+    static Capsule randomNewInstance(Level level) {
+        return new Capsule(
           level.spawnCoordinates(),
           Utils.getRandomFrom(level.getColors()),
           Utils.getRandomFrom(level.getColors()),
@@ -30,8 +30,8 @@ class FullCapsule extends CapsulePart {
         );
     }
 
-    FullCapsule copy() {
-        return new FullCapsule(coordinates(), color(), orientation(), slave.copy());
+    Capsule copy() {
+        return new Capsule(coordinates(), color(), orientation(), slave.copy());
     }
 
     void forEachCapsule(Consumer<CapsulePart> action) {
@@ -92,29 +92,29 @@ class FullCapsule extends CapsulePart {
      * @param action the move to apply on the capsule
      * @return a copy of the current instance peeked by {@param action}
      */
-    private FullCapsule shifted(Consumer<FullCapsule> action) {
-        FullCapsule test = copy();
+    private Capsule shifted(Consumer<Capsule> action) {
+        Capsule test = copy();
         action.accept(test);
         return test;
     }
 
-    FullCapsule dipped() {
-        return shifted(FullCapsule::dip);
+    Capsule dipped() {
+        return shifted(Capsule::dip);
     }
 
-    FullCapsule flipped() {
-        return shifted(FullCapsule::flip);
+    Capsule flipped() {
+        return shifted(Capsule::flip);
     }
 
-    FullCapsule movedLeft() {
-        return shifted(FullCapsule::moveLeft);
+    Capsule movedLeft() {
+        return shifted(Capsule::moveLeft);
     }
 
-    FullCapsule movedRight() {
-        return shifted(FullCapsule::moveRight);
+    Capsule movedRight() {
+        return shifted(Capsule::moveRight);
     }
 
-    FullCapsule movedBack() {
-        return shifted(FullCapsule::moveForward);
+    Capsule movedBack() {
+        return shifted(Capsule::moveForward);
     }
 }
