@@ -23,7 +23,7 @@ public class Level {
         grid = new Grid(6, 15);
 
         var dippingTimer = Timer.ofSeconds(1, this::dipOrAcceptGelule);
-        var droppingTimer = Timer.ofMilliseconds(1, this::dipAllDroppingGelules);
+        var droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingGelule);
         timers.addAll(Arrays.asList(dippingTimer, droppingTimer));
     }
 
@@ -40,16 +40,18 @@ public class Level {
     }
 
     /**
-     * Executes an action on each level's gelules conveyed by {@param action} if {@param condition} is true,
-     * else executes {@param alternative} instead
-     * @param condition the predicate to match to execute {@param action}
-     * @param action the action to execute on each falling gelule
+     * Executes on each level's gelules matching {@param selection} the code conveyed by {@param action}
+     * if {@param condition} is true, else executes {@param alternative} instead
+     *
+     * @param selection   the gelules on which act
+     * @param condition   the predicate to match to execute {@param action}
+     * @param action      the action to execute on each falling gelule
      * @param alternative the action to execute on each falling gelule if {@param condition} is not matched
      */
-    private void performIfPossible(Predicate<Gelule> condition, Consumer<Gelule> action,
-                                   Consumer<Gelule> alternative) {
+    private void performIfPossible(Predicate<Gelule> selection, Predicate<Gelule> condition,
+                                   Consumer<Gelule> action, Consumer<Gelule> alternative) {
         gelules.stream()
-          .filter(Predicate.not(Gelule::isFalling))
+          .filter(selection)
           .forEach(g -> {
               if (condition.test(g)) action.accept(g);
               else alternative.accept(g);
@@ -57,48 +59,46 @@ public class Level {
     }
 
     /**
-     * Executes an action on each level's gelules conveyed by {@param action} if {@param condition} is true
+     * Executes on each level's gelules matching {@param selection} the code conveyed by {@param action}
+     * if  {@param condition} is true
+     *
+     * @param selection the gelules on which act
      * @param condition the predicate to match to execute {@param action}
-     * @param action the action to execute on each falling gelule
+     * @param action    the action to execute on each falling gelule
      */
-    private void performIfPossible(Predicate<Gelule> condition, Consumer<Gelule> action) {
-        performIfPossible(condition, action, g -> {
+    private void performIfPossible(Predicate<Gelule> selection, Predicate<Gelule> condition, Consumer<Gelule> action) {
+        performIfPossible(selection, condition, action, g -> {
         });
     }
 
     // gelule moves
-    private void dipAllDroppingGelules() {
-        gelules.stream()
-          .filter(Gelule::isFalling)
-          .forEach(g -> {
-              if (g.dipped().canStandIn(grid)) g.dip();
-              else accept(g);
-          });
+    public void moveGeluleLeft() {
+        performIfPossible(Predicate.not(Gelule::isFalling), g -> g.movedLeft().canStandIn(grid), Gelule::moveLeft);
+    }
+
+    public void moveGeluleRight() {
+        performIfPossible(Predicate.not(Gelule::isFalling), g -> g.movedRight().canStandIn(grid), Gelule::moveRight);
     }
 
     public void dipOrAcceptGelule() {
-        performIfPossible(g -> g.dipped().canStandIn(grid), Gelule::dip, this::accept);
+        performIfPossible(Predicate.not(Gelule::isFalling), g -> g.dipped().canStandIn(grid), Gelule::dip, this::accept);
+    }
+
+    private void dipOrAcceptDroppingGelule() {
+        performIfPossible(Gelule::isFalling, g -> g.dipped().canStandIn(grid), Gelule::dip, this::accept);
     }
 
     public void flipGelule() {
-        performIfPossible(g -> g.flipped().canStandIn(grid), Gelule::flip,
-          g -> performIfPossible(f -> f.flipped().movedBack().canStandIn(grid), f -> {
+        performIfPossible(Predicate.not(Gelule::isFalling), g -> g.flipped().canStandIn(grid), Gelule::flip,
+          g -> performIfPossible(f -> true, f -> f.flipped().movedBack().canStandIn(grid), f -> {
               f.flip();
               f.moveBack();
           })
         );
     }
 
-    public void moveGeluleLeft() {
-        performIfPossible(g -> g.movedLeft().canStandIn(grid), Gelule::moveLeft);
-    }
-
-    public void moveGeluleRight() {
-        performIfPossible(g -> g.movedRight().canStandIn(grid), Gelule::moveRight);
-    }
-
     public void dropGelule() {
-        performIfPossible(g -> true, Gelule::startFalling);
+        performIfPossible(Predicate.not(Gelule::isFalling), g -> true, Gelule::startFalling);
     }
 
     public void holdGelule() {
