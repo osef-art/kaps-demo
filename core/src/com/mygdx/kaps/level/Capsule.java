@@ -4,19 +4,21 @@ import com.mygdx.kaps.Utils;
 
 import java.util.function.Consumer;
 
-class Capsule extends CapsulePart {
+class Capsule extends GridObject {
     private boolean frozen;
     private boolean falling;
+    private final CapsulePart main;
     private final CapsulePart slave;
 
-    private Capsule(Coordinates coordinates, Color color, Orientation orientation, CapsulePart slave) {
-        super(coordinates, color, orientation);
+    private Capsule(CapsulePart main, CapsulePart slave) {
+        super(main.coordinates(), main.color());
+        this.main = main;
         this.slave = slave;
     }
 
     private Capsule(Coordinates coordinates, Color mainColor, Color slaveColor, Orientation orientation) {
         this(
-          coordinates, mainColor, orientation,
+          new CapsulePart(coordinates, mainColor, orientation),
           new CapsulePart(coordinates.addedTo(orientation.oppositeVector()), slaveColor, orientation.opposite())
         );
     }
@@ -31,16 +33,15 @@ class Capsule extends CapsulePart {
     }
 
     Capsule copy() {
-        return new Capsule(coordinates(), color(), orientation(), slave.copy());
+        return new Capsule(main.copy(), slave.copy());
     }
 
-    void forEachCapsule(Consumer<CapsulePart> action) {
-        action.accept(this);
-        action.accept(slave);
+    Coordinates coordinates() {
+        return main.coordinates();
     }
 
     boolean canStandIn(Grid grid) {
-        return super.canStandIn(grid) && slave.canStandIn(grid);
+        return main.canStandIn(grid) && slave.canStandIn(grid);
     }
 
     boolean isFalling() {
@@ -59,33 +60,42 @@ class Capsule extends CapsulePart {
         frozen = true;
     }
 
+    void forEachCapsule(Consumer<CapsulePart> action) {
+        action.accept(main);
+        action.accept(slave);
+    }
+
     private void updateSlave() {
-        slave.face(this);
+        slave.face(main);
+    }
+
+    /**
+     * Applies an atomic move to the main capsule and update its slave.
+     * @param action the move to apply on the main capsule
+     */
+    private void shift(Consumer<CapsulePart> action) {
+        action.accept(main);
+        updateSlave();
     }
 
     void dip() {
-        super.dip();
-        updateSlave();
+        shift(CapsulePart::dip);
     }
 
     void flip() {
-        super.flip();
-        updateSlave();
+        shift(CapsulePart::flip);
     }
 
     void moveLeft() {
-        super.moveLeft();
-        updateSlave();
+        shift(CapsulePart::moveLeft);
     }
 
     void moveRight() {
-        super.moveRight();
-        updateSlave();
+        shift(CapsulePart::moveRight);
     }
 
     void moveForward() {
-        super.moveForward();
-        updateSlave();
+        shift(CapsulePart::moveForward);
     }
 
     /**
