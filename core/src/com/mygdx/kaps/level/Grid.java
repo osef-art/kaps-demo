@@ -41,15 +41,15 @@ public class Grid {
         return columns.get(x).get(y);
     }
 
-    public int getWidth() {
+    int getWidth() {
         return columns.size();
     }
 
-    public int getHeight() {
+    int getHeight() {
         return columns.get(0).height();
     }
 
-    public void put(Capsule caps) {
+    void put(Capsule caps) {
         set(caps.getCoordinates().x, caps.getCoordinates().y, caps);
     }
 

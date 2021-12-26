@@ -63,7 +63,7 @@ class Capsule {
         coordinates.add(orientation.movingVector());
     }
 
-    void moveInDirection() {
+    void moveForward() {
         moveTowards(orientation);
     }
 

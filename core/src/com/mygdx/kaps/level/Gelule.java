@@ -95,7 +95,7 @@ class Gelule {
     }
 
     void moveBack() {
-        shift(Capsule::moveInDirection);
+        shift(Capsule::moveForward);
     }
 
     /**
