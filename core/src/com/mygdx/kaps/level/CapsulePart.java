@@ -6,13 +6,13 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import java.util.Arrays;
 import java.util.HashMap;
 
-class Capsule {
+class CapsulePart {
     private final HashMap<Orientation, Sprite> sprites = new HashMap<>();
     private final Coordinates coordinates;
     private Orientation orientation;
     private final Color color;
 
-    Capsule(Coordinates coordinates, Color color, Orientation orientation) {
+    CapsulePart(Coordinates coordinates, Color color, Orientation orientation) {
         this.orientation = orientation;
         this.coordinates = coordinates.copy();
         this.color = color;
@@ -30,8 +30,8 @@ class Capsule {
         return coordinates.toString();
     }
 
-    Capsule copy() {
-        return new Capsule(coordinates, color, orientation);
+    CapsulePart copy() {
+        return new CapsulePart(coordinates, color, orientation);
     }
 
     Sprite getSprite() {
@@ -95,7 +95,7 @@ class Capsule {
         orientation = orientation.flipped();
     }
 
-    void face(Capsule caps) {
+    void face(CapsulePart caps) {
         orientation = caps.orientation.opposite();
         coordinates.set(caps.facingCoordinates());
     }

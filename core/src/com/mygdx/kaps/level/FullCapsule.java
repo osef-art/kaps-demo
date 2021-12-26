@@ -4,12 +4,12 @@ import com.mygdx.kaps.Utils;
 
 import java.util.function.Consumer;
 
-class FullCapsule extends Capsule {
+class FullCapsule extends CapsulePart {
     private boolean frozen;
     private boolean falling;
-    private final Capsule slave;
+    private final CapsulePart slave;
 
-    private FullCapsule(Coordinates coordinates, Color color, Orientation orientation, Capsule slave) {
+    private FullCapsule(Coordinates coordinates, Color color, Orientation orientation, CapsulePart slave) {
         super(coordinates, color, orientation);
         this.slave = slave;
     }
@@ -17,7 +17,7 @@ class FullCapsule extends Capsule {
     private FullCapsule(Coordinates coordinates, Color mainColor, Color slaveColor, Orientation orientation) {
         this(
           coordinates, mainColor, orientation,
-          new Capsule(coordinates.addedTo(orientation.oppositeVector()), slaveColor, orientation.opposite())
+          new CapsulePart(coordinates.addedTo(orientation.oppositeVector()), slaveColor, orientation.opposite())
         );
     }
 
@@ -34,7 +34,7 @@ class FullCapsule extends Capsule {
         return new FullCapsule(coordinates(), color(), orientation(), slave.copy());
     }
 
-    void forEachCapsule(Consumer<Capsule> action) {
+    void forEachCapsule(Consumer<CapsulePart> action) {
         action.accept(this);
         action.accept(slave);
     }
