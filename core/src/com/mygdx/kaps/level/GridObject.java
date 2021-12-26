@@ -1,10 +1,18 @@
 package com.mygdx.kaps.level;
 
-public abstract class GridObject {
+import com.badlogic.gdx.graphics.g2d.Sprite;
+
+interface IGridObject {
+    Sprite getSprite();
+
+    void detach();
+}
+
+abstract class GridObject implements IGridObject {
     private final Coordinates coordinates;
     private final Color color;
 
-     GridObject(Coordinates coordinates, Color color) {
+    GridObject(Coordinates coordinates, Color color) {
         this.coordinates = coordinates.copy();
         this.color = color;
     }
@@ -18,7 +26,7 @@ public abstract class GridObject {
         return coordinates;
     }
 
-    public Color color() {
+    Color color() {
         return color;
     }
 }

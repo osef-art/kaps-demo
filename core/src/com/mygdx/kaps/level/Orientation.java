@@ -18,12 +18,12 @@ public enum Orientation {
     public Orientation flipped() {
         switch (this) {
             case LEFT:
-                return UP;
-            case UP:
-                return RIGHT;
-            case RIGHT:
                 return DOWN;
             case DOWN:
+                return RIGHT;
+            case RIGHT:
+                return UP;
+            case UP:
                 return LEFT;
             default:
                 return NONE;

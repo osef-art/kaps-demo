@@ -5,12 +5,14 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Optional;
 
 class CapsulePart extends GridObject {
     private final HashMap<Orientation, Sprite> sprites = new HashMap<>();
     private Orientation orientation;
+    private CapsulePart linked;
 
-    CapsulePart(Coordinates coordinates, Color color, Orientation orientation) {
+    private CapsulePart(Coordinates coordinates, Color color, Orientation orientation) {
         super(coordinates, color);
         this.orientation = orientation;
         Arrays.stream(Orientation.values()).forEach(o -> {
@@ -22,20 +24,29 @@ class CapsulePart extends GridObject {
         });
     }
 
+    CapsulePart(Coordinates coordinates, Color color) {
+        this(coordinates, color, Orientation.NONE);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
     CapsulePart copy() {
         return new CapsulePart(coordinates(), color(), orientation);
     }
 
-    Sprite getSprite() {
+    public Sprite getSprite() {
         return sprites.get(orientation);
-    }
-
-    Orientation orientation() {
-        return orientation;
     }
 
     private Coordinates facingCoordinates() {
         return coordinates().addedTo(orientation.oppositeVector());
+    }
+
+    private Optional<CapsulePart> linkedPart() {
+        return Optional.ofNullable(linked);
     }
 
     private boolean isInGrid(Grid grid) {
@@ -82,5 +93,22 @@ class CapsulePart extends GridObject {
     void face(CapsulePart caps) {
         orientation = caps.orientation.opposite();
         coordinates().set(caps.facingCoordinates());
+    }
+
+    public void linkTo(CapsulePart part, Orientation side) {
+        orientation = side.opposite();
+        part.face(this);
+        this.linked = part;
+        part.linked = this;
+    }
+
+    public void detach() {
+        linkedPart().ifPresent(CapsulePart::cutLink);
+        cutLink();
+    }
+
+    private void cutLink() {
+        orientation = Orientation.NONE;
+        linked = null;
     }
 }

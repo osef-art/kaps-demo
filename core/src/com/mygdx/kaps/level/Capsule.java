@@ -4,31 +4,30 @@ import com.mygdx.kaps.Utils;
 
 import java.util.function.Consumer;
 
-class Capsule extends GridObject {
+class Capsule {
     private boolean frozen;
     private boolean falling;
     private final CapsulePart main;
     private final CapsulePart slave;
 
     private Capsule(CapsulePart main, CapsulePart slave) {
-        super(main.coordinates(), main.color());
         this.main = main;
         this.slave = slave;
     }
 
-    private Capsule(Coordinates coordinates, Color mainColor, Color slaveColor, Orientation orientation) {
+    private Capsule(Coordinates coordinates, Color mainColor, Color slaveColor) {
         this(
-          new CapsulePart(coordinates, mainColor, orientation),
-          new CapsulePart(coordinates.addedTo(orientation.oppositeVector()), slaveColor, orientation.opposite())
+          new CapsulePart(coordinates, mainColor),
+          new CapsulePart(coordinates, slaveColor)
         );
+        main.linkTo(slave, Orientation.RIGHT);
     }
 
     static Capsule randomNewInstance(Level level) {
         return new Capsule(
           level.spawnCoordinates(),
           Utils.getRandomFrom(level.getColors()),
-          Utils.getRandomFrom(level.getColors()),
-          Orientation.LEFT
+          Utils.getRandomFrom(level.getColors())
         );
     }
 
@@ -36,8 +35,9 @@ class Capsule extends GridObject {
         return new Capsule(main.copy(), slave.copy());
     }
 
-    Coordinates coordinates() {
-        return main.coordinates();
+    @Override
+    public String toString() {
+        return "(" + main + " | " + slave + ")";
     }
 
     boolean canStandIn(Grid grid) {
@@ -60,7 +60,7 @@ class Capsule extends GridObject {
         frozen = true;
     }
 
-    void forEachCapsule(Consumer<CapsulePart> action) {
+    void forEachPart(Consumer<CapsulePart> action) {
         action.accept(main);
         action.accept(slave);
     }

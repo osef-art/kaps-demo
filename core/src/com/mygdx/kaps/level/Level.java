@@ -71,7 +71,7 @@ public class Level {
      * @param action    the action to execute on each falling Capsule
      */
     private void performIfPossible(Predicate<Capsule> selection, Predicate<Capsule> condition, Consumer<Capsule> action) {
-        performIfPossible(selection, condition, action, c -> {
+        performIfPossible(selection, condition, action, p -> {
         });
     }
 
@@ -94,7 +94,7 @@ public class Level {
 
     public void flipCapsule() {
         performIfPossible(Predicate.not(Capsule::isFalling), c -> c.flipped().canStandIn(grid), Capsule::flip,
-          g -> performIfPossible(f -> true, f -> f.flipped().movedBack().canStandIn(grid), f -> {
+          c -> performIfPossible(f -> true, f -> f.flipped().movedBack().canStandIn(grid), f -> {
               f.flip();
               f.moveForward();
           })
@@ -111,13 +111,13 @@ public class Level {
     // update
     private void spawnCapsule() {
         fallingCapsules.add(Capsule.randomNewInstance(this));
-        fallingCapsules.forEach(g -> {
-            if (!g.canStandIn(grid)) System.exit(0);
+        fallingCapsules.forEach(c -> {
+            if (!c.canStandIn(grid)) System.exit(0);
         });
     }
 
     private void accept(Capsule capsule) {
-        capsule.forEachCapsule(grid::put);
+        capsule.forEachPart(grid::put);
         capsule.freeze();
         grid.deleteMatches();
     }
