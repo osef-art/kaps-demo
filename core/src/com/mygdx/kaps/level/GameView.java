@@ -64,17 +64,17 @@ public class GameView implements Renderable {
                 dimensions.tileAt(x, y),
                 x % 2 == y % 2 ? new Color(.2f, .2f, .3f, 1) : new Color(.175f, .175f, .275f, 1)
               );
-              model.getGrid().get(x, y).ifPresent(c -> spra.render(c.getSprite(), dimensions.tileAt(x, y)));
+              model.getGrid().get(x, y).ifPresent(o -> spra.render(o.getSprite(), dimensions.tileAt(x, y)));
           })
         );
     }
 
-    private void renderCapsule(Capsule caps) {
+    private void renderCapsule(CapsulePart caps) {
         spra.render(caps.getSprite(), dimensions.tileAt(caps.coordinates().x, caps.coordinates().y));
     }
 
     private void renderFallingCapsules() {
-        model.fallingCapsules().forEach(g -> g.forEachCapsule(this::renderCapsule));
+        model.fallingCapsules().forEach(g -> g.forEachPart(this::renderCapsule));
     }
 
     @Override

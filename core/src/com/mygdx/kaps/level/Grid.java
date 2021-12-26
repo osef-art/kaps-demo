@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class Grid {
+class Grid {
     private static class Column {
-        private final List<Optional<Capsule>> tiles;
+        private final List<Optional<GridObject>> tiles;
 
         private Column(int tiles) {
             if (tiles <= 0) throw new IllegalArgumentException("Invalid column size: " + tiles);
@@ -24,11 +24,11 @@ public class Grid {
             tiles.set(y, Optional.empty());
         }
 
-        private void set(int y, Capsule caps) {
-            tiles.set(y, Optional.of(caps));
+        private void set(int y, GridObject obj) {
+            tiles.set(y, Optional.of(obj));
         }
 
-        private Optional<Capsule> get(int i) {
+        private Optional<GridObject> get(int i) {
             return tiles.get(i);
         }
     }
@@ -40,13 +40,13 @@ public class Grid {
             MINIMUM_MATCH_LENGTH = length;
         }
 
-        private boolean isMatch(Set<Capsule> match) {
-            return match.size() >= MINIMUM_MATCH_LENGTH && match.stream().map(Capsule::color).distinct().count() == 1;
+        private boolean isMatch(Set<GridObject> match) {
+            return match.size() >= MINIMUM_MATCH_LENGTH && match.stream().map(GridObject::color).distinct().count() == 1;
         }
 
-        private Set<Capsule> rangesFoundIn(Grid grid, BiFunction<Capsule, Integer, Coordinates> browsingPattern) {
+        private Set<GridObject> rangesFoundIn(Grid grid, BiFunction<GridObject, Integer, Coordinates> browsingPattern) {
             return grid.stack().stream()
-              // map to a set of caps that are within range
+              // map to a set of objects that are within range
               .map(c -> IntStream.range(0, MINIMUM_MATCH_LENGTH)
                 .mapToObj(n -> get(browsingPattern.apply(c, n)))
                 .filter(Optional::isPresent)
@@ -58,11 +58,11 @@ public class Grid {
               .collect(Collectors.toUnmodifiableSet());
         }
 
-        private Set<Capsule> rowsFoundIn(Grid grid) {
+        private Set<GridObject> rowsFoundIn(Grid grid) {
             return rangesFoundIn(grid, (c, n) -> c.coordinates().mapped(x -> x + n, y -> y));
         }
 
-        private Set<Capsule> columnsFoundIn(Grid grid) {
+        private Set<GridObject> columnsFoundIn(Grid grid) {
             return rangesFoundIn(grid, (c, n) -> c.coordinates().mapped(x -> x, y -> y + n));
         }
     }
@@ -84,23 +84,27 @@ public class Grid {
         return columns.get(0).height();
     }
 
-    boolean isInGrid(Coordinates coordinates) {
-        return isInGrid(coordinates.x, coordinates.y);
+    boolean isInGridBounds(Coordinates coordinates) {
+        return isInGridBounds(coordinates.x, coordinates.y);
     }
 
-    boolean isInGrid(int x, int y) {
+    boolean isInGridBounds(int x, int y) {
         return 0 <= x && x < getWidth() && 0 <= y && y < getHeight();
     }
 
-    Optional<Capsule> get(Coordinates coordinates) {
+    private boolean isEmptyTile(Coordinates coordinates) {
+        return isInGridBounds(coordinates) && get(coordinates).isEmpty();
+    }
+
+    Optional<GridObject> get(Coordinates coordinates) {
         return get(coordinates.x, coordinates.y);
     }
 
-    Optional<Capsule> get(int x, int y) {
-        return isInGrid(x, y) ? columns.get(x).get(y) : Optional.empty();
+    Optional<GridObject> get(int x, int y) {
+        return isInGridBounds(x, y) ? columns.get(x).get(y) : Optional.empty();
     }
 
-    private Set<Capsule> stack() {
+    private Set<GridObject> stack() {
         return columns.stream()
           .flatMap(c -> c.tiles.stream())
           .filter(Optional::isPresent)
@@ -108,19 +112,20 @@ public class Grid {
           .collect(Collectors.toUnmodifiableSet());
     }
 
-    private void set(int x, int y, Capsule caps) {
-        columns.get(x).set(y, caps);
+    private void set(Coordinates coordinates, GridObject obj) {
+        columns.get(coordinates.x).set(coordinates.y, obj);
     }
 
-    void put(Capsule caps) {
-        set(caps.coordinates().x, caps.coordinates().y, caps);
+    void put(GridObject obj) {
+        set(obj.coordinates(), obj);
     }
 
-    private void hit(Capsule capsule) {
-        hit(capsule.coordinates().x, capsule.coordinates().y);
+    private void hit(GridObject part) {
+        hit(part.coordinates().x, part.coordinates().y);
     }
 
     private void hit(int x, int y) {
+        get(x, y).ifPresent(IGridObject::detach);
         columns.get(x).clear(y);
     }
 
@@ -128,5 +133,12 @@ public class Grid {
         Stream.of(matchBrowser.rowsFoundIn(this), matchBrowser.columnsFoundIn(this))
           .flatMap(Collection::stream)
           .forEach(this::hit);
+    }
+
+    void dropEveryCapsule() {
+
+//        stack().stream()
+//          .filter(IGridObject::isCapsule)
+//          .filter(o -> o.)
     }
 }

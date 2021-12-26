@@ -1,102 +1,130 @@
 package com.mygdx.kaps.level;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.mygdx.kaps.Utils;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.function.Consumer;
 
 class Capsule {
-    private final HashMap<Orientation, Sprite> sprites = new HashMap<>();
-    private final Coordinates coordinates;
-    private Orientation orientation;
-    private final Color color;
+    private boolean frozen;
+    private boolean falling;
+    private final CapsulePart main;
+    private final CapsulePart slave;
 
-    Capsule(Coordinates coordinates, Color color, Orientation orientation) {
-        this.orientation = orientation;
-        this.coordinates = coordinates.copy();
-        this.color = color;
-        Arrays.stream(Orientation.values()).forEach(o -> {
-            var sprite = new Sprite(
-              new Texture("android/assets/sprites/" + color.id() + "/caps/" + o + ".png")
-            );
-            sprite.flip(false, true);
-            sprites.put(o, sprite);
-        });
+    private Capsule(CapsulePart main, CapsulePart slave) {
+        this.main = main;
+        this.slave = slave;
+    }
+
+    private Capsule(Coordinates coordinates, Color mainColor, Color slaveColor) {
+        this(
+          new CapsulePart(coordinates, mainColor),
+          new CapsulePart(coordinates, slaveColor)
+        );
+        main.linkTo(slave, Orientation.RIGHT);
+    }
+
+    static Capsule randomNewInstance(Level level) {
+        return new Capsule(
+          level.spawnCoordinates(),
+          Utils.getRandomFrom(level.getColors()),
+          Utils.getRandomFrom(level.getColors())
+        );
+    }
+
+    Capsule copy() {
+        return new Capsule(main.copy(), slave.copy());
     }
 
     @Override
     public String toString() {
-        return coordinates.toString();
-    }
-
-    Capsule copy() {
-        return new Capsule(coordinates, color, orientation);
-    }
-
-    Sprite getSprite() {
-        return sprites.get(orientation);
-    }
-
-    public Color color() {
-        return color;
-    }
-
-    Orientation orientation() {
-        return orientation;
-    }
-
-    Coordinates coordinates() {
-        return coordinates;
-    }
-
-    private Coordinates facingCoordinates() {
-        return coordinates.addedTo(orientation.oppositeVector());
-    }
-
-    private boolean isInGrid(Grid grid) {
-        return grid.isInGrid(coordinates);
-    }
-
-    private boolean overlapsStack(Grid grid) {
-        return grid.get(coordinates).isPresent();
+        return "(" + main + " | " + slave + ")";
     }
 
     boolean canStandIn(Grid grid) {
-        return isInGrid(grid) && !overlapsStack(grid);
+        return main.canStandIn(grid) && slave.canStandIn(grid);
+    }
+
+    boolean isFalling() {
+        return falling;
+    }
+
+    boolean isFrozen() {
+        return frozen;
+    }
+
+    void startFalling() {
+        falling = true;
+    }
+
+    void freeze() {
+        frozen = true;
+    }
+
+    void forEachPart(Consumer<CapsulePart> action) {
+        action.accept(main);
+        action.accept(slave);
+    }
+
+    private void updateSlave() {
+        slave.face(main);
     }
 
     /**
-     * Makes the instance move in the direction specified by {@param orientation}
-     *
-     * @param orientation the direction in which the movement is made
+     * Applies an atomic move to the main capsule and update its slave.
+     * @param action the move to apply on the main capsule
      */
-    private void moveTowards(Orientation orientation) {
-        coordinates.add(orientation.directionVector());
-    }
-
-    void moveForward() {
-        moveTowards(orientation);
-    }
-
-    void moveLeft() {
-        moveTowards(Orientation.LEFT);
-    }
-
-    void moveRight() {
-        moveTowards(Orientation.RIGHT);
+    private void shift(Consumer<CapsulePart> action) {
+        action.accept(main);
+        updateSlave();
     }
 
     void dip() {
-        moveTowards(Orientation.DOWN);
+        shift(CapsulePart::dip);
     }
 
     void flip() {
-        orientation = orientation.flipped();
+        shift(CapsulePart::flip);
     }
 
-    void face(Capsule caps) {
-        orientation = caps.orientation.opposite();
-        coordinates.set(caps.facingCoordinates());
+    void moveLeft() {
+        shift(CapsulePart::moveLeft);
+    }
+
+    void moveRight() {
+        shift(CapsulePart::moveRight);
+    }
+
+    void moveForward() {
+        shift(CapsulePart::moveForward);
+    }
+
+    /**
+     * @param action the move to apply on the capsule
+     * @return a copy of the current instance peeked by {@param action}
+     */
+    private Capsule shifted(Consumer<Capsule> action) {
+        Capsule test = copy();
+        action.accept(test);
+        return test;
+    }
+
+    Capsule dipped() {
+        return shifted(Capsule::dip);
+    }
+
+    Capsule flipped() {
+        return shifted(Capsule::flip);
+    }
+
+    Capsule movedLeft() {
+        return shifted(Capsule::moveLeft);
+    }
+
+    Capsule movedRight() {
+        return shifted(Capsule::moveRight);
+    }
+
+    Capsule movedBack() {
+        return shifted(Capsule::moveForward);
     }
 }

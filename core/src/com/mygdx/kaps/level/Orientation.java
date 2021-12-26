@@ -1,6 +1,6 @@
 package com.mygdx.kaps.level;
 
-public enum Orientation {
+enum Orientation {
     NONE("unlinked"), LEFT("left"), UP("up"), RIGHT("right"), DOWN("down");
 
     private final String path;
@@ -18,12 +18,12 @@ public enum Orientation {
     public Orientation flipped() {
         switch (this) {
             case LEFT:
-                return UP;
-            case UP:
-                return RIGHT;
-            case RIGHT:
                 return DOWN;
             case DOWN:
+                return RIGHT;
+            case RIGHT:
+                return UP;
+            case UP:
                 return LEFT;
             default:
                 return NONE;
