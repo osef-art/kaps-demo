@@ -1,6 +1,5 @@
 ## assets
-/android/assets/sprites/*.py
-/android/assets/*/.idea
+*.py
 
 ## Java
 

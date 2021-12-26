@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
 
 import static com.mygdx.kaps.MainScreen.camera;
 
@@ -23,6 +24,14 @@ public class SpriteRendererAdapter implements RendererAdapter {
 
     public void render(Sprite sprite, float x, float y, float width, float height) {
         draw(() -> batch.draw(sprite, x, y, width, height));
+    }
+
+    public void render(Sprite sprite, Rectangle rectangle) {
+        render(sprite, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+    }
+
+    public void render(Sprite sprite, Rectangle rectangle, float alpha) {
+        render(sprite, rectangle.x, rectangle.y, rectangle.width, rectangle.height, alpha);
     }
 
     public void render(Sprite sprite, float x, float y, float width, float height, float alpha) {
