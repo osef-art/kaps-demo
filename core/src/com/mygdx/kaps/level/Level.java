@@ -107,6 +107,9 @@ public class Level {
     // update
     private void spawnGelule() {
         gelules.add(Gelule.randomNewInstance(this));
+        gelules.forEach(g -> {
+            if (!g.canStandIn(grid)) System.exit(0);
+        });
     }
 
     private void accept(Gelule gelule) {
