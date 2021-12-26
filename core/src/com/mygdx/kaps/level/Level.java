@@ -77,23 +77,23 @@ public class Level {
 
     // capsule moves
     public void moveCapsuleLeft() {
-        performIfPossible(Predicate.not(Capsule::isFalling), c -> c.movedLeft().canStandIn(grid), Capsule::moveLeft);
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.movedLeft().canStandIn(grid), Capsule::moveLeft);
     }
 
     public void moveCapsuleRight() {
-        performIfPossible(Predicate.not(Capsule::isFalling), c -> c.movedRight().canStandIn(grid), Capsule::moveRight);
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.movedRight().canStandIn(grid), Capsule::moveRight);
     }
 
     public void dipOrAcceptCapsule() {
-        performIfPossible(Predicate.not(Capsule::isFalling), c -> c.dipped().canStandIn(grid), Capsule::dip, this::accept);
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.dipped().canStandIn(grid), Capsule::dip, this::accept);
     }
 
     private void dipOrAcceptDroppingCapsule() {
-        performIfPossible(Capsule::isFalling, c -> c.dipped().canStandIn(grid), Capsule::dip, this::accept);
+        performIfPossible(Capsule::isDropping, c -> c.dipped().canStandIn(grid), Capsule::dip, this::accept);
     }
 
     public void flipCapsule() {
-        performIfPossible(Predicate.not(Capsule::isFalling), c -> c.flipped().canStandIn(grid), Capsule::flip,
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.flipped().canStandIn(grid), Capsule::flip,
           c -> performIfPossible(f -> true, f -> f.flipped().movedBack().canStandIn(grid), f -> {
               f.flip();
               f.moveForward();
@@ -102,7 +102,7 @@ public class Level {
     }
 
     public void dropCapsule() {
-        performIfPossible(Predicate.not(Capsule::isFalling), c -> true, Capsule::startFalling);
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> true, Capsule::startDropping);
     }
 
     public void holdCapsule() {
@@ -125,7 +125,7 @@ public class Level {
 
     public void update() {
         fallingCapsules.removeIf(Capsule::isFrozen);
-        if (fallingCapsules.stream().noneMatch(Predicate.not(Capsule::isFalling))) spawnCapsule();
+        if (fallingCapsules.stream().noneMatch(Predicate.not(Capsule::isDropping))) spawnCapsule();
         timers.forEach(Timer::resetIfExceeds);
     }
 }

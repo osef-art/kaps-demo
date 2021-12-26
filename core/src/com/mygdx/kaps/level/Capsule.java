@@ -3,10 +3,9 @@ package com.mygdx.kaps.level;
 import com.mygdx.kaps.Utils;
 
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 class Capsule {
-    private boolean frozen;
-    private boolean falling;
     private final CapsulePart main;
     private final CapsulePart slave;
 
@@ -40,29 +39,33 @@ class Capsule {
         return "(" + main + " | " + slave + ")";
     }
 
-    boolean canStandIn(Grid grid) {
-        return main.canStandIn(grid) && slave.canStandIn(grid);
+    private boolean bothVerify(Predicate<CapsulePart> condition) {
+        return condition.test(main) && condition.test(slave);
     }
 
-    boolean isFalling() {
-        return falling;
+    boolean canStandIn(Grid grid) {
+        return bothVerify(p -> p.canStandIn(grid));
+    }
+
+    boolean isDropping() {
+        return bothVerify(CapsulePart::isDropping);
     }
 
     boolean isFrozen() {
-        return frozen;
-    }
-
-    void startFalling() {
-        falling = true;
-    }
-
-    void freeze() {
-        frozen = true;
+        return bothVerify(CapsulePart::isFrozen);
     }
 
     void forEachPart(Consumer<CapsulePart> action) {
         action.accept(main);
         action.accept(slave);
+    }
+
+    void startDropping() {
+        forEachPart(CapsulePart::startDropping);
+    }
+
+    void freeze() {
+        forEachPart(CapsulePart::freeze);
     }
 
     private void updateSlave() {

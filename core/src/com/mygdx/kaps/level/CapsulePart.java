@@ -11,6 +11,8 @@ class CapsulePart extends GridObject {
     private final HashMap<Orientation, Sprite> sprites = new HashMap<>();
     private Orientation orientation;
     private CapsulePart linked;
+    private boolean dropping;
+    private boolean frozen;
 
     private CapsulePart(Coordinates coordinates, Color color, Orientation orientation) {
         super(coordinates, color);
@@ -52,6 +54,22 @@ class CapsulePart extends GridObject {
     @Override
     public boolean isCapsule() {
         return true;
+    }
+
+    boolean isDropping() {
+        return dropping;
+    }
+
+    boolean isFrozen() {
+        return frozen;
+    }
+
+    void startDropping() {
+        dropping = true;
+    }
+
+    void freeze() {
+        frozen = true;
     }
 
     private boolean isInGridBounds(Grid grid) {
