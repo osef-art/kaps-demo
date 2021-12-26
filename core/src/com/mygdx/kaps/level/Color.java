@@ -38,26 +38,26 @@ public enum Color {
         );
     }
 
-    public static Color randomBlank() {
+    static Color randomBlank() {
         return random(Arrays.stream(values())
           .filter(c -> c.blank)
           .collect(Collectors.toSet())
         );
     }
 
-    public static Color random(Set<Color> colors) {
+    static Color random(Set<Color> colors) {
         return Utils.getRandomFrom(colors);
     }
 
-    public int id() {
+    int id() {
         return ordinal() + 1;
     }
 
-    public com.badlogic.gdx.graphics.Color value() {
+    com.badlogic.gdx.graphics.Color value() {
         return gdxColor;
     }
 
-    public com.badlogic.gdx.graphics.Color value(float alpha) {
+    com.badlogic.gdx.graphics.Color value(float alpha) {
         return new com.badlogic.gdx.graphics.Color(
           gdxColor.r, gdxColor.g, gdxColor.b, alpha
         );

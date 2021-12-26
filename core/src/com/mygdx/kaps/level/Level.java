@@ -120,6 +120,7 @@ public class Level {
         capsule.forEachPart(grid::put);
         capsule.freeze();
         grid.deleteMatches();
+        grid.dropEveryCapsule();
     }
 
     public void update() {

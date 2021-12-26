@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class Grid {
+class Grid {
     private static class Column {
         private final List<Optional<GridObject>> tiles;
 
@@ -84,12 +84,16 @@ public class Grid {
         return columns.get(0).height();
     }
 
-    boolean isInGrid(Coordinates coordinates) {
-        return isInGrid(coordinates.x, coordinates.y);
+    boolean isInGridBounds(Coordinates coordinates) {
+        return isInGridBounds(coordinates.x, coordinates.y);
     }
 
-    boolean isInGrid(int x, int y) {
+    boolean isInGridBounds(int x, int y) {
         return 0 <= x && x < getWidth() && 0 <= y && y < getHeight();
+    }
+
+    private boolean isEmptyTile(Coordinates coordinates) {
+        return isInGridBounds(coordinates) && get(coordinates).isEmpty();
     }
 
     Optional<GridObject> get(Coordinates coordinates) {
@@ -97,7 +101,7 @@ public class Grid {
     }
 
     Optional<GridObject> get(int x, int y) {
-        return isInGrid(x, y) ? columns.get(x).get(y) : Optional.empty();
+        return isInGridBounds(x, y) ? columns.get(x).get(y) : Optional.empty();
     }
 
     private Set<GridObject> stack() {
@@ -108,12 +112,12 @@ public class Grid {
           .collect(Collectors.toUnmodifiableSet());
     }
 
-    private void set(int x, int y, GridObject obj) {
-        columns.get(x).set(y, obj);
+    private void set(Coordinates coordinates, GridObject obj) {
+        columns.get(coordinates.x).set(coordinates.y, obj);
     }
 
     void put(GridObject obj) {
-        set(obj.coordinates().x, obj.coordinates().y, obj);
+        set(obj.coordinates(), obj);
     }
 
     private void hit(GridObject part) {
@@ -121,7 +125,7 @@ public class Grid {
     }
 
     private void hit(int x, int y) {
-        get(x,y).ifPresent(IGridObject::detach);
+        get(x, y).ifPresent(IGridObject::detach);
         columns.get(x).clear(y);
     }
 
@@ -129,5 +133,12 @@ public class Grid {
         Stream.of(matchBrowser.rowsFoundIn(this), matchBrowser.columnsFoundIn(this))
           .flatMap(Collection::stream)
           .forEach(this::hit);
+    }
+
+    void dropEveryCapsule() {
+
+//        stack().stream()
+//          .filter(IGridObject::isCapsule)
+//          .filter(o -> o.)
     }
 }

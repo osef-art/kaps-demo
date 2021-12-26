@@ -49,8 +49,13 @@ class CapsulePart extends GridObject {
         return Optional.ofNullable(linked);
     }
 
-    private boolean isInGrid(Grid grid) {
-        return grid.isInGrid(coordinates());
+    @Override
+    public boolean isCapsule() {
+        return true;
+    }
+
+    private boolean isInGridBounds(Grid grid) {
+        return grid.isInGridBounds(coordinates());
     }
 
     private boolean overlapsStack(Grid grid) {
@@ -58,7 +63,7 @@ class CapsulePart extends GridObject {
     }
 
     boolean canStandIn(Grid grid) {
-        return isInGrid(grid) && !overlapsStack(grid);
+        return isInGridBounds(grid) && !overlapsStack(grid);
     }
 
     /**
@@ -90,25 +95,25 @@ class CapsulePart extends GridObject {
         orientation = orientation.flipped();
     }
 
-    void face(CapsulePart caps) {
-        orientation = caps.orientation.opposite();
-        coordinates().set(caps.facingCoordinates());
-    }
-
-    public void linkTo(CapsulePart part, Orientation side) {
+    void linkTo(CapsulePart part, Orientation side) {
         orientation = side.opposite();
         part.face(this);
         this.linked = part;
         part.linked = this;
     }
 
-    public void detach() {
-        linkedPart().ifPresent(CapsulePart::cutLink);
-        cutLink();
+    void face(CapsulePart caps) {
+        orientation = caps.orientation.opposite();
+        coordinates().set(caps.facingCoordinates());
     }
 
     private void cutLink() {
         orientation = Orientation.NONE;
         linked = null;
+    }
+
+    public void detach() {
+        linkedPart().ifPresent(CapsulePart::cutLink);
+        cutLink();
     }
 }

@@ -6,6 +6,8 @@ interface IGridObject {
     Sprite getSprite();
 
     void detach();
+
+    boolean isCapsule();
 }
 
 abstract class GridObject implements IGridObject {

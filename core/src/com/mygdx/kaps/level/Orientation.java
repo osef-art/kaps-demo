@@ -1,6 +1,6 @@
 package com.mygdx.kaps.level;
 
-public enum Orientation {
+enum Orientation {
     NONE("unlinked"), LEFT("left"), UP("up"), RIGHT("right"), DOWN("down");
 
     private final String path;
