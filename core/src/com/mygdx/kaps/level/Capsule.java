@@ -74,7 +74,7 @@ class Capsule {
     }
 
     private void updateSlave() {
-        slave.face(main);
+        main.updateLinked();
     }
 
     /**

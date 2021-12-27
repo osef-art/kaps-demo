@@ -125,12 +125,12 @@ class LinkedCapsulePart extends CapsulePart {
         return new LinkedCapsulePart(coordinates(), color(), orientation);
     }
 
-    public LinkedCapsulePart linked() {
+    LinkedCapsulePart linked() {
         if (linked == null) throw new IllegalStateException(this + " should be linked !");
         return linked;
     }
 
-    public Orientation orientation() {
+    Orientation orientation() {
         return orientation;
     }
 
@@ -138,28 +138,22 @@ class LinkedCapsulePart extends CapsulePart {
         return sprites.get(orientation);
     }
 
-    void linkTo(LinkedCapsulePart part, Orientation side) {
+    void linkTo(LinkedCapsulePart linked, Orientation side) {
         orientation = side.opposite();
-        part.face(this);
-        this.linked = part;
-        part.linked = this;
+        this.linked = linked;
+        linked.linked = this;
+        updateLinked();
     }
 
-    private void cutLink() {
-//        orientation = Orientation.NONE;
-//        linked = null;
-    }
-
-    public void detach() {
-//        linkedPart().ifPresent(LinkedCapsulePart::cutLink);
-//        cutLink();
+    void updateLinked() {
+        linked.face(this);
     }
 
     private Coordinates facingCoordinates() {
         return coordinates().addedTo(orientation.oppositeVector());
     }
 
-    void face(LinkedCapsulePart caps) {
+    private void face(LinkedCapsulePart caps) {
         orientation = caps.orientation.opposite();
         coordinates().set(caps.facingCoordinates());
     }
