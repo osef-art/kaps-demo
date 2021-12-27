@@ -7,6 +7,8 @@ import java.util.Objects;
 interface IGridObject {
     Sprite getSprite();
 
+    boolean isGerm();
+
     boolean isCapsule();
 }
 

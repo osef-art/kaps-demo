@@ -33,7 +33,6 @@ public class Level {
     private final Set<Color> colors;
     private final Grid grid;
 
-    // TODO: replace by sidekick set
     public Level(Set<Color> colors) {
         colors.add(Color.randomBlank());
         this.colors = colors;
