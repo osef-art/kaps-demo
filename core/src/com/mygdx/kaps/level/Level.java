@@ -119,8 +119,7 @@ public class Level {
     private void accept(Capsule capsule) {
         capsule.applyToBoth(grid::put);
         capsule.freeze();
-        grid.deleteMatches();
-        grid.dropEveryCapsule();
+        grid.deleteMatchesRecursively();
     }
 
     public void update() {

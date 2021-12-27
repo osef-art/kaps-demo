@@ -143,10 +143,23 @@ class Grid {
         tmp.ifPresentOrElse(o1 -> set(c2, o1), () -> clear(c2));
     }
 
-    void deleteMatches() {
+    private boolean containsMatches() {
+        return Stream.of(matchBrowser.rowsFoundIn(this), matchBrowser.columnsFoundIn(this))
+          .mapToLong(Collection::size)
+          .sum() > 0;
+    }
+
+    private void deleteMatches() {
         Stream.of(matchBrowser.rowsFoundIn(this), matchBrowser.columnsFoundIn(this))
           .flatMap(Collection::stream)
           .forEach(c -> hit(c.coordinates()));
+    }
+
+    void deleteMatchesRecursively() {
+        do {
+            deleteMatches();
+            dropEveryCapsule();
+        } while (containsMatches());
     }
 
     void dropEveryCapsule() {
