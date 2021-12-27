@@ -68,8 +68,12 @@ class Capsule {
         return main.verify(CapsulePart::isFrozen);
     }
 
+    void applyForEach(Consumer<CapsulePart> mainAction, Consumer<CapsulePart> slaveAction) {
+        main.applyForEach(mainAction, slaveAction);
+    }
+
     void applyToBoth(Consumer<CapsulePart> action) {
-        main.apply(action);
+        main.applyToBoth(action);
     }
 
     void startDropping() {

@@ -93,7 +93,7 @@ class CapsulePart extends GridObject {
         return condition.test(this);
     }
 
-    void apply(Consumer<CapsulePart> action) {
+    void applyToBoth(Consumer<CapsulePart> action) {
         action.accept(this);
     }
 
@@ -201,9 +201,12 @@ class LinkedCapsulePart extends CapsulePart {
         return condition.test(this) && condition.test(linked);
     }
 
-    void apply(Consumer<CapsulePart> action) {
+    void applyForEach(Consumer<CapsulePart> action, Consumer<CapsulePart> linkedAction) {
         action.accept(this);
-        action.accept(linked);
+        linkedAction.accept(linked);
     }
 
+    void applyToBoth(Consumer<CapsulePart> action) {
+        applyForEach(action, action);
+    }
 }

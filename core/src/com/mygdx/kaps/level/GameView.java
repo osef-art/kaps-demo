@@ -17,6 +17,7 @@ public class GameView implements Renderable {
         private final Rectangle gridTile;
         private final Rectangle sidekickZone;
         private final Rectangle infoZone;
+        private final Rectangle nextBox;
         private final Level level;
 
         private Dimensions(Level lvl, float screenWidth, float screenHeight) {
@@ -27,12 +28,14 @@ public class GameView implements Renderable {
             float tileSize = gridHeight / lvl.getGrid().getHeight();
             float gridWidth = lvl.getGrid().getWidth() * tileSize;
             float infoZoneHeight = (screen.height - topSpaceHeight) / 2;
+            float nextBoxSize = infoZoneHeight * 5 / 4;
 
             level = lvl;
             gridZone = new Rectangle((screen.width - gridWidth) / 2, (topSpaceHeight - gridHeight) / 2, gridWidth, gridHeight);
             gridTile = new Rectangle(0, 0, tileSize, tileSize);
             sidekickZone = new Rectangle(0, topSpaceHeight, screen.width, infoZoneHeight);
             infoZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
+            nextBox = new Rectangle((screen.width - nextBoxSize) / 2, screen.height - nextBoxSize, nextBoxSize, nextBoxSize);
         }
 
         private Rectangle tileAt(Coordinates coordinates) {
@@ -64,6 +67,7 @@ public class GameView implements Renderable {
     private void renderLayout() {
         sra.drawRect(dimensions.sidekickZone, new Color(.3f, .3f, .375f, 1f));
         sra.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
+        sra.drawCircle(dimensions.nextBox, new Color(.45f, .45f, .6f, 1f));
     }
 
     private void renderGrid() {
@@ -78,12 +82,19 @@ public class GameView implements Renderable {
         );
     }
 
-    private void renderCapsulePart(CapsulePart caps, float alpha) {
-        spra.render(caps.getSprite(), dimensions.tileAt(caps.coordinates()), alpha);
+    private void renderCapsulePart(CapsulePart part, float alpha) {
+        spra.render(part.getSprite(), dimensions.tileAt(part.coordinates()), alpha);
     }
 
-    private void renderCapsulePart(CapsulePart caps) {
-        spra.render(caps.getSprite(), dimensions.tileAt(caps.coordinates()));
+    private void renderCapsulePart(CapsulePart part) {
+        spra.render(part.getSprite(), dimensions.tileAt(part.coordinates()));
+    }
+
+    private void renderCapsule(Capsule caps, Rectangle zone) {
+        caps.applyForEach(
+          p -> spra.render(p.getSprite(), zone.x, zone.y + zone.height / 4, zone.width / 2, zone.height / 2),
+          p -> spra.render(p.getSprite(), zone.x + zone.width / 2, zone.y + zone.height / 4, zone.width / 2, zone.height / 2)
+        );
     }
 
     private void renderFallingCapsules() {
@@ -93,11 +104,18 @@ public class GameView implements Renderable {
         });
     }
 
+    private void renderUpcoming() {
+        Rectangle nextBox = dimensions.nextBox;
+        renderCapsule(model.upcoming().get(0), nextBox);
+        tra.drawText("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 /8, nextBox.width, nextBox.height/ 8);
+    }
+
     @Override
     public void render() {
         renderLayout();
         renderGrid();
         renderFallingCapsules();
+        renderUpcoming();
     }
 
     public void dispose() {

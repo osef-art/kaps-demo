@@ -36,7 +36,11 @@ public class TextRendererAdaptor implements RendererAdapter {
     }
 
     public void drawText(String txt, float x, float y, float width, float height) {
-        spra.renderText(txt, font, x, y, width, height - fontSize * 1.25f);
+        spra.renderText(txt, font, x, y, width, height - fontSize * 2f);
+    }
+
+    public void drawText(String txt, Rectangle zone) {
+        drawText(txt, zone.x, zone.y, zone.width, zone.height);
     }
 
     public void drawTextWithShadow(String txt, float x, float y) {
@@ -45,7 +49,7 @@ public class TextRendererAdaptor implements RendererAdapter {
     }
 
     public void drawTextWithShadow(String txt, float x, float y, float width, float height) {
-        spra.renderText(txt, shade, x, y + fontSize * 0.2f, width, height - fontSize * 1.25f);
+        spra.renderText(txt, shade, x, y + fontSize * 0.2f, width, height - fontSize * 2f);
         drawText(txt, x, y, width, height);
     }
 

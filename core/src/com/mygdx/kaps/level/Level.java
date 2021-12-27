@@ -3,12 +3,10 @@ package com.mygdx.kaps.level;
 
 import com.mygdx.kaps.time.Timer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 public class Level {
     public static class LevelParameters {
@@ -27,7 +25,9 @@ public class Level {
             });
         }
     }
+
     private final LevelParameters parameters;
+    private final LinkedList<Capsule> upcomingCapsules = new LinkedList<>();
     private final List<Capsule> fallingCapsules = new ArrayList<>();
     private final List<Timer> timers = new ArrayList<>();
     private final Set<Color> colors;
@@ -35,10 +35,12 @@ public class Level {
 
     // TODO: replace by sidekick set
     public Level(Set<Color> colors) {
-        parameters=new LevelParameters(this);
         colors.add(Color.randomBlank());
         this.colors = colors;
+
+        parameters = new LevelParameters(this);
         grid = new Grid(6, 15);
+        IntStream.range(0, 2).forEach(n -> upcomingCapsules.add(Capsule.randomNewInstance(this)));
 
         var dippingTimer = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
         var droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingCapsule);
@@ -59,6 +61,10 @@ public class Level {
 
     List<Capsule> fallingCapsules() {
         return fallingCapsules;
+    }
+
+    public List<Capsule> upcoming() {
+        return upcomingCapsules;
     }
 
     Coordinates spawnCoordinates() {
@@ -146,13 +152,16 @@ public class Level {
     }
 
     private void spawnCapsule() {
-        fallingCapsules.add(Capsule.randomNewInstance(this));
+        var upcoming = upcomingCapsules.removeFirst();
+        upcomingCapsules.add(Capsule.randomNewInstance(this));
+
+        fallingCapsules.add(upcoming);
         fallingCapsules.stream()
           .filter(Predicate.not(Capsule::isDropping))
           .forEach(c -> {
-            if (!c.canStandIn(grid)) System.exit(0);
-            updatePreview(c);
-        });
+              if (!c.canStandIn(grid)) System.exit(0);
+              updatePreview(c);
+          });
     }
 
     private void accept(Capsule capsule) {

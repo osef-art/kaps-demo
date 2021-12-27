@@ -170,7 +170,7 @@ class Grid {
               Predicate<CapsulePart> condition = p -> isEmptyTile(p.coordinates().addedTo(0, -1));
               var verified = c.orientation().isVertical() ? c.atLeastOneVerify(condition) : c.verify(condition);
               if (verified) {
-                  c.apply(p -> swap(p.coordinates(), p.coordinates().addedTo(0, -1)));
+                  c.applyToBoth(p -> swap(p.coordinates(), p.coordinates().addedTo(0, -1)));
                   return true;
               }
               return false;
