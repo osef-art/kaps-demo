@@ -132,7 +132,7 @@ class Grid {
     }
 
     private void detach(Coordinates coordinates) {
-        get(coordinates.x, coordinates.y).ifPresent(o -> {
+        get(coordinates).ifPresent(o -> {
             if (o.isCapsule()) ((CapsulePart) o).linked().ifPresent(l -> put(new CapsulePart(l)));
         });
     }
