@@ -17,7 +17,7 @@ public class InputHandler implements InputProcessor {
         DROP_KEY(Level::dropCapsule, 62), // SPACEBAR
         HOLD_KEY(Level::holdCapsule, 31, 50, 30), // V, M
 
-        PREVIEW(l -> l.parameters().togglePreview(), 52), // X
+        PREVIEW_KEY(l -> l.parameters().togglePreview(), 52), // X
 
         ESCAPE_KEY(l -> System.exit(0), 29, 131, 68), // A, ESC, !
         ;
