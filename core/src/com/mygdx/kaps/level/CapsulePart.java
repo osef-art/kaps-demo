@@ -5,29 +5,19 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
 
 class CapsulePart extends GridObject {
-    private final HashMap<Orientation, Sprite> sprites = new HashMap<>();
-    private Orientation orientation;
-    private CapsulePart linked;
+    private final Sprite sprite;
     private boolean dropping;
     private boolean frozen;
 
-    private CapsulePart(Coordinates coordinates, Color color, Orientation orientation) {
-        super(coordinates, color);
-        this.orientation = orientation;
-        Arrays.stream(Orientation.values()).forEach(o -> {
-            var sprite = new Sprite(
-              new Texture("android/assets/sprites/" + color.id() + "/caps/" + o + ".png")
-            );
-            sprite.flip(false, true);
-            sprites.put(o, sprite);
-        });
-    }
-
     CapsulePart(Coordinates coordinates, Color color) {
-        this(coordinates, color, Orientation.NONE);
+        super(coordinates, color);
+        sprite = new Sprite(
+          new Texture("android/assets/sprites/" + color.id() + "/caps/" + Orientation.NONE + ".png")
+        );
     }
 
     @Override
@@ -36,19 +26,15 @@ class CapsulePart extends GridObject {
     }
 
     CapsulePart copy() {
-        return new CapsulePart(coordinates(), color(), orientation);
+        return new CapsulePart(coordinates(), color());
     }
 
     public Sprite getSprite() {
-        return sprites.get(orientation);
+        return sprite;
     }
 
-    private Coordinates facingCoordinates() {
-        return coordinates().addedTo(orientation.oppositeVector());
-    }
-
-    private Optional<CapsulePart> linkedPart() {
-        return Optional.ofNullable(linked);
+    @Override
+    public void detach() {
     }
 
     @Override
@@ -94,12 +80,8 @@ class CapsulePart extends GridObject {
      *
      * @param orientation the direction in which the movement is made
      */
-    private void moveTowards(Orientation orientation) {
+    void moveTowards(Orientation orientation) {
         coordinates().add(orientation.directionVector());
-    }
-
-    void moveForward() {
-        moveTowards(orientation);
     }
 
     void moveLeft() {
@@ -113,21 +95,54 @@ class CapsulePart extends GridObject {
     void dip() {
         moveTowards(Orientation.DOWN);
     }
+}
 
-    void flip() {
-        orientation = orientation.flipped();
+class LinkedCapsulePart extends CapsulePart {
+    private final HashMap<Orientation, Sprite> sprites = new HashMap<>();
+    private Orientation orientation;
+    private LinkedCapsulePart linked;
+
+    LinkedCapsulePart(Coordinates coordinates, Color color) {
+        super(coordinates, color);
+        Arrays.stream(Orientation.values())
+          .forEach(o -> {
+              var sprite = new Sprite(
+                new Texture("android/assets/sprites/" + color.id() + "/caps/" + o + ".png")
+              );
+              sprite.flip(false, true);
+              sprites.put(o, sprite);
+          });
+        sprites.put(Orientation.NONE, super.getSprite());
     }
 
-    void linkTo(CapsulePart part, Orientation side) {
+    private LinkedCapsulePart(Coordinates coordinates, Color color, Orientation orientation) {
+        this(coordinates, color);
+        this.orientation = orientation;
+    }
+
+    LinkedCapsulePart(Coordinates coordinates, Color color, Orientation side, LinkedCapsulePart linked) {
+        this(coordinates, color);
+        Objects.requireNonNull(linked);
+        linkTo(linked, side.opposite());
+    }
+
+    LinkedCapsulePart copy() {
+        return new LinkedCapsulePart(coordinates(), color(), orientation);
+    }
+
+    public Orientation orientation() {
+        return orientation;
+    }
+
+    public Sprite getSprite() {
+        return sprites.get(orientation);
+    }
+
+    void linkTo(LinkedCapsulePart part, Orientation side) {
         orientation = side.opposite();
         part.face(this);
         this.linked = part;
         part.linked = this;
-    }
-
-    void face(CapsulePart caps) {
-        orientation = caps.orientation.opposite();
-        coordinates().set(caps.facingCoordinates());
     }
 
     private void cutLink() {
@@ -136,7 +151,29 @@ class CapsulePart extends GridObject {
     }
 
     public void detach() {
-        linkedPart().ifPresent(CapsulePart::cutLink);
+        linkedPart().ifPresent(LinkedCapsulePart::cutLink);
         cutLink();
     }
+
+    private Coordinates facingCoordinates() {
+        return coordinates().addedTo(orientation.oppositeVector());
+    }
+
+    private Optional<LinkedCapsulePart> linkedPart() {
+        return Optional.ofNullable(linked);
+    }
+
+    void face(LinkedCapsulePart caps) {
+        orientation = caps.orientation.opposite();
+        coordinates().set(caps.facingCoordinates());
+    }
+
+    void moveForward() {
+        moveTowards(orientation);
+    }
+
+    void flip() {
+        orientation = orientation.flipped();
+    }
+
 }

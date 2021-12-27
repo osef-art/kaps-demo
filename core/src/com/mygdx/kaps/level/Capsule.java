@@ -6,20 +6,24 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 class Capsule {
-    private final CapsulePart main;
-    private final CapsulePart slave;
+    private final LinkedCapsulePart main;
+    private final LinkedCapsulePart slave;
 
-    private Capsule(CapsulePart main, CapsulePart slave) {
-        this.main = main;
-        this.slave = slave;
+    private Capsule(CapsulePart main, CapsulePart slave, Orientation mainOrientation) {
+        this.slave = new LinkedCapsulePart(slave.coordinates(), slave.color());
+        this.main = new LinkedCapsulePart(main.coordinates(), main.color(), mainOrientation, this.slave);
+    }
+
+    private Capsule(LinkedCapsulePart main, LinkedCapsulePart slave) {
+        this(main, slave, main.orientation());
     }
 
     private Capsule(Coordinates coordinates, Color mainColor, Color slaveColor) {
         this(
           new CapsulePart(coordinates, mainColor),
-          new CapsulePart(coordinates, slaveColor)
+          new CapsulePart(coordinates, slaveColor),
+          Orientation.LEFT
         );
-        main.linkTo(slave, Orientation.RIGHT);
     }
 
     static Capsule randomNewInstance(Level level) {
@@ -39,7 +43,7 @@ class Capsule {
         return "(" + main + " | " + slave + ")";
     }
 
-    private boolean bothVerify(Predicate<CapsulePart> condition) {
+    private boolean bothVerify(Predicate<LinkedCapsulePart> condition) {
         return condition.test(main) && condition.test(slave);
     }
 
@@ -48,24 +52,24 @@ class Capsule {
     }
 
     boolean isDropping() {
-        return bothVerify(CapsulePart::isDropping);
+        return bothVerify(LinkedCapsulePart::isDropping);
     }
 
     boolean isFrozen() {
-        return bothVerify(CapsulePart::isFrozen);
+        return bothVerify(LinkedCapsulePart::isFrozen);
     }
 
-    void forEachPart(Consumer<CapsulePart> action) {
+    void forEachPart(Consumer<LinkedCapsulePart> action) {
         action.accept(main);
         action.accept(slave);
     }
 
     void startDropping() {
-        forEachPart(CapsulePart::startDropping);
+        forEachPart(LinkedCapsulePart::startDropping);
     }
 
     void freeze() {
-        forEachPart(CapsulePart::freeze);
+        forEachPart(LinkedCapsulePart::freeze);
     }
 
     private void updateSlave() {
@@ -76,29 +80,29 @@ class Capsule {
      * Applies an atomic move to the main capsule and update its slave.
      * @param action the move to apply on the main capsule
      */
-    private void shift(Consumer<CapsulePart> action) {
+    private void shift(Consumer<LinkedCapsulePart> action) {
         action.accept(main);
         updateSlave();
     }
 
     void dip() {
-        shift(CapsulePart::dip);
+        shift(LinkedCapsulePart::dip);
     }
 
     void flip() {
-        shift(CapsulePart::flip);
+        shift(LinkedCapsulePart::flip);
     }
 
     void moveLeft() {
-        shift(CapsulePart::moveLeft);
+        shift(LinkedCapsulePart::moveLeft);
     }
 
     void moveRight() {
-        shift(CapsulePart::moveRight);
+        shift(LinkedCapsulePart::moveRight);
     }
 
     void moveForward() {
-        shift(CapsulePart::moveForward);
+        shift(LinkedCapsulePart::moveForward);
     }
 
     /**
