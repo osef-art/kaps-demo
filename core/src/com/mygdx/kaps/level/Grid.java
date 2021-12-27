@@ -84,12 +84,12 @@ class Grid {
         return columns.get(0).height();
     }
 
-    boolean isInGridBounds(Coordinates coordinates) {
-        return isInGridBounds(coordinates.x, coordinates.y);
+    private boolean isInGridBounds(int x, int y) {
+        return 0 <= x && x < getWidth() && 0 <= y && y < getHeight();
     }
 
-    boolean isInGridBounds(int x, int y) {
-        return 0 <= x && x < getWidth() && 0 <= y && y < getHeight();
+    boolean isInGridBounds(Coordinates coordinates) {
+        return isInGridBounds(coordinates.x, coordinates.y);
     }
 
     private boolean isEmptyTile(Coordinates coordinates) {
@@ -130,8 +130,8 @@ class Grid {
     }
 
     private void detach(int x, int y) {
-        get(x,y).ifPresent(o -> {
-            if (o.isCapsule()) ((CapsulePart) o).linked().ifPresent(l -> set(l.coordinates(), new CapsulePart(l)));
+        get(x, y).ifPresent(o -> {
+            if (o.isCapsule()) ((CapsulePart) o).linked().ifPresent(l -> put(new CapsulePart(l)));
         });
     }
 
@@ -143,8 +143,5 @@ class Grid {
 
     void dropEveryCapsule() {
 
-//        stack().stream()
-//          .filter(IGridObject::isCapsule)
-//          .filter(o -> o.)
     }
 }
