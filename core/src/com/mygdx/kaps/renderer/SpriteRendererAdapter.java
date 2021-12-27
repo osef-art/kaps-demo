@@ -6,24 +6,30 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 
+import java.util.function.Consumer;
+
 import static com.mygdx.kaps.MainScreen.camera;
 
 public class SpriteRendererAdapter implements RendererAdapter {
     private final SpriteBatch batch = new SpriteBatch();
 
-    private void draw(Runnable action) {
+    private void draw(Consumer<SpriteBatch> action) {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        action.run();
+        action.accept(batch);
         batch.end();
     }
 
-    public void render(Sprite sprite) {
-        draw(() -> sprite.draw(batch));
+    public void render(Sprite sprite, float x, float y, float width, float height) {
+        draw(b -> b.draw(sprite, x, y, width, height));
     }
 
-    public void render(Sprite sprite, float x, float y, float width, float height) {
-        draw(() -> batch.draw(sprite, x, y, width, height));
+    public void render(Sprite sprite, float x, float y, float width, float height, float alpha) {
+        draw(b -> {
+            b.setColor(1, 1, 1, alpha);
+            b.draw(sprite, x, y, width, height);
+            b.setColor(1, 1, 1, 1);
+        });
     }
 
     public void render(Sprite sprite, Rectangle rectangle) {
@@ -34,24 +40,16 @@ public class SpriteRendererAdapter implements RendererAdapter {
         render(sprite, rectangle.x, rectangle.y, rectangle.width, rectangle.height, alpha);
     }
 
-    public void render(Sprite sprite, float x, float y, float width, float height, float alpha) {
-        draw(() -> {
-            batch.setColor(1,1,1, alpha);
-            batch.draw(sprite, x, y, width, height);
-            batch.setColor(1,1,1, 1);
-        });
-    }
-
     void renderText(String text, BitmapFont font, float x, float y) {
-        draw(() -> font.draw(batch, text, x, y));
+        draw(b -> font.draw(b, text, x, y));
     }
 
-    void renderText(String txt, BitmapFont font, float x, float y, float width, float height) {
-        final GlyphLayout layout = new GlyphLayout(font, txt);
+    void renderText(String text, BitmapFont font, float x, float y, float width, float height) {
+        final GlyphLayout layout = new GlyphLayout(font, text);
         final float fontX = x + (width - layout.width) / 2;
         final float fontY = y + (height + layout.height) / 2;
 
-        draw(() -> font.draw(batch, layout, fontX, fontY));
+        draw(b -> font.draw(b, layout, fontX, fontY));
     }
 
     @Override

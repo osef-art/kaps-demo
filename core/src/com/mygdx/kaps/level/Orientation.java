@@ -26,12 +26,12 @@ enum Orientation {
      Orientation flipped() {
         switch (this) {
             case LEFT:
-                return DOWN;
-            case DOWN:
-                return RIGHT;
-            case RIGHT:
                 return UP;
             case UP:
+                return RIGHT;
+            case RIGHT:
+                return DOWN;
+            case DOWN:
                 return LEFT;
             default:
                 return NONE;

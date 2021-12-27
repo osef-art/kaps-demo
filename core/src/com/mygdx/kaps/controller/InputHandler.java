@@ -14,10 +14,12 @@ public class InputHandler implements InputProcessor {
         RIGHT_KEY(Level::moveCapsuleRight, 75.0, 22, 32), // D, RIGHT ARR.
         DOWN_KEY(Level::dipOrAcceptCapsule, 75.0, 20, 47), // S, DOWN ARR.
         FLIP_KEY(Level::flipCapsule, 150.0, 19, 54), // Z, UP ARR.
-        DROP_KEY(Level::dropCapsule, 62), // C, L
+        DROP_KEY(Level::dropCapsule, 62), // SPACEBAR
         HOLD_KEY(Level::holdCapsule, 31, 50, 30), // V, M
 
-        ESCAPE_KEY(m -> System.exit(0), 29, 131, 68), // A, ESC, !
+        PREVIEW(l -> l.parameters().togglePreview(), 52), // X
+
+        ESCAPE_KEY(l -> System.exit(0), 29, 131, 68), // A, ESC, !
         ;
 
         private final Set<Integer> codes;

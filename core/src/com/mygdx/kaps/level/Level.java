@@ -11,6 +11,23 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class Level {
+    public static class LevelParameters {
+        private final Level model;
+        private boolean enablePreview;
+
+        private LevelParameters(Level lvl) {
+            model = lvl;
+        }
+
+        public void togglePreview() {
+            enablePreview = !enablePreview;
+            model.fallingCapsules.forEach(c -> {
+                if (enablePreview) model.updatePreview(c);
+                else c.clearPreview();
+            });
+        }
+    }
+    private final LevelParameters parameters;
     private final List<Capsule> fallingCapsules = new ArrayList<>();
     private final List<Timer> timers = new ArrayList<>();
     private final Set<Color> colors;
@@ -18,6 +35,7 @@ public class Level {
 
     // TODO: replace by sidekick set
     public Level(Set<Color> colors) {
+        parameters=new LevelParameters(this);
         colors.add(Color.randomBlank());
         this.colors = colors;
         grid = new Grid(6, 15);
@@ -31,12 +49,16 @@ public class Level {
         return colors;
     }
 
-    List<Capsule> fallingCapsules() {
-        return fallingCapsules;
-    }
-
     Grid getGrid() {
         return grid;
+    }
+
+    public LevelParameters parameters() {
+        return parameters;
+    }
+
+    List<Capsule> fallingCapsules() {
+        return fallingCapsules;
     }
 
     Coordinates spawnCoordinates() {
@@ -77,11 +99,17 @@ public class Level {
 
     // capsule moves
     public void moveCapsuleLeft() {
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.movedLeft().canStandIn(grid), Capsule::moveLeft);
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.movedLeft().canStandIn(grid), c -> {
+            c.moveLeft();
+            updatePreview(c);
+        });
     }
 
     public void moveCapsuleRight() {
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.movedRight().canStandIn(grid), Capsule::moveRight);
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.movedRight().canStandIn(grid), c -> {
+            c.moveRight();
+            updatePreview(c);
+        });
     }
 
     public void dipOrAcceptCapsule() {
@@ -93,10 +121,14 @@ public class Level {
     }
 
     public void flipCapsule() {
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.flipped().canStandIn(grid), Capsule::flip,
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.flipped().canStandIn(grid), c -> {
+              c.flip();
+              updatePreview(c);
+          },
           c -> performIfPossible(f -> true, f -> f.flipped().movedBack().canStandIn(grid), f -> {
               f.flip();
               f.moveForward();
+              updatePreview(f);
           })
         );
     }
@@ -109,10 +141,17 @@ public class Level {
     }
 
     // update
+    private void updatePreview(Capsule capsule) {
+        if (parameters.enablePreview) capsule.updatePreview(grid);
+    }
+
     private void spawnCapsule() {
         fallingCapsules.add(Capsule.randomNewInstance(this));
-        fallingCapsules.forEach(c -> {
+        fallingCapsules.stream()
+          .filter(Predicate.not(Capsule::isDropping))
+          .forEach(c -> {
             if (!c.canStandIn(grid)) System.exit(0);
+            updatePreview(c);
         });
     }
 
@@ -120,6 +159,7 @@ public class Level {
         capsule.applyToBoth(grid::put);
         capsule.freeze();
         grid.deleteMatchesRecursively();
+        fallingCapsules.forEach(this::updatePreview);
     }
 
     public void update() {

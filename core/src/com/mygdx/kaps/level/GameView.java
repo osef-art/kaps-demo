@@ -57,8 +57,8 @@ public class GameView implements Renderable {
 
     public GameView(Level lvl) {
         Objects.requireNonNull(lvl);
-        model = lvl;
         dimensions = new Dimensions(lvl, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        model = lvl;
     }
 
     private void renderLayout() {
@@ -78,12 +78,19 @@ public class GameView implements Renderable {
         );
     }
 
-    private void renderCapsule(CapsulePart caps) {
+    private void renderCapsulePart(CapsulePart caps, float alpha) {
+        spra.render(caps.getSprite(), dimensions.tileAt(caps.coordinates()), alpha);
+    }
+
+    private void renderCapsulePart(CapsulePart caps) {
         spra.render(caps.getSprite(), dimensions.tileAt(caps.coordinates()));
     }
 
     private void renderFallingCapsules() {
-        model.fallingCapsules().forEach(c -> c.applyToBoth(this::renderCapsule));
+        model.fallingCapsules().forEach(c -> {
+            c.preview().ifPresent(prev -> prev.applyToBoth(p -> renderCapsulePart(p, .5f)));
+            c.applyToBoth(this::renderCapsulePart);
+        });
     }
 
     @Override

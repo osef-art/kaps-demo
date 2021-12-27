@@ -2,10 +2,12 @@ package com.mygdx.kaps.level;
 
 import com.mygdx.kaps.Utils;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 class Capsule {
     private final LinkedCapsulePart main;
+    private Capsule preview;
 
     private Capsule(CapsulePart main, CapsulePart slave, Orientation mainOrientation) {
         var linked = new LinkedCapsulePart(slave.coordinates(), slave.color());
@@ -41,6 +43,19 @@ class Capsule {
         return "(" + main + " | " + main.linked() + ")";
     }
 
+    Optional<Capsule> preview() {
+        return Optional.ofNullable(preview);
+    }
+
+    void updatePreview(Grid grid) {
+        preview = copy();
+        while (preview.dipped().canStandIn(grid)) preview.dip();
+    }
+
+    void clearPreview() {
+        preview = null;
+    }
+
     boolean canStandIn(Grid grid) {
         return main.verify(p -> p.canStandIn(grid));
     }
@@ -59,10 +74,12 @@ class Capsule {
 
     void startDropping() {
         applyToBoth(CapsulePart::startDropping);
+        clearPreview();
     }
 
     void freeze() {
         applyToBoth(CapsulePart::freeze);
+        clearPreview();
     }
 
     /**
