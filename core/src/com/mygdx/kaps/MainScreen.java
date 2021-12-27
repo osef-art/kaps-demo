@@ -5,13 +5,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.kaps.controller.InputHandler;
-import com.mygdx.kaps.level.Color;
 import com.mygdx.kaps.level.GameView;
 import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.sound.SoundStream;
-
-import java.util.Arrays;
-import java.util.HashSet;
 
 public class MainScreen extends ApplicationAdapter {
     public static OrthographicCamera camera;
@@ -27,7 +23,7 @@ public class MainScreen extends ApplicationAdapter {
         camera.setToOrtho(true);
         camera.translate(0, Gdx.graphics.getHeight());
 
-        game = new Level(new HashSet<>(Arrays.asList(Color.COLOR_1, Color.COLOR_2)));
+        game = Level.randomLevel(6);
         view = new GameView(game);
         inputs = new InputHandler(game);
 

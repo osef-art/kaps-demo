@@ -38,6 +38,13 @@ public enum Color {
         );
     }
 
+    static Color randomNonBlank() {
+        return random(Arrays.stream(values())
+          .filter(c -> !c.blank)
+          .collect(Collectors.toSet())
+        );
+    }
+
     static Color randomBlank() {
         return random(Arrays.stream(values())
           .filter(c -> c.blank)

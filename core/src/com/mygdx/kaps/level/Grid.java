@@ -93,7 +93,7 @@ class Grid {
         return isInGridBounds(coordinates.x, coordinates.y);
     }
 
-    private boolean isEmptyTile(Coordinates coordinates) {
+    boolean isEmptyTile(Coordinates coordinates) {
         return isInGridBounds(coordinates) && get(coordinates).isEmpty();
     }
 

@@ -30,12 +30,12 @@ public class Level {
     private final LinkedList<Capsule> upcomingCapsules = new LinkedList<>();
     private final List<Capsule> fallingCapsules = new ArrayList<>();
     private final List<Timer> timers = new ArrayList<>();
-    private final Set<Color> colors;
+    private final Set<Color> colorSet = new HashSet<>();
     private final Grid grid;
 
-    public Level(Set<Color> colors) {
-        colors.add(Color.randomBlank());
-        this.colors = colors;
+    public Level(Color ... colors) {
+        colorSet.addAll(Arrays.asList(colors));
+        colorSet.add(Color.randomBlank());
 
         parameters = new LevelParameters(this);
         grid = new Grid(6, 15);
@@ -46,8 +46,25 @@ public class Level {
         timers.addAll(Arrays.asList(dippingTimer, droppingTimer));
     }
 
-    Set<Color> getColors() {
-        return colors;
+    public static Level randomLevel(int germNumber) {
+        Level level = new Level(Color.randomNonBlank(), Color.randomNonBlank());
+        int germsLeft = germNumber;
+
+        do {
+            var randomTile = new Coordinates(
+              new Random().nextInt(level.grid.getWidth()),
+              new Random().nextInt(3)
+            );
+            if (level.grid.isEmptyTile(randomTile)) {
+                level.grid.put(new Germ(randomTile, Color.random(level.colorSet)));
+                germsLeft--;
+            }
+        } while (germsLeft > 0);
+        return level;
+    }
+
+    Set<Color> getColorSet() {
+        return colorSet;
     }
 
     Grid getGrid() {
