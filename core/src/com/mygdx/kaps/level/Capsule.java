@@ -33,7 +33,7 @@ class Capsule {
     }
 
     Capsule copy() {
-        return new Capsule(main.copy(), main.linked().copy());
+        return new Capsule(main.copy(), main.linked().map(LinkedCapsulePart::copy).orElse(null));
     }
 
     @Override

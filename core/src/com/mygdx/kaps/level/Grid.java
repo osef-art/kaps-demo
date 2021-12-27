@@ -125,9 +125,14 @@ class Grid {
     }
 
     private void hit(int x, int y) {
-//        get(x, y).ifPresent(IGridObject::detach);
-        // TODO: manual detach
+        detach(x, y);
         columns.get(x).clear(y);
+    }
+
+    private void detach(int x, int y) {
+        get(x,y).ifPresent(o -> {
+            if (o.isCapsule()) ((CapsulePart) o).linked().ifPresent(l -> set(l.coordinates(), new CapsulePart(l)));
+        });
     }
 
     void deleteMatches() {

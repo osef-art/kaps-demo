@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -13,6 +14,10 @@ class CapsulePart extends GridObject {
     private final Sprite sprite;
     private boolean dropping;
     private boolean frozen;
+
+    CapsulePart(LinkedCapsulePart caps) {
+        this(caps.coordinates(), caps.color());
+    }
 
     CapsulePart(Coordinates coordinates, Color color) {
         super(coordinates, color);
@@ -32,6 +37,10 @@ class CapsulePart extends GridObject {
 
     public Sprite getSprite() {
         return sprite;
+    }
+
+    public Optional<LinkedCapsulePart> linked() {
+        return Optional.empty();
     }
 
     @Override
@@ -127,9 +136,8 @@ class LinkedCapsulePart extends CapsulePart {
         return new LinkedCapsulePart(coordinates(), color(), orientation);
     }
 
-    LinkedCapsulePart linked() {
-        if (linked == null) throw new IllegalStateException(this + " should be linked !");
-        return linked;
+    public Optional<LinkedCapsulePart> linked() {
+        return Optional.of(linked);
     }
 
     Orientation orientation() {
