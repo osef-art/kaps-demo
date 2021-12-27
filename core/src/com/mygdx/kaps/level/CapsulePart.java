@@ -26,13 +26,13 @@ class CapsulePart extends GridObject {
         );
     }
 
+    CapsulePart copy() {
+        return new CapsulePart(coordinates(), color());
+    }
+
     @Override
     public String toString() {
         return super.toString();
-    }
-
-    CapsulePart copy() {
-        return new CapsulePart(coordinates(), color());
     }
 
     public Sprite getSprite() {
@@ -41,6 +41,10 @@ class CapsulePart extends GridObject {
 
     public Optional<LinkedCapsulePart> linked() {
         return Optional.empty();
+    }
+
+    Orientation orientation() {
+        return Orientation.NONE;
     }
 
     @Override
@@ -79,6 +83,18 @@ class CapsulePart extends GridObject {
 
     boolean canStandIn(Grid grid) {
         return isInGridBounds(grid) && !overlapsStack(grid);
+    }
+
+    boolean atLeastOneVerify(Predicate<CapsulePart> condition) {
+        return condition.test(this);
+    }
+
+    boolean verify(Predicate<CapsulePart> condition) {
+        return condition.test(this);
+    }
+
+    void apply(Consumer<CapsulePart> action) {
+        action.accept(this);
     }
 
     /**
@@ -176,11 +192,16 @@ class LinkedCapsulePart extends CapsulePart {
         orientation = orientation.flipped();
     }
 
-    boolean bothVerify(Predicate<LinkedCapsulePart> condition) {
+    @Override
+    boolean atLeastOneVerify(Predicate<CapsulePart> condition) {
+        return condition.test(this) || condition.test(linked);
+    }
+
+    boolean verify(Predicate<CapsulePart> condition) {
         return condition.test(this) && condition.test(linked);
     }
 
-    void applyToBoth(Consumer<LinkedCapsulePart> action) {
+    void apply(Consumer<CapsulePart> action) {
         action.accept(this);
         action.accept(linked);
     }

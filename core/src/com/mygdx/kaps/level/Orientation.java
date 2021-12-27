@@ -1,5 +1,6 @@
 package com.mygdx.kaps.level;
 
+@SuppressWarnings("DuplicatedCode")
 enum Orientation {
     NONE("unlinked"), LEFT("left"), UP("up"), RIGHT("right"), DOWN("down");
 
@@ -14,8 +15,15 @@ enum Orientation {
         return path;
     }
 
-    @SuppressWarnings("DuplicatedCode")
-    public Orientation flipped() {
+     boolean isVertical() {
+        return this == UP || this == DOWN;
+     }
+
+     boolean isHorizontal() {
+        return this == LEFT || this == RIGHT;
+     }
+
+     Orientation flipped() {
         switch (this) {
             case LEFT:
                 return DOWN;
@@ -30,8 +38,7 @@ enum Orientation {
         }
     }
 
-    @SuppressWarnings("DuplicatedCode")
-    public Orientation opposite() {
+     Orientation opposite() {
         switch (this) {
             case LEFT:
                 return RIGHT;
@@ -46,7 +53,7 @@ enum Orientation {
         }
     }
 
-    public Coordinates directionVector() {
+     Coordinates directionVector() {
         switch (this) {
             case LEFT:
                 return new Coordinates(-1, 0);
@@ -61,7 +68,7 @@ enum Orientation {
         }
     }
 
-    public Coordinates oppositeVector() {
+     Coordinates oppositeVector() {
         return directionVector().mapped(x -> -x);
     }
 }

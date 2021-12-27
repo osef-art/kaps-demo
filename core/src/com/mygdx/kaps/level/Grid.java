@@ -2,6 +2,7 @@ package com.mygdx.kaps.level;
 
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -114,34 +115,56 @@ class Grid {
 
     private void set(Coordinates coordinates, GridObject obj) {
         columns.get(coordinates.x).set(coordinates.y, obj);
+        obj.coordinates().set(coordinates);
     }
 
     void put(GridObject obj) {
         set(obj.coordinates(), obj);
     }
 
-    private void hit(GridObject part) {
-        hit(part.coordinates().x, part.coordinates().y);
+    private void clear(Coordinates coordinates) {
+        columns.get(coordinates.x).clear(coordinates.y);
     }
 
-    private void hit(int x, int y) {
-        detach(x, y);
-        columns.get(x).clear(y);
+    private void hit(Coordinates coordinates) {
+        detach(coordinates);
+        clear(coordinates);
     }
 
-    private void detach(int x, int y) {
-        get(x, y).ifPresent(o -> {
+    private void detach(Coordinates coordinates) {
+        get(coordinates.x, coordinates.y).ifPresent(o -> {
             if (o.isCapsule()) ((CapsulePart) o).linked().ifPresent(l -> put(new CapsulePart(l)));
         });
+    }
+
+    private void swap(Coordinates c1, Coordinates c2) {
+        var tmp = get(c1);
+        get(c2).ifPresentOrElse(o2 -> set(c1, o2), () -> clear(c1));
+        tmp.ifPresentOrElse(o1 -> set(c2, o1), () -> clear(c2));
     }
 
     void deleteMatches() {
         Stream.of(matchBrowser.rowsFoundIn(this), matchBrowser.columnsFoundIn(this))
           .flatMap(Collection::stream)
-          .forEach(this::hit);
+          .forEach(c -> hit(c.coordinates()));
     }
 
     void dropEveryCapsule() {
-
+        stack().stream()
+          .filter(IGridObject::isCapsule)
+          .map(o -> (CapsulePart) o)
+          .map(c -> {
+              Predicate<CapsulePart> condition = p -> isEmptyTile(p.coordinates().addedTo(0, -1));
+              var verified = c.orientation().isVertical() ? c.atLeastOneVerify(condition) : c.verify(condition);
+              if (verified) {
+                  c.apply(p -> swap(p.coordinates(), p.coordinates().addedTo(0, -1)));
+                  return true;
+              }
+              return false;
+          })
+          .reduce(Boolean::logicalOr)
+          .ifPresent(couldDip -> {
+              if (couldDip) dropEveryCapsule();
+          });
     }
 }

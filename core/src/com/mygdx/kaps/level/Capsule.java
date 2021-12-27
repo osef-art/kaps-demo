@@ -42,31 +42,32 @@ class Capsule {
     }
 
     boolean canStandIn(Grid grid) {
-        return main.bothVerify(p -> p.canStandIn(grid));
+        return main.verify(p -> p.canStandIn(grid));
     }
 
     boolean isDropping() {
-        return main.bothVerify(LinkedCapsulePart::isDropping);
+        return main.verify(CapsulePart::isDropping);
     }
 
     boolean isFrozen() {
-        return main.bothVerify(LinkedCapsulePart::isFrozen);
+        return main.verify(CapsulePart::isFrozen);
     }
 
-    void applyToBoth(Consumer<LinkedCapsulePart> action) {
-        main.applyToBoth(action);
+    void applyToBoth(Consumer<CapsulePart> action) {
+        main.apply(action);
     }
 
     void startDropping() {
-        applyToBoth(LinkedCapsulePart::startDropping);
+        applyToBoth(CapsulePart::startDropping);
     }
 
     void freeze() {
-        applyToBoth(LinkedCapsulePart::freeze);
+        applyToBoth(CapsulePart::freeze);
     }
 
     /**
      * Applies an atomic move to the main capsule and update its slave.
+     *
      * @param action the move to apply on the main capsule
      */
     private void shift(Consumer<LinkedCapsulePart> action) {
