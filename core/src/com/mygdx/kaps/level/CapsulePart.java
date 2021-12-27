@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 class CapsulePart extends GridObject {
     private final Sprite sprite;
@@ -165,4 +167,14 @@ class LinkedCapsulePart extends CapsulePart {
     void flip() {
         orientation = orientation.flipped();
     }
+
+    boolean bothVerify(Predicate<LinkedCapsulePart> condition) {
+        return condition.test(this) && condition.test(linked);
+    }
+
+    void applyToBoth(Consumer<LinkedCapsulePart> action) {
+        action.accept(this);
+        action.accept(linked);
+    }
+
 }

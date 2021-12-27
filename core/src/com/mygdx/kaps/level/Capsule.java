@@ -3,16 +3,13 @@ package com.mygdx.kaps.level;
 import com.mygdx.kaps.Utils;
 
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 class Capsule {
     private final LinkedCapsulePart main;
-    private final LinkedCapsulePart slave;
 
     private Capsule(CapsulePart main, CapsulePart slave, Orientation mainOrientation) {
         var linked = new LinkedCapsulePart(slave.coordinates(), slave.color());
         this.main = new LinkedCapsulePart(main.coordinates(), main.color(), mainOrientation, linked);
-        this.slave = this.main.linked();
     }
 
     private Capsule(LinkedCapsulePart main, LinkedCapsulePart slave) {
@@ -36,45 +33,36 @@ class Capsule {
     }
 
     Capsule copy() {
-        return new Capsule(main.copy(), slave.copy());
+        return new Capsule(main.copy(), main.linked().copy());
     }
 
     @Override
     public String toString() {
-        return "(" + main + " | " + slave + ")";
-    }
-
-    private boolean bothVerify(Predicate<LinkedCapsulePart> condition) {
-        return condition.test(main) && condition.test(slave);
+        return "(" + main + " | " + main.linked() + ")";
     }
 
     boolean canStandIn(Grid grid) {
-        return bothVerify(p -> p.canStandIn(grid));
+        return main.bothVerify(p -> p.canStandIn(grid));
     }
 
     boolean isDropping() {
-        return bothVerify(LinkedCapsulePart::isDropping);
+        return main.bothVerify(LinkedCapsulePart::isDropping);
     }
 
     boolean isFrozen() {
-        return bothVerify(LinkedCapsulePart::isFrozen);
+        return main.bothVerify(LinkedCapsulePart::isFrozen);
     }
 
-    void forEachPart(Consumer<LinkedCapsulePart> action) {
-        action.accept(main);
-        action.accept(slave);
+    void applyToBoth(Consumer<LinkedCapsulePart> action) {
+        main.applyToBoth(action);
     }
 
     void startDropping() {
-        forEachPart(LinkedCapsulePart::startDropping);
+        applyToBoth(LinkedCapsulePart::startDropping);
     }
 
     void freeze() {
-        forEachPart(LinkedCapsulePart::freeze);
-    }
-
-    private void updateSlave() {
-        main.updateLinked();
+        applyToBoth(LinkedCapsulePart::freeze);
     }
 
     /**
@@ -83,7 +71,7 @@ class Capsule {
      */
     private void shift(Consumer<LinkedCapsulePart> action) {
         action.accept(main);
-        updateSlave();
+        main.updateLinked();
     }
 
     void dip() {
