@@ -10,8 +10,9 @@ class Capsule {
     private final LinkedCapsulePart slave;
 
     private Capsule(CapsulePart main, CapsulePart slave, Orientation mainOrientation) {
-        this.slave = new LinkedCapsulePart(slave.coordinates(), slave.color());
-        this.main = new LinkedCapsulePart(main.coordinates(), main.color(), mainOrientation, this.slave);
+        var linked = new LinkedCapsulePart(slave.coordinates(), slave.color());
+        this.main = new LinkedCapsulePart(main.coordinates(), main.color(), mainOrientation, linked);
+        this.slave = this.main.linked();
     }
 
     private Capsule(LinkedCapsulePart main, LinkedCapsulePart slave) {

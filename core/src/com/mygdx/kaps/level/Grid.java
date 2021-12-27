@@ -125,7 +125,8 @@ class Grid {
     }
 
     private void hit(int x, int y) {
-        get(x, y).ifPresent(IGridObject::detach);
+//        get(x, y).ifPresent(IGridObject::detach);
+        // TODO: manual detach
         columns.get(x).clear(y);
     }
 

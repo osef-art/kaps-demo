@@ -5,8 +5,6 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 interface IGridObject {
     Sprite getSprite();
 
-    void detach();
-
     boolean isCapsule();
 }
 
