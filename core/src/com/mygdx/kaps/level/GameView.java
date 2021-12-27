@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.kaps.renderer.Renderable;
 import com.mygdx.kaps.renderer.ShapeRendererAdapter;
 import com.mygdx.kaps.renderer.SpriteRendererAdapter;
+import com.mygdx.kaps.renderer.TextRendererAdaptor;
 
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -50,6 +51,7 @@ public class GameView implements Renderable {
 
     private final SpriteRendererAdapter spra = new SpriteRendererAdapter();
     private final ShapeRendererAdapter sra = new ShapeRendererAdapter();
+    private final TextRendererAdaptor tra = new TextRendererAdaptor(spra, 16, Color.WHITE);
     private final Dimensions dimensions;
     private final Level model;
 
