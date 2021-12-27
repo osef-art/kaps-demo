@@ -4,10 +4,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.time.Timer;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -32,6 +29,7 @@ public class InputHandler implements InputProcessor {
         }
 
         Key(Consumer<Level> consumer, double hold, int... codes) {
+            Objects.requireNonNull(consumer);
             this.codes = Arrays.stream(codes).boxed().collect(Collectors.toUnmodifiableSet());
             effect = consumer;
             refreshRate = hold;
@@ -54,8 +52,9 @@ public class InputHandler implements InputProcessor {
     private final HashMap<Key, Timer> pressedKeys = new HashMap<>();
     private final Level model;
 
-    public InputHandler(Level model) {
-        this.model = model;
+    public InputHandler(Level lvl) {
+        Objects.requireNonNull(lvl);
+        model = lvl;
     }
 
     public void update() {

@@ -7,6 +7,7 @@ import com.mygdx.kaps.renderer.Renderable;
 import com.mygdx.kaps.renderer.ShapeRendererAdapter;
 import com.mygdx.kaps.renderer.SpriteRendererAdapter;
 
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 public class GameView implements Renderable {
@@ -18,6 +19,7 @@ public class GameView implements Renderable {
         private final Level level;
 
         private Dimensions(Level lvl, float screenWidth, float screenHeight) {
+            Objects.requireNonNull(lvl);
             Rectangle screen = new Rectangle(0, 0, screenWidth, screenHeight);
             float topSpaceHeight = screenHeight * 0.8f;
             float gridHeight = topSpaceHeight * 0.9f;
@@ -30,6 +32,10 @@ public class GameView implements Renderable {
             gridTile = new Rectangle(0, 0, tileSize, tileSize);
             sidekickZone = new Rectangle(0, topSpaceHeight, screen.width, infoZoneHeight);
             infoZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
+        }
+
+        private Rectangle tileAt(Coordinates coordinates) {
+            return tileAt(coordinates.x, coordinates.y);
         }
 
         private Rectangle tileAt(int x, int y) {
@@ -47,9 +53,10 @@ public class GameView implements Renderable {
     private final Dimensions dimensions;
     private final Level model;
 
-    public GameView(Level model) {
-        this.model = model;
-        dimensions = new Dimensions(model, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+    public GameView(Level lvl) {
+        Objects.requireNonNull(lvl);
+        model = lvl;
+        dimensions = new Dimensions(lvl, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     private void renderLayout() {
@@ -70,11 +77,11 @@ public class GameView implements Renderable {
     }
 
     private void renderCapsule(CapsulePart caps) {
-        spra.render(caps.getSprite(), dimensions.tileAt(caps.coordinates().x, caps.coordinates().y));
+        spra.render(caps.getSprite(), dimensions.tileAt(caps.coordinates()));
     }
 
     private void renderFallingCapsules() {
-        model.fallingCapsules().forEach(g -> g.applyToBoth(this::renderCapsule));
+        model.fallingCapsules().forEach(c -> c.applyToBoth(this::renderCapsule));
     }
 
     @Override
