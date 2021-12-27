@@ -113,6 +113,10 @@ class Grid {
           .collect(Collectors.toUnmodifiableSet());
     }
 
+    long germsCount() {
+        return stack().stream().filter(IGridObject::isGerm).count();
+    }
+
     private void set(Coordinates coordinates, GridObject obj) {
         columns.get(coordinates.x).set(coordinates.y, obj);
         obj.coordinates().set(coordinates);

@@ -40,7 +40,7 @@ class Capsule {
 
     @Override
     public String toString() {
-        return "(" + main + " | " + main.linked() + ")";
+        return "(" + main + " | " + main.linked().orElse(main) + ")";
     }
 
     Optional<Capsule> preview() {
