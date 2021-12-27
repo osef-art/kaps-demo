@@ -6,14 +6,14 @@ import com.mygdx.kaps.time.Timer;
 
 import java.nio.file.Path;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 
 public class SpriteSet implements Animated, RenderableDynamic {
     private final Timer updateTimer;
-    private final Sprite[] rightSprites;
-    private final Sprite[] leftSprites;
+    private final Sprite[] sprites;
     private final boolean looping;
-    private final int numberOfFrames;
+    private final int animationLength;
     private final Path path;
     private int currentFrame;
 
@@ -24,10 +24,9 @@ public class SpriteSet implements Animated, RenderableDynamic {
     public SpriteSet(String path, int startingFrame, int frames, double speed, boolean looping) {
         this.looping = looping;
         updateTimer = new Timer(speed);
-        rightSprites = new Sprite[frames];
-        leftSprites = new Sprite[frames];
+        sprites = new Sprite[frames];
         currentFrame = startingFrame;
-        numberOfFrames = frames;
+        animationLength = frames;
         this.path = Path.of(path);
 
         updateSprites();
@@ -41,30 +40,28 @@ public class SpriteSet implements Animated, RenderableDynamic {
         return currentFrame;
     }
 
-    private Sprite getCurrentSprite(boolean right) {
-        return right ? rightSprites[currentFrame] : leftSprites[currentFrame];
+    public Sprite getCurrentSprite() {
+        return sprites[currentFrame];
     }
 
     private void updateSprites() {
-        for (int i = 0; i < numberOfFrames; i++) {
-            String path = this.path.toString() + (numberOfFrames >= 9 && i < 10 ? "0" : "") + i + ".png";
-            var lSprite = new Sprite(new Texture(path));
-            var rSprite = new Sprite(new Texture(path));
-            rSprite.flip(false, true);
-            lSprite.flip(true, true);
-            rightSprites[i] = rSprite;
-            leftSprites[i] = lSprite;
-        }
+        IntStream.range(0, 8).forEach(n -> {
+            String path = this.path.toString() + (animationLength >= 9 && n < 10 ? "0" : "") + n + ".png";
+            var sprite = new Sprite(new Texture(path));
+            sprite.flip(false, true);
+            sprites[n] = sprite;
+        });
     }
 
     @Override
     public void update() {
         if (isAtLastFrame() && !looping) return;
-        if (updateTimer.resetIfExceeds()) currentFrame = (currentFrame + 1) % numberOfFrames;
+        if (updateTimer.resetIfExceeds()) currentFrame = (currentFrame + 1) % animationLength;
     }
 
     /**
-     * Checks if the sprite can jump to the next frame, and updates the current frame if it can.
+     * Checks if the sprite can jump to the next frame, and updates the current frame if so.
+     *
      * @return 1 if the sprite can be updated,
      * 0 if the sprite can't be updated yet,
      * -1 if it can't be updated anymore (non-looping sprite)
@@ -72,7 +69,7 @@ public class SpriteSet implements Animated, RenderableDynamic {
     public int updateIfPossible() {
         if (updateTimer.resetIfExceeds()) {
             if (isAtLastFrame() && !looping) return -1;
-            currentFrame = (currentFrame + 1) % numberOfFrames;
+            currentFrame = (currentFrame + 1) % animationLength;
             return 1;
         }
         return 0;
@@ -93,7 +90,7 @@ public class SpriteSet implements Animated, RenderableDynamic {
     }
 
     private boolean isAtLastFrame() {
-        return currentFrame == numberOfFrames - 1;
+        return currentFrame == animationLength - 1;
     }
 
     public boolean isOver() {
