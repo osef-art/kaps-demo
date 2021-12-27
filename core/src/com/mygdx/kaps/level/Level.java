@@ -33,7 +33,7 @@ public class Level {
     private final Set<Color> colorSet = new HashSet<>();
     private final Grid grid;
 
-    public Level(Color ... colors) {
+    public Level(Color... colors) {
         colorSet.addAll(Arrays.asList(colors));
         colorSet.add(Color.randomBlank());
 
@@ -44,6 +44,8 @@ public class Level {
         var dippingTimer = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
         var droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingCapsule);
         timers.addAll(Arrays.asList(dippingTimer, droppingTimer));
+
+        spawnCapsule();
     }
 
     public static Level randomLevel(int germNumber) {
@@ -163,21 +165,23 @@ public class Level {
     }
 
     // update
+    private boolean checkForGameOver() {
+        return fallingCapsules.stream()
+          .filter(Predicate.not(Capsule::isDropping))
+          .map(c -> !c.canStandIn(grid))
+          .reduce(Boolean::logicalOr)
+          .orElse(false) || grid.germsCount() <= 0;
+    }
+
     private void updatePreview(Capsule capsule) {
         if (parameters.enablePreview) capsule.updatePreview(grid);
     }
 
     private void spawnCapsule() {
         var upcoming = upcomingCapsules.removeFirst();
+        updatePreview(upcoming);
         upcomingCapsules.add(Capsule.randomNewInstance(this));
-
         fallingCapsules.add(upcoming);
-        fallingCapsules.stream()
-          .filter(Predicate.not(Capsule::isDropping))
-          .forEach(c -> {
-              if (!c.canStandIn(grid)) System.exit(0);
-              updatePreview(c);
-          });
     }
 
     private void accept(Capsule capsule) {
@@ -190,6 +194,10 @@ public class Level {
     public void update() {
         fallingCapsules.removeIf(Capsule::isFrozen);
         if (fallingCapsules.stream().noneMatch(Predicate.not(Capsule::isDropping))) spawnCapsule();
+        if (checkForGameOver()) {
+            System.out.println("LEVEL CLEARED !");
+            System.exit(0);
+        }
         timers.forEach(Timer::resetIfExceeds);
     }
 }
