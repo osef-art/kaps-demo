@@ -28,7 +28,7 @@ class Capsule {
 
     static Capsule randomNewInstance(Level level) {
         return new Capsule(
-          level.spawnCoordinates(),
+          level.spawningCoordinates(),
           Utils.getRandomFrom(level.getColorSet()),
           Utils.getRandomFrom(level.getColorSet())
         );

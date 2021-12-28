@@ -3,15 +3,10 @@ package com.mygdx.kaps.level;
 
 import com.mygdx.kaps.time.Timer;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class Level {
     public static class LevelParameters {
@@ -30,7 +25,6 @@ public class Level {
             });
         }
     }
-
     private final LevelParameters parameters;
     private final LinkedList<Capsule> upcomingCapsules = new LinkedList<>();
     private final List<Capsule> fallingCapsules = new ArrayList<>();
@@ -38,7 +32,7 @@ public class Level {
     private final Set<Color> colorSet;
     private final Grid grid;
 
-    private Level(Grid grid, Set<Color> colors) {
+    Level(Grid grid, Set<Color> colors) {
         parameters = new LevelParameters(this);
         colorSet = colors;
         this.grid = grid;
@@ -48,55 +42,6 @@ public class Level {
         var dippingTimer = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
         var droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingCapsule);
         timers.addAll(Arrays.asList(dippingTimer, droppingTimer));
-    }
-
-    public static Level randomLevel(int width, int height, int germNumber) {
-        if (germNumber > width * Math.min(height, 3))
-            throw new IllegalArgumentException("Too many germs for a " + width + "x" + height + " grid: " + germNumber);
-
-        var colors = new HashSet<Color>();
-        while (colors.size() < 3)
-            colors.add(Color.randomNonBlank());
-        Level level = new Level(new Grid(width, height), colors);
-
-        do {
-            var randomTile = new Coordinates(
-              new Random().nextInt(level.grid.getWidth()),
-              new Random().nextInt(3)
-            );
-            if (level.grid.isEmptyTile(randomTile)) {
-                level.grid.put(new Germ(randomTile, Color.random(level.colorSet)));
-                germNumber--;
-            }
-        } while (germNumber > 0);
-        return level;
-    }
-
-    public static Level loadFrom(String filePath) {
-        List<String> gridData;
-        var colors = new HashSet<Color>();
-        while (colors.size() < 3)
-            colors.add(Color.randomNonBlank());
-
-        try {
-            Stream<String> lines = Files.lines(Path.of(filePath));
-            gridData = lines.collect(Collectors.toList());
-            lines.close();
-        } catch (IOException e) {
-            throw new IllegalArgumentException("An error occurred while parsing file " + filePath + ": " + e);
-        }
-
-        System.out.println(gridData);
-        var rows = gridData.stream().map(line -> {
-            var chars = line.toCharArray();
-            var germs = IntStream.range(0, chars.length)
-              .mapToObj(n -> chars[n])
-              .map(c -> c == '.' ? null : Germ.ofSymbol(c, colors))
-              .collect(Collectors.toList());
-            return new Grid.Row(germs);
-        }).collect(Collectors.toList());
-
-        return new Level(new Grid(rows), colors);
     }
 
     Set<Color> getColorSet() {
@@ -119,7 +64,7 @@ public class Level {
         return upcomingCapsules;
     }
 
-    Coordinates spawnCoordinates() {
+    Coordinates spawningCoordinates() {
         return new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1);
     }
 

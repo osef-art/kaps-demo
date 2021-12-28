@@ -36,7 +36,8 @@ public class Germ extends GridObject {
     private Germ(Coordinates coordinates, Color color, GermKind kind) {
         super(coordinates, color);
         this.kind = kind;
-        sprites = new SpriteSet("android/assets/sprites/" + color.id() + "/germs/" + kind + "/idle_", 8, 0);
+        sprites = new SpriteSet("android/assets/sprites/" + color.id() + "/germs/" + GermKind.BASIC + "/idle_", 8, 0);
+//        sprites = new SpriteSet("android/assets/sprites/" + color.id() + "/germs/" + kind + "/idle_", 8, 0);
     }
 
     Germ(Coordinates coordinates, Color color) {

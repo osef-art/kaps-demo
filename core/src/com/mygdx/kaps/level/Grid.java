@@ -173,7 +173,7 @@ class Grid {
         tmp.ifPresentOrElse(o1 -> set(c2, o1), () -> clear(c2));
     }
 
-    private boolean containsMatches() {
+    boolean containsMatches() {
         return Stream.of(matchBrowser.rowsFoundIn(this), matchBrowser.columnsFoundIn(this))
           .mapToLong(Collection::size)
           .sum() > 0;

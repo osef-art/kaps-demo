@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.kaps.controller.InputHandler;
 import com.mygdx.kaps.level.GameView;
 import com.mygdx.kaps.level.Level;
+import com.mygdx.kaps.level.LevelLoader;
 import com.mygdx.kaps.sound.SoundStream;
 
 import java.util.Random;
@@ -26,8 +27,8 @@ public class MainScreen extends ApplicationAdapter {
         camera.translate(0, Gdx.graphics.getHeight());
 
         game = new Random().nextBoolean() ?
-                 Level.loadFrom("android/assets/levels/level0") :
-                 Level.randomLevel(6, 15, 10);
+                 LevelLoader.loadFrom("android/assets/levels/level" + new Random().nextInt(21)) :
+                 LevelLoader.randomLevel(6, 15, 10);
         view = new GameView(game);
         inputs = new InputHandler(game);
 
