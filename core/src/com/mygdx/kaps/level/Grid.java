@@ -8,29 +8,29 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 class Grid {
-    private static class Column {
+    private static class Row {
         private final List<Optional<GridObject>> tiles;
 
-        private Column(int tiles) {
-            if (tiles <= 0) throw new IllegalArgumentException("Invalid column size: " + tiles);
+        private Row(int tiles) {
+            if (tiles < 2) throw new IllegalArgumentException("Invalid row length: " + tiles);
             this.tiles = new ArrayList<>(tiles);
             IntStream.range(0, tiles).forEach(c -> this.tiles.add(Optional.empty()));
         }
 
-        private int height() {
+        private int width() {
             return tiles.size();
         }
 
-        private void clear(int y) {
-            tiles.set(y, Optional.empty());
+        private void clear(int n) {
+            tiles.set(n, Optional.empty());
         }
 
-        private void set(int y, GridObject obj) {
-            tiles.set(y, Optional.of(obj));
+        private void set(int n, GridObject obj) {
+            tiles.set(n, Optional.of(obj));
         }
 
-        private Optional<GridObject> get(int i) {
-            return tiles.get(i);
+        private Optional<GridObject> get(int n) {
+            return tiles.get(n);
         }
     }
 
@@ -69,20 +69,20 @@ class Grid {
     }
 
     private final MatchHandler matchBrowser = new MatchHandler(4);
-    private final List<Column> columns;
+    private final List<Row> rows;
 
     Grid(int columns, int rows) {
-        if (columns < 2) throw new IllegalArgumentException("Insufficient grid width: " + columns);
-        this.columns = new ArrayList<>(columns);
-        IntStream.range(0, columns).forEach(c -> this.columns.add(new Column(rows)));
+        if (rows < 2) throw new IllegalArgumentException("Insufficient grid width: " + rows);
+        this.rows = new ArrayList<>(rows);
+        IntStream.range(0, rows).forEach(c -> this.rows.add(new Row(columns)));
     }
 
     int getWidth() {
-        return columns.size();
+        return rows.get(0).width();
     }
 
     int getHeight() {
-        return columns.get(0).height();
+        return rows.size();
     }
 
     private boolean isInGridBounds(int x, int y) {
@@ -102,11 +102,11 @@ class Grid {
     }
 
     Optional<GridObject> get(int x, int y) {
-        return isInGridBounds(x, y) ? columns.get(x).get(y) : Optional.empty();
+        return isInGridBounds(x, y) ? rows.get(y).get(x) : Optional.empty();
     }
 
     private Set<GridObject> stack() {
-        return columns.stream()
+        return rows.stream()
           .flatMap(c -> c.tiles.stream())
           .filter(Optional::isPresent)
           .map(Optional::get)
@@ -118,7 +118,7 @@ class Grid {
     }
 
     private void set(Coordinates coordinates, GridObject obj) {
-        columns.get(coordinates.x).set(coordinates.y, obj);
+        rows.get(coordinates.y).set(coordinates.x, obj);
         obj.coordinates().set(coordinates);
     }
 
@@ -127,7 +127,7 @@ class Grid {
     }
 
     private void clear(Coordinates coordinates) {
-        columns.get(coordinates.x).clear(coordinates.y);
+        rows.get(coordinates.y).clear(coordinates.x);
     }
 
     private void hit(Coordinates coordinates) {
