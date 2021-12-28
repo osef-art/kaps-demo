@@ -30,7 +30,7 @@ public class LevelLoader {
               new Random().nextInt(3)
             );
             if (grid.isEmptyTile(randomTile)) {
-                grid.put(new Germ(randomTile, Color.random(colors)));
+                grid.put(new BasicGerm(randomTile, Color.random(colors)));
                 germNumber--;
             }
         } while (germNumber > 0);
