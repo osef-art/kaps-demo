@@ -33,24 +33,24 @@ public class Level {
     private final Set<Color> colorSet = new HashSet<>();
     private final Grid grid;
 
-    public Level(Color... colors) {
+    private Level(int width, int height, Color... colors) {
         colorSet.addAll(Arrays.asList(colors));
-        colorSet.add(Color.randomBlank());
+        while (colorSet.size() < 3)
+            colorSet.add(Color.randomBlank());
 
         parameters = new LevelParameters(this);
-        grid = new Grid(6, 15);
+        grid = new Grid(width, height);
         IntStream.range(0, 2).forEach(n -> upcomingCapsules.add(Capsule.randomNewInstance(this)));
 
         var dippingTimer = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
         var droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingCapsule);
         timers.addAll(Arrays.asList(dippingTimer, droppingTimer));
-
-        spawnCapsule();
     }
 
-    public static Level randomLevel(int germNumber) {
-        Level level = new Level(Color.randomNonBlank(), Color.randomNonBlank());
-        int germsLeft = germNumber;
+    public static Level randomLevel(int width, int height, int germNumber) {
+        if (germNumber > width * Math.min(height, 3))
+            throw new IllegalArgumentException("Too many germs for a " + width + "x" + height + " grid: " + germNumber);
+        Level level = new Level(width, height, Color.randomNonBlank(), Color.randomNonBlank());
 
         do {
             var randomTile = new Coordinates(
@@ -59,11 +59,15 @@ public class Level {
             );
             if (level.grid.isEmptyTile(randomTile)) {
                 level.grid.put(new Germ(randomTile, Color.random(level.colorSet)));
-                germsLeft--;
+                germNumber--;
             }
-        } while (germsLeft > 0);
+        } while (germNumber > 0);
         return level;
     }
+
+//    public static Level loadFrom(String filePath) {
+//        BufferedReader reader = Files.newBufferedReader(path);
+//    }
 
     Set<Color> getColorSet() {
         return colorSet;

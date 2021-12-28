@@ -23,7 +23,7 @@ public class MainScreen extends ApplicationAdapter {
         camera.setToOrtho(true);
         camera.translate(0, Gdx.graphics.getHeight());
 
-        game = Level.randomLevel(6);
+        game = Level.randomLevel(6, 15, 16);
         view = new GameView(game);
         inputs = new InputHandler(game);
 
