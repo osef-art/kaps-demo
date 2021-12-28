@@ -25,8 +25,12 @@ class Coordinates {
         y = functionY.apply(y);
     }
 
+    void set(int x, int y) {
+        map(n -> x, n -> y);
+    }
+
     void set(Coordinates coordinates) {
-        map(x -> coordinates.x, y -> coordinates.y);
+        set(coordinates.x, coordinates.y);
     }
 
     void add(Coordinates coordinates) {
