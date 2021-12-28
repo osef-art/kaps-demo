@@ -1,9 +1,6 @@
 package com.mygdx.kaps.level;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -11,26 +8,29 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 class Grid {
-    private static class Row<T> {
-        private final List<Optional<T>> tiles;
+    static class Row {
+        private final List<Optional<? extends GridObject>> tiles;
 
-        @SuppressWarnings("unchecked")
-        private Row(int tiles) {
-            if (tiles < 2) throw new IllegalArgumentException("Invalid row length: " + tiles);
-            this.tiles = IntStream.range(0, tiles)
-              .mapToObj(n -> (Optional<T>) Optional.empty())
+        Row(List<? extends GridObject> elems) {
+            if (elems.isEmpty()) throw new IllegalArgumentException("Rows can't be empty.");
+            tiles = elems.stream()
+              .map(Optional::ofNullable)
               .collect(Collectors.toList());
+        }
+
+        Row(int length) {
+            this(IntStream.range(0, length).mapToObj(n -> (GridObject) null).collect(Collectors.toList()));
         }
 
         private int width() {
             return tiles.size();
         }
 
-        private Optional<T> get(int n) {
+        private Optional<? extends GridObject> get(int n) {
             return tiles.get(n);
         }
 
-        private Stream<Optional<T>> stream() {
+        private Stream<Optional<? extends GridObject>> stream() {
             return tiles.stream();
         }
 
@@ -38,7 +38,7 @@ class Grid {
             tiles.set(n, Optional.empty());
         }
 
-        private void set(int n, T obj) {
+        private void set(int n, GridObject obj) {
             tiles.set(n, Optional.of(obj));
         }
     }
@@ -50,11 +50,12 @@ class Grid {
             MINIMUM_MATCH_LENGTH = length;
         }
 
-        private boolean isMatch(Set<GridObject> match) {
+        private boolean isMatch(Set<? extends GridObject> match) {
             return match.size() >= MINIMUM_MATCH_LENGTH && match.stream().map(GridObject::color).distinct().count() == 1;
         }
 
-        private Set<GridObject> rangesFoundIn(Grid grid, BiFunction<GridObject, Integer, Coordinates> browsingPattern) {
+        private Set<? extends GridObject> rangesFoundIn(Grid grid,
+                                                        BiFunction<GridObject, Integer, Coordinates> browsingPattern) {
             return grid.stack().stream()
               // map to a set of objects that are within range
               .map(c -> IntStream.range(0, MINIMUM_MATCH_LENGTH)
@@ -68,23 +69,38 @@ class Grid {
               .collect(Collectors.toUnmodifiableSet());
         }
 
-        private Set<GridObject> rowsFoundIn(Grid grid) {
+        private Set<? extends GridObject> rowsFoundIn(Grid grid) {
             return rangesFoundIn(grid, (c, n) -> c.coordinates().mapped(x -> x + n, y -> y));
         }
 
-        private Set<GridObject> columnsFoundIn(Grid grid) {
+        private Set<? extends GridObject> columnsFoundIn(Grid grid) {
             return rangesFoundIn(grid, (c, n) -> c.coordinates().mapped(x -> x, y -> y + n));
         }
     }
 
     private final MatchHandler matchBrowser = new MatchHandler(4);
-    private final List<Row<GridObject>> rows;
+    private final List<Row> rows;
 
     Grid(int columns, int rows) {
-        if (rows < 2) throw new IllegalArgumentException("Insufficient grid width: " + rows);
-        this.rows = IntStream.range(0, rows)
-          .mapToObj(c -> (new Row<GridObject>(columns)))
-          .collect(Collectors.toList());
+        this(IntStream.range(0, rows)
+          .mapToObj(c -> (new Row(columns)))
+          .collect(Collectors.toList()));
+    }
+
+    Grid(List<Row> rows) {
+        if (rows.size() < 2)
+            throw new IllegalArgumentException("Insufficient grid height: " + rows);
+        if (rows.get(0).width() < 2)
+            throw new IllegalArgumentException("Insufficient grid width: " + rows.get(0).width());
+        if (rows.stream().map(Row::width).distinct().count() > 1)
+            throw new IllegalArgumentException("Grid rows must all have same size");
+        Collections.reverse(rows);
+        this.rows = rows;
+        IntStream.range(0, getWidth()).forEach(
+          x -> IntStream.range(0, getHeight()).forEach(
+            y -> get(x, y).ifPresent(o -> o.coordinates().set(x, y))
+          )
+        );
     }
 
     int getWidth() {
@@ -107,15 +123,15 @@ class Grid {
         return isInGridBounds(coordinates) && get(coordinates).isEmpty();
     }
 
-    Optional<GridObject> get(Coordinates coordinates) {
+    Optional<? extends GridObject> get(Coordinates coordinates) {
         return get(coordinates.x, coordinates.y);
     }
 
-    Optional<GridObject> get(int x, int y) {
+    Optional<? extends GridObject> get(int x, int y) {
         return isInGridBounds(x, y) ? rows.get(y).get(x) : Optional.empty();
     }
 
-    private Set<GridObject> stack() {
+    private Set<? extends GridObject> stack() {
         return rows.stream()
           .flatMap(Row::stream)
           .filter(Optional::isPresent)
