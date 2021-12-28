@@ -9,33 +9,34 @@ import java.util.stream.Stream;
 
 class Grid {
     private static class Row<T> {
-        private final T[] tiles;
+        private final List<Optional<T>> tiles;
 
         @SuppressWarnings("unchecked")
         private Row(int tiles) {
             if (tiles < 2) throw new IllegalArgumentException("Invalid row length: " + tiles);
-            this.tiles = (T[]) new Object[tiles];
-            IntStream.range(0, tiles).forEach(n -> this.tiles[n] = null);
+            this.tiles = IntStream.range(0, tiles)
+              .mapToObj(n -> (Optional<T>) Optional.empty())
+              .collect(Collectors.toList());
         }
 
         private int width() {
-            return tiles.length;
-        }
-
-        private Stream<Optional<T>> stream() {
-            return Arrays.stream(tiles).map(Optional::ofNullable);
+            return tiles.size();
         }
 
         private Optional<T> get(int n) {
-            return Optional.ofNullable(tiles[n]);
+            return tiles.get(n);
+        }
+
+        private Stream<Optional<T>> stream() {
+            return tiles.stream();
         }
 
         private void clear(int n) {
-            tiles[n] = null;
+            tiles.set(n, Optional.empty());
         }
 
         private void set(int n, T obj) {
-            tiles[n] = (obj);
+            tiles.set(n, Optional.of(obj));
         }
     }
 
