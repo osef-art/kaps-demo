@@ -8,29 +8,34 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 class Grid {
-    private static class Row {
-        private final List<Optional<GridObject>> tiles;
+    private static class Row<T> {
+        private final T[] tiles;
 
+        @SuppressWarnings("unchecked")
         private Row(int tiles) {
             if (tiles < 2) throw new IllegalArgumentException("Invalid row length: " + tiles);
-            this.tiles = new ArrayList<>(tiles);
-            IntStream.range(0, tiles).forEach(c -> this.tiles.add(Optional.empty()));
+            this.tiles = (T[]) new Object[tiles];
+            IntStream.range(0, tiles).forEach(n -> this.tiles[n] = null);
         }
 
         private int width() {
-            return tiles.size();
+            return tiles.length;
+        }
+
+        private Stream<Optional<T>> stream() {
+            return Arrays.stream(tiles).map(Optional::ofNullable);
+        }
+
+        private Optional<T> get(int n) {
+            return Optional.ofNullable(tiles[n]);
         }
 
         private void clear(int n) {
-            tiles.set(n, Optional.empty());
+            tiles[n] = null;
         }
 
-        private void set(int n, GridObject obj) {
-            tiles.set(n, Optional.of(obj));
-        }
-
-        private Optional<GridObject> get(int n) {
-            return tiles.get(n);
+        private void set(int n, T obj) {
+            tiles[n] = (obj);
         }
     }
 
@@ -69,12 +74,12 @@ class Grid {
     }
 
     private final MatchHandler matchBrowser = new MatchHandler(4);
-    private final List<Row> rows;
+    private final List<Row<GridObject>> rows;
 
     Grid(int columns, int rows) {
         if (rows < 2) throw new IllegalArgumentException("Insufficient grid width: " + rows);
         this.rows = new ArrayList<>(rows);
-        IntStream.range(0, rows).forEach(c -> this.rows.add(new Row(columns)));
+        IntStream.range(0, rows).forEach(c -> this.rows.add(new Row<>(columns)));
     }
 
     int getWidth() {
@@ -107,7 +112,7 @@ class Grid {
 
     private Set<GridObject> stack() {
         return rows.stream()
-          .flatMap(c -> c.tiles.stream())
+          .flatMap(Row::stream)
           .filter(Optional::isPresent)
           .map(Optional::get)
           .collect(Collectors.toUnmodifiableSet());
