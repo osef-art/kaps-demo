@@ -1,6 +1,9 @@
 package com.mygdx.kaps.level;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -79,8 +82,9 @@ class Grid {
 
     Grid(int columns, int rows) {
         if (rows < 2) throw new IllegalArgumentException("Insufficient grid width: " + rows);
-        this.rows = new ArrayList<>(rows);
-        IntStream.range(0, rows).forEach(c -> this.rows.add(new Row<>(columns)));
+        this.rows = IntStream.range(0, rows)
+          .mapToObj(c -> (new Row<GridObject>(columns)))
+          .collect(Collectors.toList());
     }
 
     int getWidth() {
