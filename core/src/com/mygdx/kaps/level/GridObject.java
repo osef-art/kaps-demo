@@ -17,8 +17,7 @@ abstract class GridObject implements IGridObject {
     private final Color color;
 
     GridObject(Coordinates coordinates, Color color) {
-        Objects.requireNonNull(coordinates);
-        this.coordinates = coordinates.copy();
+        this.coordinates = Objects.requireNonNull(coordinates).copy();
         this.color = color;
     }
 

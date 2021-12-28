@@ -5,6 +5,10 @@ import java.util.function.Function;
 class Coordinates {
     int x, y;
 
+    Coordinates() {
+        this(0, 0);
+    }
+
     Coordinates(int x, int y) {
         this.x = x;
         this.y = y;
@@ -17,6 +21,7 @@ class Coordinates {
 
     /**
      * Applies {@param functionX} to x and {@param functionY} to y.
+     *
      * @param functionX the effect to apply on x
      * @param functionY the effect to apply on y
      */
