@@ -195,17 +195,14 @@ class Grid {
           .filter(IGridObject::isCapsule)
           .map(o -> (CapsulePart) o)
           .map(c -> {
-              Predicate<CapsulePart> condition = p -> isEmptyTile(p.coordinates().addedTo(0, -1));
-              var verified = c.orientation().isVertical() ? c.atLeastOneVerify(condition) : c.verify(condition);
-              if (verified) {
-                  c.applyToBoth(p -> {
-                      clear(p.coordinates());
-                      p.coordinates().add(0, -1);
-                      put(p);
-                  });
-                  return true;
-              }
-              return false;
+              Predicate<CapsulePart> hasEmptyTileBelow = p -> isEmptyTile(p.coordinates().addedTo(0, -1));
+              var canDip = c.orientation().isVertical() ? c.atLeastOneVerify(hasEmptyTileBelow) : c.verify(hasEmptyTileBelow);
+              if (canDip) c.applyToBoth(p -> {
+                  clear(p.coordinates());
+                  p.coordinates().add(0, -1);
+                  put(p);
+              });
+              return canDip;
           })
           .reduce(Boolean::logicalOr)
           .ifPresent(couldDip -> {
