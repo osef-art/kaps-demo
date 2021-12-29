@@ -165,6 +165,10 @@ class Grid {
         });
     }
 
+    private void hit(GridObject o) {
+        hit(o.coordinates());
+    }
+
     private void detach(Coordinates coordinates) {
         get(coordinates).ifPresent(o -> {
             if (o.isCapsule()) ((CapsulePart) o).linked().ifPresent(l -> put(new CapsulePart(l)));
@@ -180,7 +184,7 @@ class Grid {
     private void deleteMatches() {
         Stream.of(matchBrowser.rowsFoundIn(this), matchBrowser.columnsFoundIn(this))
           .flatMap(Collection::stream)
-          .forEach(c -> hit(c.coordinates()));
+          .forEach(this::hit);
     }
 
     void deleteMatchesRecursively() {
@@ -196,7 +200,9 @@ class Grid {
           .map(o -> (CapsulePart) o)
           .map(c -> {
               Predicate<CapsulePart> hasEmptyTileBelow = p -> isEmptyTile(p.coordinates().addedTo(0, -1));
-              var canDip = c.orientation().isVertical() ? c.atLeastOneVerify(hasEmptyTileBelow) : c.verify(hasEmptyTileBelow);
+              var canDip = c.orientation().isVertical() ?
+                             c.atLeastOneVerify(hasEmptyTileBelow) :
+                             c.verify(hasEmptyTileBelow);
               if (canDip) c.applyToBoth(p -> {
                   clear(p.coordinates());
                   p.coordinates().add(0, -1);
