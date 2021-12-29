@@ -34,12 +34,16 @@ class Coordinates {
         map(n -> x, n -> y);
     }
 
+    void add(int x, int y) {
+        map(n -> n + x, n -> n + y);
+    }
+
     void set(Coordinates coordinates) {
         set(coordinates.x, coordinates.y);
     }
 
     void add(Coordinates coordinates) {
-        map(x -> x + coordinates.x, y -> y + coordinates.y);
+        add(coordinates.x, coordinates.y);
     }
 
     /**

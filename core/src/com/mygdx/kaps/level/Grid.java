@@ -83,7 +83,7 @@ class Grid {
 
     Grid(int columns, int rows) {
         this(IntStream.range(0, rows)
-          .mapToObj(c -> (new Row(columns)))
+          .mapToObj(c -> new Row(columns))
           .collect(Collectors.toList()));
     }
 
@@ -94,6 +94,7 @@ class Grid {
             throw new IllegalArgumentException("Insufficient grid width: " + rows.get(0).width());
         if (rows.stream().map(Row::width).distinct().count() > 1)
             throw new IllegalArgumentException("Grid rows must all have same size");
+
         Collections.reverse(rows);
         this.rows = rows;
         IntStream.range(0, getWidth()).forEach(
@@ -145,7 +146,7 @@ class Grid {
 
     private void set(Coordinates coordinates, GridObject obj) {
         rows.get(coordinates.y).set(coordinates.x, obj);
-        obj.coordinates().set(coordinates);
+//        obj.coordinates().set(coordinates);
     }
 
     void put(GridObject obj) {
@@ -168,12 +169,6 @@ class Grid {
         get(coordinates).ifPresent(o -> {
             if (o.isCapsule()) ((CapsulePart) o).linked().ifPresent(l -> put(new CapsulePart(l)));
         });
-    }
-
-    private void swap(Coordinates c1, Coordinates c2) {
-        var tmp = get(c1);
-        get(c2).ifPresentOrElse(o2 -> set(c1, o2), () -> clear(c1));
-        tmp.ifPresentOrElse(o1 -> set(c2, o1), () -> clear(c2));
     }
 
     boolean containsMatches() {
@@ -203,7 +198,11 @@ class Grid {
               Predicate<CapsulePart> condition = p -> isEmptyTile(p.coordinates().addedTo(0, -1));
               var verified = c.orientation().isVertical() ? c.atLeastOneVerify(condition) : c.verify(condition);
               if (verified) {
-                  c.applyToBoth(p -> swap(p.coordinates(), p.coordinates().addedTo(0, -1)));
+                  c.applyToBoth(p -> {
+                      clear(p.coordinates());
+                      p.coordinates().add(0, -1);
+                      put(p);
+                  });
                   return true;
               }
               return false;
