@@ -62,7 +62,7 @@ public class Level {
         return fallingCapsules;
     }
 
-    public List<Capsule> upcoming() {
+    List<Capsule> upcoming() {
         return upcomingCapsules;
     }
 

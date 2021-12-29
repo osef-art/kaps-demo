@@ -34,6 +34,11 @@ class Capsule {
         );
     }
 
+    static Capsule randomMonoColorInstance(Level level) {
+        var color = Utils.getRandomFrom(level.getColorSet());
+        return new Capsule(level.spawningCoordinates(), color, color);
+    }
+
     Capsule copy() {
         return new Capsule(main.copy(), main.linked().map(LinkedCapsulePart::copy).orElse(null));
     }
