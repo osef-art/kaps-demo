@@ -1,7 +1,7 @@
 package com.mygdx.kaps.level;
 
 import java.util.*;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -44,41 +44,70 @@ class Grid {
     }
 
     private class MatchHandler {
-        private final int MINIMUM_MATCH_LENGTH;
+        private class MatchPattern {
+            private final Set<Function<Coordinates, Coordinates>> relativeTiles;
 
-        public MatchHandler(int length) {
-            MINIMUM_MATCH_LENGTH = length;
+            @SafeVarargs
+            private MatchPattern(Function<Coordinates, Coordinates>... tiles) {
+                relativeTiles = Arrays.stream(tiles).collect(Collectors.toSet());
+                relativeTiles.add(Function.identity());
+            }
+
+            private boolean isMatch(Set<? extends GridObject> match) {
+                return match.size() >= relativeTiles.size() && match.stream().map(GridObject::color).distinct().count() == 1;
+            }
         }
 
-        private boolean isMatch(Set<? extends GridObject> match) {
-            return match.size() >= MINIMUM_MATCH_LENGTH && match.stream().map(GridObject::color).distinct().count() == 1;
+        private final List<MatchPattern> patterns;
+
+        public MatchHandler() {
+            var rowPattern = new MatchPattern(
+              c -> c.addedTo(1, 0),
+              c -> c.addedTo(2, 0),
+              c -> c.addedTo(3, 0)
+            );
+            var columnPattern = new MatchPattern(
+              c -> c.addedTo(0, -1),
+              c -> c.addedTo(0, -2),
+              c -> c.addedTo(0, -3)
+            );
+            var squarePattern = new MatchPattern(
+              c -> c.addedTo(-1, -1),
+              c -> c.addedTo(-1, 0),
+              c -> c.addedTo(-1, 1),
+              c -> c.addedTo(0, 1),
+              c -> c.addedTo(1, 1),
+              c -> c.addedTo(1, 0),
+              c -> c.addedTo(1, -1),
+              c -> c.addedTo(0, -1)
+            );
+            patterns = Arrays.asList(rowPattern, columnPattern, squarePattern);
         }
 
-        private Set<? extends GridObject> rangesFoundIn(Grid grid,
-                                                        BiFunction<GridObject, Integer, Coordinates> browsingPattern) {
+        private Set<? extends GridObject> matchesFoundIn(Grid grid, MatchPattern pattern) {
             return grid.stack().stream()
-              // map to a set of objects that are within range
-              .map(c -> IntStream.range(0, MINIMUM_MATCH_LENGTH)
-                .mapToObj(n -> get(browsingPattern.apply(c, n)))
+              // map each object to a set of objects that follows pattern
+              .map(o -> pattern.relativeTiles.stream()
+                .map(c -> c.apply(o.coordinates()))
+                .map(Grid.this::get)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(Collectors.toUnmodifiableSet())
+                .collect(Collectors.toSet())
               )
-              .filter(this::isMatch)
+              .filter(pattern::isMatch)
               .flatMap(Collection::stream)
               .collect(Collectors.toUnmodifiableSet());
         }
 
-        private Set<? extends GridObject> rowsFoundIn(Grid grid) {
-            return rangesFoundIn(grid, (c, n) -> c.coordinates().mapped(x -> x + n, y -> y));
-        }
-
-        private Set<? extends GridObject> columnsFoundIn(Grid grid) {
-            return rangesFoundIn(grid, (c, n) -> c.coordinates().mapped(x -> x, y -> y + n));
+        private Set<? extends GridObject> allMatchesFoundIn(Grid grid) {
+            return patterns.stream()
+              .map(p -> matchesFoundIn(grid, p))
+              .flatMap(Collection::stream)
+              .collect(Collectors.toSet());
         }
     }
 
-    private final MatchHandler matchBrowser = new MatchHandler(4);
+    private final MatchHandler matchBrowser = new MatchHandler();
     private final List<Row> rows;
 
     Grid(int columns, int rows) {
@@ -176,15 +205,11 @@ class Grid {
     }
 
     boolean containsMatches() {
-        return Stream.of(matchBrowser.rowsFoundIn(this), matchBrowser.columnsFoundIn(this))
-          .mapToLong(Collection::size)
-          .sum() > 0;
+        return matchBrowser.allMatchesFoundIn(this).size() > 0;
     }
 
     private void deleteMatches() {
-        Stream.of(matchBrowser.rowsFoundIn(this), matchBrowser.columnsFoundIn(this))
-          .flatMap(Collection::stream)
-          .forEach(this::hit);
+        matchBrowser.allMatchesFoundIn(this).forEach(this::hit);
     }
 
     void deleteMatchesRecursively() {
