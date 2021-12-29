@@ -17,8 +17,21 @@ public class MainScreen extends ApplicationAdapter {
     private InputHandler inputs;
     public static SoundStream soundStream;
 
+    private final String[] args;
     private Level game;
     private GameView view;
+
+    public MainScreen(String... args) {
+        this.args = args;
+    }
+
+    private Level loadedLevel() {
+        if (args.length > 0 && args[0].equals("-l")) {
+            int lvl = args.length > 1 ? Integer.parseInt(args[1]) : new Random().nextInt(21);
+            return LevelLoader.loadFrom("android/assets/levels/level" + lvl);
+        }
+        return LevelLoader.randomLevel(6, 15, 10);
+    }
 
     @Override
     public void create() {
@@ -26,9 +39,7 @@ public class MainScreen extends ApplicationAdapter {
         camera.setToOrtho(true);
         camera.translate(0, Gdx.graphics.getHeight());
 
-        game = new Random().nextBoolean() ?
-                 LevelLoader.loadFrom("android/assets/levels/level" + new Random().nextInt(21)) :
-                 LevelLoader.randomLevel(6, 15, 10);
+        game = loadedLevel();
         view = new GameView(game);
         inputs = new InputHandler(game);
 
