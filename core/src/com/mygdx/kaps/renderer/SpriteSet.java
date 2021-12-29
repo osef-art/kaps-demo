@@ -45,7 +45,7 @@ public class SpriteSet implements Animated, RenderableDynamic {
     }
 
     private void updateSprites() {
-        IntStream.range(0, 8).forEach(n -> {
+        IntStream.range(0, animationLength).forEach(n -> {
             String path = this.path.toString() + (animationLength >= 9 && n < 10 ? "0" : "") + n + ".png";
             var sprite = new Sprite(new Texture(path));
             sprite.flip(false, true);

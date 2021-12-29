@@ -6,6 +6,7 @@ import com.mygdx.kaps.time.Timer;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Level {
@@ -26,22 +27,23 @@ public class Level {
         }
     }
     private final LevelParameters parameters;
-    private final LinkedList<Capsule> upcomingCapsules = new LinkedList<>();
+    private final LinkedList<Capsule> upcomingCapsules;
     private final List<Capsule> fallingCapsules = new ArrayList<>();
-    private final List<Timer> timers = new ArrayList<>();
+    private final List<Timer> timers;
     private final Set<Color> colorSet;
     private final Grid grid;
 
     Level(Grid grid, Set<Color> colors) {
-        parameters = new LevelParameters(this);
-        colorSet = colors;
         this.grid = grid;
-        IntStream.range(0, 2)
-          .forEach(n -> upcomingCapsules.add(Capsule.randomNewInstance(this)));
+        colorSet = colors;
+        parameters = new LevelParameters(this);
+        upcomingCapsules = IntStream.range(0, 2)
+          .mapToObj(n -> Capsule.randomNewInstance(this))
+          .collect(Collectors.toCollection(LinkedList::new));
 
         var dippingTimer = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
         var droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingCapsule);
-        timers.addAll(Arrays.asList(dippingTimer, droppingTimer));
+        timers = Arrays.asList(dippingTimer, droppingTimer);
     }
 
     Set<Color> getColorSet() {

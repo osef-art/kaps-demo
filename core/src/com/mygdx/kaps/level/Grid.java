@@ -153,12 +153,15 @@ class Grid {
     }
 
     private void clear(Coordinates coordinates) {
+        detach(coordinates);
         rows.get(coordinates.y).clear(coordinates.x);
     }
 
     private void hit(Coordinates coordinates) {
-        detach(coordinates);
-        clear(coordinates);
+        get(coordinates).ifPresent(o -> {
+            o.takeHit();
+            if (o.isDestroyed()) clear(coordinates);
+        });
     }
 
     private void detach(Coordinates coordinates) {

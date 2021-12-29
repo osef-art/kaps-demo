@@ -5,25 +5,15 @@ import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.renderer.SpriteSet;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public abstract class Germ extends GridObject {
     enum GermKind {
-        BASIC,
-        WALL(4),
-        THORN,
-        VIRUS;
-
-        private final int maxHealth;
-
-        GermKind(int max) {
-            maxHealth = max;
-        }
-
-        GermKind() {
-            this(1);
-        }
+        BASIC, WALL, THORN, VIRUS;
 
         @Override
         public String toString() {
@@ -56,29 +46,14 @@ public abstract class Germ extends GridObject {
     }
 
     private final SpriteSet sprites;
-    private final int maxHealth;
-    private int health;
-
-    private Germ(Coordinates coordinates, Color color, GermKind kind, int health) {
-        super(coordinates, color);
-        if (health <= 0 || kind.maxHealth < health)
-            throw new IllegalArgumentException("Invalid health: " + health + " / " + kind.maxHealth);
-        maxHealth = kind.maxHealth;
-        this.health = health;
-        sprites = new SpriteSet("android/assets/sprites/" + color.id() + "/germs/" + GermKind.BASIC + "/idle_", 8, 0);
-//        sprites = new SpriteSet("android/assets/sprites/" + color.id() + "/germs/" + kind + "/idle_", 8, 0);
-    }
 
     Germ(Coordinates coordinates, Color color, GermKind kind) {
-        this(coordinates, color, kind, kind.maxHealth);
-    }
-
-    Germ(Color color, GermKind kind, int health) {
-        this(new Coordinates(), color, kind, health);
+        super(coordinates, color);
+        sprites = new SpriteSet("android/assets/sprites/" + color.id() + "/germs/" + kind + "/idle_", 8, 0);
     }
 
     Germ(Color color, GermKind kind) {
-        this(color, kind, kind.maxHealth);
+        this(new Coordinates(), color, kind);
     }
 
     static Germ ofSymbol(char symbol, Set<Color> colors) {
@@ -99,10 +74,6 @@ public abstract class Germ extends GridObject {
     public boolean isCapsule() {
         return false;
     }
-
-    public void takeHit() {
-        if (health > 0) health--;
-    }
 }
 
 
@@ -117,12 +88,37 @@ class BasicGerm extends Germ {
 }
 
 class WallGerm extends Germ {
-    public WallGerm(Color color) {
-        super(color, GermKind.WALL);
-    }
+    private static final int maxHealth = 4;
+    private final List<SpriteSet> spriteSets;
+    private int health;
 
     public WallGerm(Color color, int health) {
-        super(color, GermKind.WALL, health);
+        super(color, GermKind.BASIC);
+        if (health <= 0 || maxHealth < health)
+            throw new IllegalArgumentException("Invalid health: " + health + " / " + maxHealth);
+
+        this.health = health;
+        spriteSets = IntStream.range(0, maxHealth)
+          .mapToObj(n -> new SpriteSet(
+            "android/assets/sprites/" + color.id() + "/germs/" + GermKind.WALL + (n + 1) + "/idle_", n > 1 ? 4 : 8, 0)
+          ).collect(Collectors.toList());
+    }
+
+    public WallGerm(Color color) {
+        this(color, maxHealth);
+    }
+
+    @Override
+    public Sprite getSprite() {
+        return spriteSets.get(health - 1).getCurrentSprite();
+    }
+
+    public boolean isDestroyed() {
+        return health <= 0;
+    }
+
+    public void takeHit() {
+        if (health > 0) health--;
     }
 }
 
