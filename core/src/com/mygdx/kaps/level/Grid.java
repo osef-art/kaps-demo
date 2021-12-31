@@ -228,11 +228,13 @@ class Grid {
               var canDip = c.orientation().isVertical() ?
                              c.atLeastOneVerify(hasEmptyTileBelow) :
                              c.verify(hasEmptyTileBelow);
-              if (canDip) c.applyToBoth(p -> {
-                  clear(p.coordinates());
-                  p.coordinates().add(0, -1);
-                  put(p);
-              });
+              if (canDip) {
+                  c.applyToBoth(p -> clear(p.coordinates()));
+                  c.applyToBoth(p -> {
+                      p.coordinates().add(0, -1);
+                      put(p);
+                  });
+              }
               return canDip;
           })
           .reduce(Boolean::logicalOr)
