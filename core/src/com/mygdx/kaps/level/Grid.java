@@ -133,6 +133,7 @@ class Grid {
         );
     }
 
+    // getters
     int getWidth() {
         return rows.get(0).width();
     }
@@ -173,6 +174,7 @@ class Grid {
         return stack().stream().filter(IGridObject::isGerm).count();
     }
 
+    // tiles operations
     private void set(Coordinates coordinates, GridObject obj) {
         rows.get(coordinates.y).set(coordinates.x, obj);
 //        obj.coordinates().set(coordinates);
@@ -204,6 +206,7 @@ class Grid {
         });
     }
 
+    // stack operations
     boolean containsMatches() {
         return matchBrowser.allMatchesFoundIn(this).size() > 0;
     }
