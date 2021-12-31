@@ -98,7 +98,7 @@ public class GameView implements Renderable {
     }
 
     private void renderFallingCapsules() {
-        model.fallingCapsules().forEach(c -> {
+        model.controlledCapsules().forEach(c -> {
             c.preview().ifPresent(prev -> prev.applyToBoth(p -> renderCapsulePart(p, .5f)));
             c.applyToBoth(this::renderCapsulePart);
         });

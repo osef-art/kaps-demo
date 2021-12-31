@@ -20,7 +20,7 @@ public class Level {
 
         public void togglePreview() {
             enablePreview = !enablePreview;
-            model.fallingCapsules.forEach(c -> {
+            model.controlledCapsules.forEach(c -> {
                 if (enablePreview) model.updatePreview(c);
                 else c.clearPreview();
             });
@@ -28,7 +28,7 @@ public class Level {
     }
     private final LevelParameters parameters;
     private final LinkedList<Capsule> upcomingCapsules;
-    private final List<Capsule> fallingCapsules = new ArrayList<>();
+    private final List<Capsule> controlledCapsules = new ArrayList<>();
     private final List<Timer> timers;
     private final Set<Color> colorSet;
     private final Grid grid;
@@ -41,9 +41,9 @@ public class Level {
           .mapToObj(n -> Capsule.randomNewInstance(this))
           .collect(Collectors.toCollection(LinkedList::new));
 
-        var dippingTimer = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
+        var gridRefresher = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
         var droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingCapsule);
-        timers = Arrays.asList(dippingTimer, droppingTimer);
+        timers = Arrays.asList(gridRefresher, droppingTimer);
     }
 
     Set<Color> getColorSet() {
@@ -58,8 +58,8 @@ public class Level {
         return parameters;
     }
 
-    List<Capsule> fallingCapsules() {
-        return fallingCapsules;
+    List<Capsule> controlledCapsules() {
+        return controlledCapsules;
     }
 
     List<Capsule> upcoming() {
@@ -81,7 +81,7 @@ public class Level {
      */
     private void performIfPossible(Predicate<Capsule> selection, Predicate<Capsule> condition,
                                    Consumer<Capsule> action, Consumer<Capsule> alternative) {
-        fallingCapsules.stream()
+        controlledCapsules.stream()
           .filter(selection)
           .forEach(c -> {
               if (condition.test(c)) action.accept(c);
@@ -147,7 +147,7 @@ public class Level {
 
     // update
     private boolean checkForGameOver() {
-        return fallingCapsules.stream()
+        return controlledCapsules.stream()
           .filter(Predicate.not(Capsule::isDropping))
           .map(c -> !c.canStandIn(grid))
           .reduce(Boolean::logicalOr)
@@ -162,19 +162,19 @@ public class Level {
         var upcoming = upcomingCapsules.removeFirst();
         updatePreview(upcoming);
         upcomingCapsules.add(Capsule.randomNewInstance(this));
-        fallingCapsules.add(upcoming);
+        controlledCapsules.add(upcoming);
     }
 
     private void accept(Capsule capsule) {
         capsule.applyToBoth(grid::put);
         capsule.freeze();
         grid.deleteMatchesRecursively();
-        fallingCapsules.forEach(this::updatePreview);
+        controlledCapsules.forEach(this::updatePreview);
     }
 
     public void update() {
-        fallingCapsules.removeIf(Capsule::isFrozen);
-        if (fallingCapsules.stream().noneMatch(Predicate.not(Capsule::isDropping))) spawnCapsule();
+        controlledCapsules.removeIf(Capsule::isFrozen);
+        if (controlledCapsules.stream().noneMatch(Predicate.not(Capsule::isDropping))) spawnCapsule();
         if (checkForGameOver()) {
             System.out.println("LEVEL CLEARED !");
             System.exit(0);
