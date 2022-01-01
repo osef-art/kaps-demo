@@ -8,14 +8,12 @@ import com.mygdx.kaps.controller.InputHandler;
 import com.mygdx.kaps.level.GameView;
 import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.level.LevelLoader;
-import com.mygdx.kaps.sound.SoundStream;
 
 import java.util.Random;
 
 public class MainScreen extends ApplicationAdapter {
     public static OrthographicCamera camera;
     private InputHandler inputs;
-    public static SoundStream soundStream;
 
     private final String[] args;
     private Level game;
@@ -44,7 +42,6 @@ public class MainScreen extends ApplicationAdapter {
         inputs = new InputHandler(game);
 
         Gdx.input.setInputProcessor(inputs);
-        soundStream = new SoundStream();
     }
 
     @Override
