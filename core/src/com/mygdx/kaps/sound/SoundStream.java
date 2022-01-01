@@ -27,9 +27,10 @@ public class SoundStream {
         }
 
         SoundStore(int set) {
-            if (0 <= set) throw new IllegalArgumentException("Invalid set number.");
+            if (set <= 0) throw new IllegalArgumentException("Invalid set number.");
             paths = IntStream.range(0, set)
-              .mapToObj(n -> "android/assets/sounds/" + this + n + ".wav")
+              .mapToObj(n -> toString() + (set > 1 ? n : ""))
+              .map(name -> "android/assets/sounds/" + name + ".wav")
               .collect(Collectors.toSet());
         }
 
@@ -47,6 +48,6 @@ public class SoundStream {
     public void play(String path) {
         if (sound != null) sound.dispose();
         sound = Gdx.audio.newSound(Gdx.files.internal(path));
-        sound.setVolume(sound.play(), 0.015f);
+        sound.setVolume(sound.play(), 0.5f);
     }
 }

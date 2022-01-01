@@ -211,15 +211,8 @@ class Grid {
         return matchBrowser.allMatchesFoundIn(this).size() > 0;
     }
 
-    private void deleteMatches() {
+    void deleteMatches() {
         matchBrowser.allMatchesFoundIn(this).forEach(this::hit);
-    }
-
-    void deleteMatchesRecursively() {
-        do {
-            deleteMatches();
-            dropEveryCapsule();
-        } while (containsMatches());
     }
 
     void dropEveryCapsule() {

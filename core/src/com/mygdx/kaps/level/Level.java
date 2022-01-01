@@ -26,9 +26,11 @@ public class Level {
             });
         }
     }
+
     private final LevelParameters parameters;
     private final LinkedList<Capsule> upcomingCapsules;
     private final List<Capsule> controlledCapsules = new ArrayList<>();
+    private final List<LevelObserver> observers;
     private final List<Timer> timers;
     private final Set<Color> colorSet;
     private final Grid grid;
@@ -44,6 +46,8 @@ public class Level {
         var gridRefresher = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
         var droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingCapsule);
         timers = Arrays.asList(gridRefresher, droppingTimer);
+        observers = new ArrayList<>();
+        observers.add(new SoundPlayerObserver());
     }
 
     Set<Color> getColorSet() {
@@ -107,14 +111,14 @@ public class Level {
         performIfPossible(Predicate.not(Capsule::isDropping), c -> c.movedLeft().canStandIn(grid), c -> {
             c.moveLeft();
             updatePreview(c);
-        });
+        }, c -> observers.forEach(LevelObserver::onIllegalMove));
     }
 
     public void moveCapsuleRight() {
         performIfPossible(Predicate.not(Capsule::isDropping), c -> c.movedRight().canStandIn(grid), c -> {
             c.moveRight();
             updatePreview(c);
-        });
+        }, c -> observers.forEach(LevelObserver::onIllegalMove));
     }
 
     public void dipOrAcceptCapsule() {
@@ -127,19 +131,26 @@ public class Level {
 
     public void flipCapsule() {
         performIfPossible(Predicate.not(Capsule::isDropping), c -> c.flipped().canStandIn(grid), c -> {
+              observers.forEach(LevelObserver::onCapsuleFlipped);
               c.flip();
               updatePreview(c);
           },
           c -> performIfPossible(f -> true, f -> f.flipped().movedBack().canStandIn(grid), f -> {
-              f.flip();
-              f.moveForward();
-              updatePreview(f);
-          })
+                observers.forEach(LevelObserver::onCapsuleFlipped);
+                f.flip();
+                f.moveForward();
+                updatePreview(f);
+            },
+            f -> observers.forEach(LevelObserver::onIllegalMove)
+          )
         );
     }
 
     public void dropCapsule() {
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> true, Capsule::startDropping);
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> true, capsule -> {
+            observers.forEach(LevelObserver::onCapsuleDrop);
+            capsule.startDropping();
+        });
     }
 
     public void holdCapsule() {
@@ -168,7 +179,13 @@ public class Level {
     private void accept(Capsule capsule) {
         capsule.applyToBoth(grid::put);
         capsule.freeze();
-        grid.deleteMatchesRecursively();
+        observers.forEach(LevelObserver::onCapsuleAccepted);
+
+        while (grid.containsMatches()) {
+            observers.forEach(LevelObserver::onMatchDeleted);
+            grid.deleteMatches();
+            grid.dropEveryCapsule();
+        }
         controlledCapsules.forEach(this::updatePreview);
     }
 
