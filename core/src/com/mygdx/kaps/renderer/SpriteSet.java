@@ -29,7 +29,13 @@ public class SpriteSet implements Animated, RenderableDynamic {
         animationLength = frames;
         this.path = Path.of(path);
 
-        updateSprites();
+        IntStream.range(0, animationLength).forEach(n -> {
+            var sprite = new Sprite(new Texture(
+              this.path + (animationLength >= 9 && n < 10 ? "0" : "") + n + ".png"
+            ));
+            sprite.flip(false, true);
+            sprites[n] = sprite;
+        });
     }
 
     public static SpriteSet oneShot(String path, int frames, double speed) {
@@ -42,15 +48,6 @@ public class SpriteSet implements Animated, RenderableDynamic {
 
     public Sprite getCurrentSprite() {
         return sprites[currentFrame];
-    }
-
-    private void updateSprites() {
-        IntStream.range(0, animationLength).forEach(n -> {
-            String path = this.path.toString() + (animationLength >= 9 && n < 10 ? "0" : "") + n + ".png";
-            var sprite = new Sprite(new Texture(path));
-            sprite.flip(false, true);
-            sprites[n] = sprite;
-        });
     }
 
     @Override
