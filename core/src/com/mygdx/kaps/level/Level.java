@@ -101,19 +101,6 @@ public class Level {
         rejected.forEach(alternative);
     }
 
-    /**
-     * Executes on each level's capsules matching {@param selection} the code conveyed by {@param action}
-     * if  {@param condition} is true
-     *
-     * @param selection the capsules on which act
-     * @param condition the predicate to match to execute {@param action}
-     * @param action    the action to execute on each falling Capsule
-     */
-    private void performIfPossible(Predicate<Capsule> selection, Predicate<Capsule> condition, Consumer<Capsule> action) {
-        performIfPossible(selection, condition, action, p -> {
-        });
-    }
-
     // capsule moves
     public void moveCapsuleLeft() {
         performIfPossible(Predicate.not(Capsule::isDropping), c -> c.movedLeft().canStandIn(grid), c -> {
@@ -130,8 +117,7 @@ public class Level {
     }
 
     public void dipOrAcceptCapsule() {
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.dipped().canStandIn(grid), Capsule::dip,
-          this::acceptThenSpawnThenCheckForGameOver);
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.dipped().canStandIn(grid), Capsule::dip, this::acceptAndSpawnNew);
     }
 
     public void flipCapsule() {
@@ -154,14 +140,14 @@ public class Level {
     public void dropCapsule() {
         observers.forEach(LevelObserver::onCapsuleDrop);
         controlledCapsules.forEach(Capsule::startDropping);
-        acceptThenSpawnThenCheckForGameOver(controlledCapsules.get(0));
+        acceptAndSpawnNew(controlledCapsules.get(0));
     }
 
     public void holdCapsule() {
     }
 
     private void dipOrFreezeGridCapsules() {
-
+        grid.dipOrFreezeDroppingCapsules();
     }
 
     // update
@@ -190,6 +176,7 @@ public class Level {
             grid.deleteMatches();
             grid.initEveryCapsuleDropping();
         }
+        controlledCapsules.forEach(this::updatePreview);
     }
 
     private void accept(Capsule capsule) {
@@ -198,10 +185,9 @@ public class Level {
         capsule.applyToBoth(grid::put);
 //        capsule.freeze();
 //        deleteMatchesRecursively();
-        controlledCapsules.forEach(this::updatePreview);
     }
 
-    private void acceptThenSpawnThenCheckForGameOver(Capsule capsule) {
+    private void acceptAndSpawnNew(Capsule capsule) {
         accept(capsule);
 
         if (controlledCapsules.isEmpty()) {

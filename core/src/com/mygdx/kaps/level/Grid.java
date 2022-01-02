@@ -236,6 +236,27 @@ class Grid {
           });
     }
 
+    void dipOrFreezeDroppingCapsules() {
+        // TODO: optimize and clean (and prev method too)
+        stack().stream()
+          .filter(IGridObject::isCapsule)
+          .map(o -> (CapsulePart) o)
+          .filter(CapsulePart::isDropping)
+          .forEach(c -> {
+              Predicate<CapsulePart> hasEmptyTileBelow = p -> isEmptyTile(p.coordinates().addedTo(0, -1));
+              var canDip = c.orientation().isVertical() ?
+                             c.atLeastOneVerify(hasEmptyTileBelow) :
+                             c.verify(hasEmptyTileBelow);
+              if (canDip) {
+                  c.applyToBoth(p -> clear(p.coordinates()));
+                  c.applyToBoth(p -> {
+                      p.dip();
+                      put(p);
+                  });
+              } else c.freeze();
+          });
+    }
+
     void updateSprites() {
         stack().forEach(IGridObject::updateSprite);
     }
