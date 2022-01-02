@@ -232,26 +232,32 @@ class Grid {
         if (couldDip) initEveryCapsuleDropping();
     }
 
-    void dipOrFreezeDroppingCapsules() {
-        stack().stream()
+    boolean dipOrFreezeDroppingCapsules() {
+        return stack().stream()
           .filter(IGridObject::isCapsule)
           .map(o -> (CapsulePart) o)
           .filter(CapsulePart::isDropping)
           .sorted(Comparator.comparingInt(p -> p.coordinates().y))
-          .forEach(c -> {
+          .map(c -> {
               Predicate<CapsulePart> hasEmptyTileBelow = p -> p.dipped().canStandIn(this);
               var canDip = c.orientation().isVertical() ?
                              c.atLeastOneVerify(hasEmptyTileBelow) :
                              c.verify(hasEmptyTileBelow);
-              if (c.isDropping() && canDip) {
+              if (c.isDropping()) if (canDip) {
                   c.applyToBoth(p -> clear(p.coordinates()));
                   c.applyToBoth(p -> {
                       p.dip();
                       put(p);
                   });
                   c.linked().ifPresent(CapsulePart::freeze);
-              } else c.freeze();
-          });
+              } else {
+                  c.freeze();
+                  return true;
+              }
+              return false;
+          })
+          .reduce(Boolean::logicalOr)
+          .orElse(false);
     }
 
     void updateSprites() {

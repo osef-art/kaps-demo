@@ -5,7 +5,7 @@ import com.mygdx.kaps.sound.SoundStream;
 interface LevelObserver {
     void onCapsuleFlipped();
 
-    void onCapsuleAccepted();
+    void onCapsuleFreeze();
 
     void onMatchDeleted();
 
@@ -23,7 +23,7 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
-    public void onCapsuleAccepted() {
+    public void onCapsuleFreeze() {
         stream.play(SoundStream.SoundStore.IMPACT);
     }
 

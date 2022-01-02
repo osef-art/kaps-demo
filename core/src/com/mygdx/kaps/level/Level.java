@@ -45,7 +45,7 @@ public class Level {
           .collect(Collectors.toCollection(LinkedList::new));
 
         gridRefresher = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
-        Timer droppingTimer = Timer.ofMilliseconds(50, this::dipOrFreezeGridCapsules);
+        Timer droppingTimer = Timer.ofMilliseconds(50, this::dipOrFreezeDroppingCapsules);
         timers = Arrays.asList(gridRefresher, droppingTimer);
         observers = new ArrayList<>();
         observers.add(new SoundPlayerObserver());
@@ -117,7 +117,10 @@ public class Level {
     }
 
     public void dipOrAcceptCapsule() {
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.dipped().canStandIn(grid), Capsule::dip, this::acceptAndSpawnNew);
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.dipped().canStandIn(grid), Capsule::dip, c -> {
+            acceptAndSpawnNew(c);
+            observers.forEach(LevelObserver::onCapsuleFreeze);
+        });
     }
 
     public void flipCapsule() {
@@ -147,13 +150,15 @@ public class Level {
     public void holdCapsule() {
     }
 
-    private void dipOrFreezeGridCapsules() {
-        grid.dipOrFreezeDroppingCapsules();
-        deleteMatchesRecursively();
+    private void dipOrFreezeDroppingCapsules() {
+        if (grid.dipOrFreezeDroppingCapsules()) {
+            observers.forEach(LevelObserver::onCapsuleFreeze);
+            deleteMatchesIfAny();
 
-        if (gameIsOver()) {
-            System.out.println("LEVEL CLEARED !");
-            System.exit(0);
+            if (gameIsOver()) {
+                System.out.println("LEVEL CLEARED !");
+                System.exit(0);
+            }
         }
     }
 
@@ -177,7 +182,7 @@ public class Level {
         controlledCapsules.add(upcoming);
     }
 
-    private void deleteMatchesRecursively() {
+    private void deleteMatchesIfAny() {
         if (grid.containsMatches()) {
             observers.forEach(LevelObserver::onMatchDeleted);
             grid.deleteMatches();
@@ -186,8 +191,8 @@ public class Level {
     }
 
     private void accept(Capsule capsule) {
-        observers.forEach(LevelObserver::onCapsuleAccepted);
-        controlledCapsules.removeIf(c-> c.equals(capsule));
+        controlledCapsules.removeIf(c -> c.equals(capsule));
+        capsule.startDropping();
         capsule.applyToBoth(grid::put);
     }
 
