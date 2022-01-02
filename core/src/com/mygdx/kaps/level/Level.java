@@ -45,7 +45,7 @@ public class Level {
           .collect(Collectors.toCollection(LinkedList::new));
 
         gridRefresher = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
-        Timer droppingTimer = Timer.ofMilliseconds(10, this::dipOrFreezeGridCapsules);
+        Timer droppingTimer = Timer.ofMilliseconds(50, this::dipOrFreezeGridCapsules);
         timers = Arrays.asList(gridRefresher, droppingTimer);
         observers = new ArrayList<>();
         observers.add(new SoundPlayerObserver());
@@ -150,6 +150,11 @@ public class Level {
     private void dipOrFreezeGridCapsules() {
         grid.dipOrFreezeDroppingCapsules();
         deleteMatchesRecursively();
+
+        if (gameIsOver()) {
+            System.out.println("LEVEL CLEARED !");
+            System.exit(0);
+        }
     }
 
     // update
@@ -192,10 +197,6 @@ public class Level {
         if (controlledCapsules.isEmpty()) {
             gridRefresher.reset();
             spawnCapsule();
-        }
-        if (gameIsOver()) {
-            System.out.println("LEVEL CLEARED !");
-            System.exit(0);
         }
     }
 
