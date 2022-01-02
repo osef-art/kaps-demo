@@ -152,13 +152,16 @@ public class Level {
     }
 
     public void dropCapsule() {
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> true, capsule -> {
-            observers.forEach(LevelObserver::onCapsuleDrop);
-            capsule.startDropping();
-        });
+        observers.forEach(LevelObserver::onCapsuleDrop);
+        controlledCapsules.forEach(Capsule::startDropping);
+        acceptThenSpawnThenCheckForGameOver(controlledCapsules.get(0));
     }
 
     public void holdCapsule() {
+    }
+
+    private void dipOrFreezeGridCapsules() {
+
     }
 
     // update
@@ -193,8 +196,8 @@ public class Level {
         observers.forEach(LevelObserver::onCapsuleAccepted);
         controlledCapsules.removeIf(c-> c.equals(capsule));
         capsule.applyToBoth(grid::put);
-        capsule.freeze();
-        deleteMatchesRecursively();
+//        capsule.freeze();
+//        deleteMatchesRecursively();
         controlledCapsules.forEach(this::updatePreview);
     }
 
