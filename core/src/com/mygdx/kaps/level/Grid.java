@@ -216,24 +216,20 @@ class Grid {
     }
 
     void initEveryCapsuleDropping() {
-        stack().stream()
+        var couldDip = stack().stream()
           .filter(IGridObject::isCapsule)
           .map(o -> (CapsulePart) o)
           .filter(Predicate.not(CapsulePart::isDropping))
-          // TODO: replace by peek
-          .map(c -> {
-              Predicate<CapsulePart> hasEmptyTileOrDroppingObjectBelow = p -> isEmptyTile(p.coordinates().addedTo(0, -1)) ||
-                                                                                get(p.coordinates().addedTo(0, -1)).map(GridObject::isDropping).orElse(false);
-              var canDip = c.orientation().isVertical() ?
-                             c.atLeastOneVerify(hasEmptyTileOrDroppingObjectBelow) :
-                             c.verify(hasEmptyTileOrDroppingObjectBelow);
-              if (canDip) c.initDropping();
-              return canDip;
+          .filter(c -> {
+              Predicate<CapsulePart> hasEmptyTileOrDroppingObjectBelow =
+                p -> isEmptyTile(p.coordinates().addedTo(0, -1)) || get(p.coordinates().addedTo(0, -1)).map(GridObject::isDropping).orElse(false);
+              return c.orientation().isVertical() ?
+                       c.atLeastOneVerify(hasEmptyTileOrDroppingObjectBelow) :
+                       c.verify(hasEmptyTileOrDroppingObjectBelow);
           })
-          .reduce(Boolean::logicalOr)
-          .ifPresent(couldDip -> {
-              if (couldDip) initEveryCapsuleDropping();
-          });
+          .peek(CapsulePart::initDropping)
+          .count() > 0;
+        if (couldDip) initEveryCapsuleDropping();
     }
 
     void dipOrFreezeDroppingCapsules() {
