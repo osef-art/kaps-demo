@@ -23,8 +23,8 @@ public class GameView implements Renderable {
         private Dimensions(Level lvl, float screenWidth, float screenHeight) {
             Objects.requireNonNull(lvl);
             Rectangle screen = new Rectangle(0, 0, screenWidth, screenHeight);
-            float topSpaceHeight = screenHeight * 0.8f;
-            float gridHeight = topSpaceHeight * 0.9f;
+            float topSpaceHeight = screenHeight * .8f;
+            float gridHeight = topSpaceHeight * .9f;
             float tileSize = gridHeight / lvl.getGrid().getHeight();
             float gridWidth = lvl.getGrid().getWidth() * tileSize;
             float infoZoneHeight = (screen.height - topSpaceHeight) / 2;

@@ -27,7 +27,7 @@ public class TextRendererAdaptor implements RendererAdapter {
         );
         font = generator.generateFont(parameter);
         shade = generator.generateFont(parameter);
-        shade.setColor(0, 0, 0, 0.25f);
+        shade.setColor(0, 0, 0, .25f);
         generator.dispose();
     }
 
@@ -44,12 +44,12 @@ public class TextRendererAdaptor implements RendererAdapter {
     }
 
     public void drawTextWithShadow(String txt, float x, float y) {
-        spra.renderText(txt, shade, x, y + fontSize * 0.2f);
+        spra.renderText(txt, shade, x, y + fontSize * .2f);
         drawText(txt, x, y);
     }
 
     public void drawTextWithShadow(String txt, float x, float y, float width, float height) {
-        spra.renderText(txt, shade, x, y + fontSize * 0.2f, width, height - fontSize * 2f);
+        spra.renderText(txt, shade, x, y + fontSize * .2f, width, height - fontSize * 2f);
         drawText(txt, x, y, width, height);
     }
 

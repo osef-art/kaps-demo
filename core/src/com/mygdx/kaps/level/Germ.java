@@ -13,10 +13,10 @@ import java.util.stream.IntStream;
 
 public abstract class Germ extends GridObject {
     enum GermKind {
-        BASIC(0.1f),
-        WALL(0.15f),
-        THORN(0.125f),
-        VIRUS(0.15f),
+        BASIC(.1f),
+        WALL(.15f),
+        THORN(.125f),
+        VIRUS(.15f),
         ;
 
         private final float animationSpeed;
@@ -113,7 +113,7 @@ class WallGerm extends Germ {
         animations = IntStream.range(0, maxHealth).mapToObj(n -> new AnimatedSprite(
           "android/assets/sprites/" + color.id() + "/germs/" + GermKind.WALL + (n + 1) + "/idle_",
           n > 1 ? 4 : 8,
-          n > 1 ? .2f : 0.15f
+          n > 1 ? .2f : .15f
         )).collect(Collectors.toList());
     }
 
