@@ -215,27 +215,24 @@ class Grid {
         matchBrowser.allMatchesFoundIn(this).forEach(this::hit);
     }
 
-    void dropEveryCapsule() {
+    void initEveryCapsuleDropping() {
         stack().stream()
           .filter(IGridObject::isCapsule)
           .map(o -> (CapsulePart) o)
+          .filter(Predicate.not(CapsulePart::isDropping))
+          // TODO: replace by peek
           .map(c -> {
-              Predicate<CapsulePart> hasEmptyTileBelow = p -> isEmptyTile(p.coordinates().addedTo(0, -1));
+              Predicate<CapsulePart> hasEmptyTileOrDroppingObjectBelow = p -> isEmptyTile(p.coordinates().addedTo(0, -1)) ||
+                                                                                get(p.coordinates().addedTo(0, -1)).map(GridObject::isDropping).orElse(false);
               var canDip = c.orientation().isVertical() ?
-                             c.atLeastOneVerify(hasEmptyTileBelow) :
-                             c.verify(hasEmptyTileBelow);
-              if (canDip) {
-                  c.applyToBoth(p -> clear(p.coordinates()));
-                  c.applyToBoth(p -> {
-                      p.coordinates().add(0, -1);
-                      put(p);
-                  });
-              }
+                             c.atLeastOneVerify(hasEmptyTileOrDroppingObjectBelow) :
+                             c.verify(hasEmptyTileOrDroppingObjectBelow);
+              if (canDip) c.initDropping();
               return canDip;
           })
           .reduce(Boolean::logicalOr)
           .ifPresent(couldDip -> {
-              if (couldDip) dropEveryCapsule();
+              if (couldDip) initEveryCapsuleDropping();
           });
     }
 

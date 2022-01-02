@@ -83,12 +83,12 @@ class Capsule {
     }
 
     void startDropping() {
-        applyToBoth(CapsulePart::startDropping);
+        applyToBoth(CapsulePart::initDropping);
         clearPreview();
     }
 
     void freeze() {
-        applyToBoth(CapsulePart::stopDropping);
+        applyToBoth(CapsulePart::freeze);
         clearPreview();
     }
 
