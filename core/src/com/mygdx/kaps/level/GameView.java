@@ -76,7 +76,8 @@ public class GameView implements Renderable {
     private void renderLayout() {
         sra.drawRect(dimensions.sidekickZone, new Color(.3f, .3f, .375f, 1f));
         sra.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
-        sra.drawCircle(dimensions.nextBox, new Color(.45f, .45f, .6f, 1f));
+        sra.drawCircle(dimensions.nextBox.x + dimensions.nextBox.width / 2, dimensions.nextBox.y + dimensions.nextBox.height,
+          dimensions.nextBox.width, new Color(.45f, .45f, .6f, 1f));
     }
 
     private void renderGrid() {

@@ -108,6 +108,12 @@ class CapsulePart extends GridObject {
     void dip() {
         moveTowards(Orientation.DOWN);
     }
+
+    CapsulePart dipped() {
+        var test = copy();
+        test.dip();
+        return test;
+    }
 }
 
 class LinkedCapsulePart extends CapsulePart {

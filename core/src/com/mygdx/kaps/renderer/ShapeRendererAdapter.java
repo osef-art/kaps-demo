@@ -26,12 +26,12 @@ public class ShapeRendererAdapter implements RendererAdapter {
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
-    private void drawCircle(float x, float y, float radius, Color color) {
+    public void drawCircle(float x, float y, float radius, Color color) {
         draw(rd -> rd.circle(x, y, radius), color);
     }
 
     public void drawCircle(Rectangle zone, Color color) {
-        drawCircle(zone.x + zone.width / 2, zone.y + zone.height, Math.min(zone.width, zone.height), color);
+        drawCircle(zone.x + zone.width / 2, zone.y + zone.height / 2, Math.min(zone.width, zone.height) / 2, color);
     }
 
     public void drawArc(float x, float y, float radius, float start, float degrees, Color color) {

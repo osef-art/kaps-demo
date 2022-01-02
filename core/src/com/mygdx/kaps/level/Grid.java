@@ -221,11 +221,11 @@ class Grid {
           .map(o -> (CapsulePart) o)
           .filter(Predicate.not(CapsulePart::isDropping))
           .filter(c -> {
-              Predicate<CapsulePart> hasEmptyTileOrDroppingObjectBelow =
-                p -> isEmptyTile(p.coordinates().addedTo(0, -1)) || get(p.coordinates().addedTo(0, -1)).map(GridObject::isDropping).orElse(false);
+              Predicate<CapsulePart> hasEmptyTileBelow =
+                p -> p.dipped().canStandIn(this) || get(p.dipped().coordinates()).map(GridObject::isDropping).orElse(true);
               return c.orientation().isVertical() ?
-                       c.atLeastOneVerify(hasEmptyTileOrDroppingObjectBelow) :
-                       c.verify(hasEmptyTileOrDroppingObjectBelow);
+                       c.atLeastOneVerify(hasEmptyTileBelow) :
+                       c.verify(hasEmptyTileBelow);
           })
           .peek(CapsulePart::initDropping)
           .count() > 0;
@@ -233,22 +233,23 @@ class Grid {
     }
 
     void dipOrFreezeDroppingCapsules() {
-        // TODO: optimize and clean (and prev method too)
         stack().stream()
           .filter(IGridObject::isCapsule)
           .map(o -> (CapsulePart) o)
           .filter(CapsulePart::isDropping)
+          .sorted(Comparator.comparingInt(p -> p.coordinates().y))
           .forEach(c -> {
-              Predicate<CapsulePart> hasEmptyTileBelow = p -> isEmptyTile(p.coordinates().addedTo(0, -1));
+              Predicate<CapsulePart> hasEmptyTileBelow = p -> p.dipped().canStandIn(this);
               var canDip = c.orientation().isVertical() ?
                              c.atLeastOneVerify(hasEmptyTileBelow) :
                              c.verify(hasEmptyTileBelow);
-              if (canDip) {
+              if (c.isDropping() && canDip) {
                   c.applyToBoth(p -> clear(p.coordinates()));
                   c.applyToBoth(p -> {
                       p.dip();
                       put(p);
                   });
+                  c.linked().ifPresent(CapsulePart::freeze);
               } else c.freeze();
           });
     }
