@@ -45,7 +45,7 @@ public class Level {
           .collect(Collectors.toCollection(LinkedList::new));
 
         gridRefresher = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
-        Timer droppingTimer = Timer.ofMilliseconds(1, this::dipOrFreezeGridCapsules);
+        Timer droppingTimer = Timer.ofMilliseconds(100, this::dipOrFreezeGridCapsules);
         timers = Arrays.asList(gridRefresher, droppingTimer);
         observers = new ArrayList<>();
         observers.add(new SoundPlayerObserver());
@@ -138,6 +138,7 @@ public class Level {
     }
 
     public void dropCapsule() {
+        dipOrAcceptCapsule();
         observers.forEach(LevelObserver::onCapsuleDrop);
         controlledCapsules.forEach(Capsule::startDropping);
         acceptAndSpawnNew(controlledCapsules.get(0));
@@ -148,6 +149,7 @@ public class Level {
 
     private void dipOrFreezeGridCapsules() {
         grid.dipOrFreezeDroppingCapsules();
+        deleteMatchesRecursively();
     }
 
     // update
@@ -171,20 +173,17 @@ public class Level {
     }
 
     private void deleteMatchesRecursively() {
-        while (grid.containsMatches()) {
+        if (grid.containsMatches()) {
             observers.forEach(LevelObserver::onMatchDeleted);
             grid.deleteMatches();
             grid.initEveryCapsuleDropping();
         }
-        controlledCapsules.forEach(this::updatePreview);
     }
 
     private void accept(Capsule capsule) {
         observers.forEach(LevelObserver::onCapsuleAccepted);
         controlledCapsules.removeIf(c-> c.equals(capsule));
         capsule.applyToBoth(grid::put);
-//        capsule.freeze();
-//        deleteMatchesRecursively();
     }
 
     private void acceptAndSpawnNew(Capsule capsule) {
