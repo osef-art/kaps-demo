@@ -11,9 +11,9 @@ import java.util.stream.IntStream;
 
 public class Level {
     public static class LevelParameters {
-
         private final Level model;
         private boolean enablePreview;
+
         private LevelParameters(Level lvl) {
             model = lvl;
         }
@@ -25,7 +25,6 @@ public class Level {
                 else c.clearPreview();
             });
         }
-
     }
 
     private final LevelParameters parameters;
@@ -45,7 +44,7 @@ public class Level {
           .mapToObj(n -> Capsule.randomNewInstance(this))
           .collect(Collectors.toCollection(LinkedList::new));
 
-         gridRefresher = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
+        gridRefresher = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
         Timer droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingCapsule);
         timers = Arrays.asList(gridRefresher, droppingTimer);
         observers = new ArrayList<>();
@@ -91,12 +90,14 @@ public class Level {
      */
     private void performIfPossible(Predicate<Capsule> selection, Predicate<Capsule> condition,
                                    Consumer<Capsule> action, Consumer<Capsule> alternative) {
+        List<Capsule> rejected = new ArrayList<>();
         controlledCapsules.stream()
           .filter(selection)
           .forEach(c -> {
               if (condition.test(c)) action.accept(c);
-              else alternative.accept(c);
+              else rejected.add(c);
           });
+        rejected.forEach(alternative);
     }
 
     /**
@@ -164,11 +165,12 @@ public class Level {
 
     // update
     private boolean checkForGameOver() {
-        return controlledCapsules.stream()
-          .filter(Predicate.not(Capsule::isDropping))
-          .map(c -> !c.canStandIn(grid))
-          .reduce(Boolean::logicalOr)
-          .orElse(false) || grid.germsCount() <= 0;
+//        return controlledCapsules.stream()
+//          .filter(Predicate.not(Capsule::isDropping))
+//          .map(c -> !c.canStandIn(grid))
+//          .reduce(Boolean::logicalOr)
+//          .orElse(false) || grid.germsCount() <= 0;
+        return grid.germsCount() <= 0;
     }
 
     private void updatePreview(Capsule capsule) {
@@ -182,23 +184,26 @@ public class Level {
         controlledCapsules.add(upcoming);
     }
 
-    private void accept(Capsule capsule) {
-        capsule.applyToBoth(grid::put);
-        capsule.freeze();
-        observers.forEach(LevelObserver::onCapsuleAccepted);
-
+    private void deleteMatchesRecursively() {
         while (grid.containsMatches()) {
             observers.forEach(LevelObserver::onMatchDeleted);
             grid.deleteMatches();
             grid.dropEveryCapsule();
         }
+    }
+
+    private void accept(Capsule capsule) {
+        capsule.applyToBoth(grid::put);
+        capsule.freeze();
+        observers.forEach(LevelObserver::onCapsuleAccepted);
+        deleteMatchesRecursively();
+        controlledCapsules.removeIf(c-> c.equals(capsule));
         controlledCapsules.forEach(this::updatePreview);
     }
 
     public void update() {
         grid.updateSprites();
-        controlledCapsules.removeIf(Capsule::isFrozen);
-        if (controlledCapsules.stream().noneMatch(Predicate.not(Capsule::isDropping))) {
+        if (controlledCapsules.isEmpty()) {
             gridRefresher.reset();
             spawnCapsule();
         }

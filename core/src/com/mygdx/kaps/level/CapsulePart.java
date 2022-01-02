@@ -13,7 +13,6 @@ import java.util.function.Predicate;
 class CapsulePart extends GridObject {
     private final Sprite sprite;
     private boolean dropping;
-    private boolean frozen;
 
     CapsulePart(LinkedCapsulePart caps) {
         this(caps.coordinates(), caps.color());
@@ -52,13 +51,11 @@ class CapsulePart extends GridObject {
         return true;
     }
 
-    boolean isDropping() {
+    @Override
+    public boolean isDropping() {
         return dropping;
     }
 
-    boolean isFrozen() {
-        return frozen;
-    }
 
     void startDropping() {
         dropping = true;
@@ -68,10 +65,6 @@ class CapsulePart extends GridObject {
         dropping = false;
     }
 
-    void freeze() {
-        frozen = true;
-        stopDropping();
-    }
 
     private boolean isInGridBounds(Grid grid) {
         return grid.isInGridBounds(coordinates());

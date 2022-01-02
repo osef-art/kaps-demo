@@ -13,6 +13,8 @@ interface IGridObject {
 
     boolean isCapsule();
 
+    boolean isDropping();
+
     boolean isDestroyed();
 
     void takeHit();
@@ -51,6 +53,10 @@ abstract class GridObject implements IGridObject {
 
     public boolean isDestroyed() {
         return destroyed;
+    }
+
+    public boolean isDropping() {
+        return false;
     }
 
     public void takeHit() {

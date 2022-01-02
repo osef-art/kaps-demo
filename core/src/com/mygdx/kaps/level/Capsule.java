@@ -4,6 +4,7 @@ import com.mygdx.kaps.Utils;
 
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 class Capsule {
     private final LinkedCapsulePart main;
@@ -70,7 +71,7 @@ class Capsule {
     }
 
     boolean isFrozen() {
-        return main.verify(CapsulePart::isFrozen);
+        return main.verify(Predicate.not(CapsulePart::isDropping));
     }
 
     void applyForEach(Consumer<CapsulePart> mainAction, Consumer<CapsulePart> slaveAction) {
@@ -87,7 +88,7 @@ class Capsule {
     }
 
     void freeze() {
-        applyToBoth(CapsulePart::freeze);
+        applyToBoth(CapsulePart::stopDropping);
         clearPreview();
     }
 
