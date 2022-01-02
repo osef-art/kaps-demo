@@ -49,6 +49,7 @@ public class Level {
         timers = Arrays.asList(gridRefresher, droppingTimer);
         observers = new ArrayList<>();
         observers.add(new SoundPlayerObserver());
+        spawnCapsule();
     }
 
     Set<Color> getColorSet() {
@@ -129,11 +130,12 @@ public class Level {
     }
 
     public void dipOrAcceptCapsule() {
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.dipped().canStandIn(grid), Capsule::dip, this::accept);
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.dipped().canStandIn(grid), Capsule::dip,
+          this::acceptThenSpawnThenCheckForGameOver);
     }
 
     private void dipOrAcceptDroppingCapsule() {
-        performIfPossible(Capsule::isDropping, c -> c.dipped().canStandIn(grid), Capsule::dip, this::accept);
+        performIfPossible(Capsule::isDropping, c -> c.dipped().canStandIn(grid), Capsule::dip, this::acceptThenSpawnThenCheckForGameOver);
     }
 
     public void flipCapsule() {
@@ -164,13 +166,12 @@ public class Level {
     }
 
     // update
-    private boolean checkForGameOver() {
-//        return controlledCapsules.stream()
-//          .filter(Predicate.not(Capsule::isDropping))
-//          .map(c -> !c.canStandIn(grid))
-//          .reduce(Boolean::logicalOr)
-//          .orElse(false) || grid.germsCount() <= 0;
-        return grid.germsCount() <= 0;
+    private boolean gameIsOver() {
+        return controlledCapsules.stream()
+          .filter(Predicate.not(Capsule::isDropping))
+          .map(c -> !c.canStandIn(grid))
+          .reduce(Boolean::logicalOr)
+          .orElse(false) || grid.germsCount() <= 0;
     }
 
     private void updatePreview(Capsule capsule) {
@@ -193,24 +194,29 @@ public class Level {
     }
 
     private void accept(Capsule capsule) {
+        controlledCapsules.removeIf(c-> c.equals(capsule));
         capsule.applyToBoth(grid::put);
         capsule.freeze();
         observers.forEach(LevelObserver::onCapsuleAccepted);
         deleteMatchesRecursively();
-        controlledCapsules.removeIf(c-> c.equals(capsule));
         controlledCapsules.forEach(this::updatePreview);
     }
 
-    public void update() {
-        grid.updateSprites();
+    private void acceptThenSpawnThenCheckForGameOver(Capsule capsule) {
+        accept(capsule);
+
         if (controlledCapsules.isEmpty()) {
             gridRefresher.reset();
             spawnCapsule();
         }
-        if (checkForGameOver()) {
+        if (gameIsOver()) {
             System.out.println("LEVEL CLEARED !");
             System.exit(0);
         }
+    }
+
+    public void update() {
+        grid.updateSprites();
         timers.forEach(Timer::resetIfExceeds);
     }
 }
