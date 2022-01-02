@@ -13,7 +13,17 @@ import java.util.stream.IntStream;
 
 public abstract class Germ extends GridObject {
     enum GermKind {
-        BASIC, WALL, THORN, VIRUS;
+        BASIC(0.1f),
+        WALL(0.15f),
+        THORN(0.125f),
+        VIRUS(0.15f),
+        ;
+
+        private final float animationSpeed;
+
+        GermKind(float speed) {
+            animationSpeed = speed;
+        }
 
         @Override
         public String toString() {
@@ -49,7 +59,9 @@ public abstract class Germ extends GridObject {
 
     Germ(Coordinates coordinates, Color color, GermKind kind) {
         super(coordinates, color);
-        anim = new AnimatedSprite("android/assets/sprites/" + color.id() + "/germs/" + kind + "/idle_", 8);
+        anim = new AnimatedSprite(
+          "android/assets/sprites/" + color.id() + "/germs/" + kind + "/idle_", 8, kind.animationSpeed
+        );
     }
 
     Germ(Color color, GermKind kind) {
@@ -98,10 +110,11 @@ class WallGerm extends Germ {
             throw new IllegalArgumentException("Invalid health: " + health + " / " + maxHealth);
 
         this.health = health;
-        animations = IntStream.range(0, maxHealth)
-          .mapToObj(n -> new AnimatedSprite(
-            "android/assets/sprites/" + color.id() + "/germs/" + GermKind.WALL + (n + 1) + "/idle_", n > 1 ? 4 : 8)
-          ).collect(Collectors.toList());
+        animations = IntStream.range(0, maxHealth).mapToObj(n -> new AnimatedSprite(
+          "android/assets/sprites/" + color.id() + "/germs/" + GermKind.WALL + (n + 1) + "/idle_",
+          n > 1 ? 4 : 8,
+          n > 1 ? .2f : 0.15f
+        )).collect(Collectors.toList());
     }
 
     public WallGerm(Color color) {

@@ -13,9 +13,6 @@ public class AnimatedSprite {
     private float existenceTime = 0f;
     private final boolean looping;
 
-    public AnimatedSprite(String path, int nbFrames) {
-        this(path, nbFrames, 0.1f);
-    }
     public AnimatedSprite(String path, int nbFrames, float animSpeed) {
         this(path, nbFrames, animSpeed, true);
     }
