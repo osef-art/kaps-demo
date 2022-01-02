@@ -11,9 +11,9 @@ import java.util.stream.IntStream;
 
 public class Level {
     public static class LevelParameters {
+
         private final Level model;
         private boolean enablePreview;
-
         private LevelParameters(Level lvl) {
             model = lvl;
         }
@@ -25,6 +25,7 @@ public class Level {
                 else c.clearPreview();
             });
         }
+
     }
 
     private final LevelParameters parameters;
@@ -33,6 +34,7 @@ public class Level {
     private final List<LevelObserver> observers;
     private final List<Timer> timers;
     private final Set<Color> colorSet;
+    private final Timer gridRefresher;
     private final Grid grid;
 
     Level(Grid grid, Set<Color> colors) {
@@ -43,8 +45,8 @@ public class Level {
           .mapToObj(n -> Capsule.randomNewInstance(this))
           .collect(Collectors.toCollection(LinkedList::new));
 
-        var gridRefresher = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
-        var droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingCapsule);
+         gridRefresher = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
+        Timer droppingTimer = Timer.ofMilliseconds(1, this::dipOrAcceptDroppingCapsule);
         timers = Arrays.asList(gridRefresher, droppingTimer);
         observers = new ArrayList<>();
         observers.add(new SoundPlayerObserver());
@@ -72,6 +74,10 @@ public class Level {
 
     Coordinates spawningCoordinates() {
         return new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1);
+    }
+
+    double refreshingProgression() {
+        return gridRefresher.ratio();
     }
 
     /**
@@ -192,7 +198,10 @@ public class Level {
     public void update() {
         grid.updateSprites();
         controlledCapsules.removeIf(Capsule::isFrozen);
-        if (controlledCapsules.stream().noneMatch(Predicate.not(Capsule::isDropping))) spawnCapsule();
+        if (controlledCapsules.stream().noneMatch(Predicate.not(Capsule::isDropping))) {
+            gridRefresher.reset();
+            spawnCapsule();
+        }
         if (checkForGameOver()) {
             System.out.println("LEVEL CLEARED !");
             System.exit(0);

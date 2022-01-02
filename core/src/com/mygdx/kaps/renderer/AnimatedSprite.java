@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 
 public class AnimatedSprite {
     private final Animation<Sprite> anim;
-    private float existenceTime = 0f;
+    private float existenceTime = 0;
     private final boolean looping;
 
     public AnimatedSprite(String path, int nbFrames, float animSpeed) {

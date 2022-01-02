@@ -15,6 +15,7 @@ public class GameView implements Renderable {
     private static class Dimensions {
         private final Rectangle gridZone;
         private final Rectangle gridTile;
+        private final Rectangle timeBar;
         private final Rectangle sidekickZone;
         private final Rectangle infoZone;
         private final Rectangle nextBox;
@@ -27,12 +28,15 @@ public class GameView implements Renderable {
             float gridHeight = topSpaceHeight * .9f;
             float tileSize = gridHeight / lvl.getGrid().getHeight();
             float gridWidth = lvl.getGrid().getWidth() * tileSize;
+            float timeBarHeight = (topSpaceHeight - gridHeight) / 4;
+            float topSpaceMargin = (topSpaceHeight - gridHeight - timeBarHeight) / 3;
             float infoZoneHeight = (screen.height - topSpaceHeight) / 2;
             float nextBoxSize = infoZoneHeight * 5 / 4;
 
             level = lvl;
-            gridZone = new Rectangle((screen.width - gridWidth) / 2, (topSpaceHeight - gridHeight) / 2, gridWidth, gridHeight);
+            gridZone = new Rectangle((screen.width - gridWidth) / 2, topSpaceMargin, gridWidth, gridHeight);
             gridTile = new Rectangle(0, 0, tileSize, tileSize);
+            timeBar = new Rectangle((screen.width - gridWidth) / 2, gridHeight + 2 * topSpaceMargin, gridWidth, timeBarHeight);
             sidekickZone = new Rectangle(0, topSpaceHeight, screen.width, infoZoneHeight);
             infoZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
             nextBox = new Rectangle((screen.width - nextBoxSize) / 2, screen.height - nextBoxSize, nextBoxSize, nextBoxSize);
@@ -64,6 +68,11 @@ public class GameView implements Renderable {
         model = lvl;
     }
 
+    private void renderGauge(Rectangle rectangle, double ratio, Color back, Color front) {
+        sra.drawRect(rectangle, back);
+        sra.drawRect(new Rectangle(rectangle.x, rectangle.y, (float) ratio * rectangle.width, rectangle.height), front);
+    }
+
     private void renderLayout() {
         sra.drawRect(dimensions.sidekickZone, new Color(.3f, .3f, .375f, 1f));
         sra.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
@@ -79,6 +88,9 @@ public class GameView implements Renderable {
               );
               model.getGrid().get(x, y).ifPresent(o -> spra.render(o.getSprite(), dimensions.tileAt(x, y)));
           })
+        );
+        renderGauge(
+          dimensions.timeBar, model.refreshingProgression(), new Color(.3f, .3f, .4f, .5f), new Color(.3f, .3f, .4f, 1f)
         );
     }
 
@@ -107,7 +119,7 @@ public class GameView implements Renderable {
     private void renderUpcoming() {
         Rectangle nextBox = dimensions.nextBox;
         renderCapsule(model.upcoming().get(0), nextBox);
-        tra.drawText("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 /8, nextBox.width, nextBox.height/ 8);
+        tra.drawText("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 / 8, nextBox.width, nextBox.height / 8);
     }
 
     @Override
