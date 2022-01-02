@@ -52,11 +52,6 @@ class CapsulePart extends GridObject {
         return true;
     }
 
-    @Override
-    public boolean isGerm() {
-        return false;
-    }
-
     boolean isDropping() {
         return dropping;
     }

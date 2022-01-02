@@ -190,6 +190,7 @@ public class Level {
     }
 
     public void update() {
+        grid.updateSprites();
         controlledCapsules.removeIf(Capsule::isFrozen);
         if (controlledCapsules.stream().noneMatch(Predicate.not(Capsule::isDropping))) spawnCapsule();
         if (checkForGameOver()) {

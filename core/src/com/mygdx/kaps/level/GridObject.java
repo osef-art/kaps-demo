@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import java.util.Objects;
 
 interface IGridObject {
+    void updateSprite();
+
     Sprite getSprite();
 
     boolean isGerm();
@@ -39,11 +41,22 @@ abstract class GridObject implements IGridObject {
         return color;
     }
 
+    public boolean isCapsule() {
+        return false;
+    }
+
+    public boolean isGerm() {
+        return false;
+    }
+
     public boolean isDestroyed() {
         return destroyed;
     }
 
     public void takeHit() {
         destroyed = true;
+    }
+
+    public void updateSprite() {
     }
 }

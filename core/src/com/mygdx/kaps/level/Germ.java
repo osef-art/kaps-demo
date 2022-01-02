@@ -2,7 +2,7 @@ package com.mygdx.kaps.level;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.Utils;
-import com.mygdx.kaps.renderer.SpriteSet;
+import com.mygdx.kaps.renderer.AnimatedSprite;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,11 +45,11 @@ public abstract class Germ extends GridObject {
         }
     }
 
-    private final SpriteSet sprites;
+    private final AnimatedSprite anim;
 
     Germ(Coordinates coordinates, Color color, GermKind kind) {
         super(coordinates, color);
-        sprites = new SpriteSet("android/assets/sprites/" + color.id() + "/germs/" + kind + "/idle_", 8, 0);
+        anim = new AnimatedSprite("android/assets/sprites/" + color.id() + "/germs/" + kind + "/idle_", 8);
     }
 
     Germ(Color color, GermKind kind) {
@@ -62,7 +62,7 @@ public abstract class Germ extends GridObject {
 
     @Override
     public Sprite getSprite() {
-        return sprites.getCurrentSprite();
+        return anim.getCurrentSprite();
     }
 
     @Override
@@ -71,8 +71,8 @@ public abstract class Germ extends GridObject {
     }
 
     @Override
-    public boolean isCapsule() {
-        return false;
+    public void updateSprite() {
+        anim.updateExistenceTime();
     }
 }
 
@@ -89,7 +89,7 @@ class BasicGerm extends Germ {
 
 class WallGerm extends Germ {
     private static final int maxHealth = 4;
-    private final List<SpriteSet> spriteSets;
+    private final List<AnimatedSprite> animations;
     private int health;
 
     public WallGerm(Color color, int health) {
@@ -98,9 +98,9 @@ class WallGerm extends Germ {
             throw new IllegalArgumentException("Invalid health: " + health + " / " + maxHealth);
 
         this.health = health;
-        spriteSets = IntStream.range(0, maxHealth)
-          .mapToObj(n -> new SpriteSet(
-            "android/assets/sprites/" + color.id() + "/germs/" + GermKind.WALL + (n + 1) + "/idle_", n > 1 ? 4 : 8, 0)
+        animations = IntStream.range(0, maxHealth)
+          .mapToObj(n -> new AnimatedSprite(
+            "android/assets/sprites/" + color.id() + "/germs/" + GermKind.WALL + (n + 1) + "/idle_", n > 1 ? 4 : 8)
           ).collect(Collectors.toList());
     }
 
@@ -110,7 +110,7 @@ class WallGerm extends Germ {
 
     @Override
     public Sprite getSprite() {
-        return spriteSets.get(health - 1).getCurrentSprite();
+        return animations.get(health - 1).getCurrentSprite();
     }
 
     public boolean isDestroyed() {
@@ -119,6 +119,11 @@ class WallGerm extends Germ {
 
     public void takeHit() {
         if (health > 0) health--;
+    }
+
+    @Override
+    public void updateSprite() {
+        animations.forEach(AnimatedSprite::updateExistenceTime);
     }
 }
 

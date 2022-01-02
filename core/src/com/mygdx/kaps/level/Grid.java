@@ -238,4 +238,8 @@ class Grid {
               if (couldDip) dropEveryCapsule();
           });
     }
+
+    void updateSprites() {
+        stack().forEach(IGridObject::updateSprite);
+    }
 }
