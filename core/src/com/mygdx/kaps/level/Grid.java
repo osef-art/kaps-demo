@@ -86,6 +86,7 @@ class Grid {
 
         private Set<? extends GridObject> matchesFoundIn(Grid grid, MatchPattern pattern) {
             return grid.stack().stream()
+              .filter(Predicate.not(GridObject::isDropping))
               // map each object to a set of objects that follows pattern
               .map(o -> pattern.relativeTiles.stream()
                 .map(c -> c.apply(o.coordinates()))
