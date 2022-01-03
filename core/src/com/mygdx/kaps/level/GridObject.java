@@ -1,14 +1,11 @@
 package com.mygdx.kaps.level;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.mygdx.kaps.renderer.AnimatedSprite;
 
 import java.util.Objects;
 
 interface IGridObject {
-    void updateSprite();
-
-    Sprite getSprite();
-
     boolean isGerm();
 
     boolean isCapsule();
@@ -16,18 +13,31 @@ interface IGridObject {
     boolean isDropping();
 
     boolean isDestroyed();
+    boolean hasVanished();
+
+    void pop();
 
     void takeHit();
+
+    void updateSprite();
+
+    void updatePoppingSprite();
+
+    Sprite getSprite();
+
+    Sprite getPoppingSprite();
 }
 
 abstract class GridObject implements IGridObject {
+    private final AnimatedSprite poppingAnim;
     private final Coordinates coordinates;
     private final Color color;
     private boolean destroyed;
 
-    GridObject(Coordinates coordinates, Color color) {
-        this.coordinates = Objects.requireNonNull(coordinates).copy();
+    GridObject(Coordinates coordinates, Color color, String path) {
         this.color = color;
+        this.coordinates = Objects.requireNonNull(coordinates).copy();
+        poppingAnim = new AnimatedSprite(path + "/pop_", 8, 0.075f);
     }
 
     @Override
@@ -59,10 +69,27 @@ abstract class GridObject implements IGridObject {
         return false;
     }
 
+    @Override
+    public boolean hasVanished() {
+        return poppingAnim.isFinished();
+    }
+
+    public Sprite getPoppingSprite() {
+        return poppingAnim.getCurrentSprite();
+    }
+
     public void takeHit() {
         destroyed = true;
     }
 
     public void updateSprite() {
+    }
+
+    public void pop() {
+        poppingAnim.reset();
+    }
+
+    public void updatePoppingSprite() {
+        poppingAnim.updateExistenceTime();
     }
 }

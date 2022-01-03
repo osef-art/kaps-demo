@@ -19,7 +19,7 @@ class CapsulePart extends GridObject {
     }
 
     CapsulePart(Coordinates coordinates, Color color) {
-        super(coordinates, color);
+        super(coordinates, color, "android/assets/sprites/" + color.id() + "/caps");
         sprite = new Sprite(
           new Texture("android/assets/sprites/" + color.id() + "/caps/" + Orientation.NONE + ".png")
         );
@@ -34,6 +34,7 @@ class CapsulePart extends GridObject {
         return super.toString();
     }
 
+    @Override
     public Sprite getSprite() {
         return sprite;
     }
@@ -74,10 +75,6 @@ class CapsulePart extends GridObject {
 
     boolean canStandIn(Grid grid) {
         return isInGridBounds(grid) && !overlapsStack(grid);
-    }
-
-    boolean atLeastOneVerify(Predicate<CapsulePart> condition) {
-        return condition.test(this);
     }
 
     boolean verify(Predicate<CapsulePart> condition) {
@@ -193,8 +190,7 @@ class LinkedCapsulePart extends CapsulePart {
         orientation = orientation.flipped();
     }
 
-    @Override
-    boolean atLeastOneVerify(Predicate<CapsulePart> condition) {
+    private boolean atLeastOneVerify(Predicate<CapsulePart> condition) {
         return condition.test(this) || condition.test(linked);
     }
 

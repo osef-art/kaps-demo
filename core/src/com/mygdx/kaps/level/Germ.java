@@ -58,7 +58,7 @@ public abstract class Germ extends GridObject {
     private final AnimatedSprite anim;
 
     Germ(Coordinates coordinates, Color color, GermKind kind) {
-        super(coordinates, color);
+        super(coordinates, color, "android/assets/sprites/" + color.id() + "/germs/" + kind);
         anim = new AnimatedSprite(
           "android/assets/sprites/" + color.id() + "/germs/" + kind + "/idle_", 8, kind.animationSpeed
         );

@@ -116,6 +116,9 @@ public class GameView implements Renderable {
             c.applyToBoth(this::renderCapsulePart);
         });
     }
+    private void renderPoppingObjects() {
+        model.poppingObjects().forEach(c -> spra.render(c.getPoppingSprite(), dimensions.tileAt(c.coordinates())));
+    }
 
     private void renderUpcoming() {
         Rectangle nextBox = dimensions.nextBox;
@@ -128,6 +131,7 @@ public class GameView implements Renderable {
         renderLayout();
         renderGrid();
         renderFallingCapsules();
+        renderPoppingObjects();
         renderUpcoming();
     }
 

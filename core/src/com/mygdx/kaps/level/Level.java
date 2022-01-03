@@ -1,6 +1,5 @@
 package com.mygdx.kaps.level;
 
-
 import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
@@ -28,9 +27,10 @@ public class Level {
     }
 
     private final LevelParameters parameters;
+    private final List<LevelObserver> observers;
     private final LinkedList<Capsule> upcomingCapsules;
     private final List<Capsule> controlledCapsules = new ArrayList<>();
-    private final List<LevelObserver> observers;
+    private final List<GridObject> popping = new ArrayList<>();
     private final List<Timer> timers;
     private final Set<Color> colorSet;
     private final Timer gridRefresher;
@@ -49,6 +49,7 @@ public class Level {
         timers = Arrays.asList(gridRefresher, droppingTimer);
         observers = new ArrayList<>();
         observers.add(new SoundPlayerObserver());
+
         spawnCapsule();
     }
 
@@ -74,6 +75,10 @@ public class Level {
 
     Coordinates spawningCoordinates() {
         return new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1);
+    }
+
+    public List<GridObject> poppingObjects() {
+        return popping;
     }
 
     double refreshingProgression() {
@@ -185,7 +190,7 @@ public class Level {
     private void deleteMatchesIfAny() {
         if (grid.containsMatches()) {
             observers.forEach(LevelObserver::onMatchDeleted);
-            grid.deleteMatches();
+            popping.addAll(grid.deleteMatches());
             grid.initEveryCapsuleDropping();
         }
     }
@@ -207,6 +212,8 @@ public class Level {
 
     public void update() {
         grid.updateSprites();
+        popping.forEach(GridObject::updatePoppingSprite);
+        popping.removeIf(GridObject::hasVanished);
         timers.forEach(Timer::resetIfExceeds);
     }
 }

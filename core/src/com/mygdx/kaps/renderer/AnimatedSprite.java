@@ -37,4 +37,12 @@ public class AnimatedSprite {
     public void updateExistenceTime() {
         existenceTime += Gdx.graphics.getDeltaTime();
     }
+
+    public void reset() {
+        existenceTime = 0;
+    }
+
+    public boolean isFinished() {
+        return anim.isAnimationFinished(existenceTime);
+    }
 }

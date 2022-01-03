@@ -219,8 +219,10 @@ class Grid {
         return matchBrowser.allMatchesFoundIn(this).size() > 0;
     }
 
-    void deleteMatches() {
-        matchBrowser.allMatchesFoundIn(this).forEach(this::hit);
+    Set<? extends GridObject> deleteMatches() {
+        return matchBrowser.allMatchesFoundIn(this).stream()
+          .peek(this::hit)
+          .collect(Collectors.toUnmodifiableSet());
     }
 
     void initEveryCapsuleDropping() {
