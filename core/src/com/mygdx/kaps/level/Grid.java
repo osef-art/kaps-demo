@@ -198,7 +198,10 @@ class Grid {
     private void hit(Coordinates coordinates) {
         get(coordinates).ifPresent(o -> {
             o.takeHit();
-            if (o.isDestroyed()) clear(coordinates);
+            if (o.isDestroyed()) {
+                o.pop();
+                clear(coordinates);
+            }
         });
     }
 
@@ -219,7 +222,7 @@ class Grid {
         return matchBrowser.allMatchesFoundIn(this).size() > 0;
     }
 
-    Set<? extends GridObject> deleteMatches() {
+    Set<? extends GridObject> hitMatches() {
         return matchBrowser.allMatchesFoundIn(this).stream()
           .peek(this::hit)
           .collect(Collectors.toUnmodifiableSet());

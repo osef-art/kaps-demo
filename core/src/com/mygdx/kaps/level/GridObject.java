@@ -13,6 +13,7 @@ interface IGridObject {
     boolean isDropping();
 
     boolean isDestroyed();
+
     boolean hasVanished();
 
     void pop();

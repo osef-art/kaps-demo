@@ -45,7 +45,7 @@ public class Level {
           .collect(Collectors.toCollection(LinkedList::new));
 
         gridRefresher = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
-        Timer droppingTimer = Timer.ofMilliseconds(50, this::dipOrFreezeDroppingCapsules);
+        Timer droppingTimer = Timer.ofMilliseconds(10, this::dipOrFreezeDroppingCapsules);
         timers = Arrays.asList(gridRefresher, droppingTimer);
         observers = new ArrayList<>();
         observers.add(new SoundPlayerObserver());
@@ -190,7 +190,7 @@ public class Level {
     private void deleteMatchesIfAny() {
         if (grid.containsMatches()) {
             observers.forEach(LevelObserver::onMatchDeleted);
-            popping.addAll(grid.deleteMatches());
+            popping.addAll(grid.hitMatches());
             grid.initEveryCapsuleDropping();
         }
     }
