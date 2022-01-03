@@ -159,21 +159,17 @@ public class Level {
         if (grid.dipOrFreezeDroppingCapsules()) {
             observers.forEach(LevelObserver::onCapsuleFreeze);
             deleteMatchesIfAny();
-
-            if (gameIsOver()) {
-                System.out.println("LEVEL CLEARED !");
-                System.exit(0);
-            }
         }
     }
 
     // update
     private boolean gameIsOver() {
-        return controlledCapsules.stream()
-          .filter(Predicate.not(Capsule::isDropping))
-          .map(c -> !c.canStandIn(grid))
-          .reduce(Boolean::logicalOr)
-          .orElse(false) || grid.germsCount() <= 0;
+        return grid.germsCount() <= 0 && popping.isEmpty() ||
+                 controlledCapsules.stream()
+                   .filter(Predicate.not(Capsule::isDropping))
+                   .map(c -> !c.canStandIn(grid))
+                   .reduce(Boolean::logicalOr)
+                   .orElse(false);
     }
 
     private void updatePreview(Capsule capsule) {
@@ -213,7 +209,10 @@ public class Level {
     public void update() {
         grid.updateSprites();
         popping.forEach(GridObject::updatePoppingSprite);
-        popping.removeIf(GridObject::hasVanished);
+        if (popping.removeIf(GridObject::hasVanished) && gameIsOver()) {
+            System.out.println("LEVEL CLEARED !");
+            System.exit(0);
+        }
         timers.forEach(Timer::resetIfExceeds);
     }
 }
