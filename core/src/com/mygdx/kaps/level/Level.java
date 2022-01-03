@@ -213,6 +213,6 @@ public class Level {
             System.out.println("LEVEL CLEARED !");
             System.exit(0);
         }
-        timers.forEach(Timer::resetIfExceeds);
+        timers.forEach(Timer::updateAndResetIfExceeds);
     }
 }
