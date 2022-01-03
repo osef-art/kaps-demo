@@ -84,6 +84,10 @@ class CapsulePart extends GridObject {
         return condition.test(this);
     }
 
+    boolean verticalVerify(Predicate<CapsulePart> condition) {
+        return condition.test(this);
+    }
+
     void applyToBoth(Consumer<CapsulePart> action) {
         action.accept(this);
     }
@@ -196,6 +200,10 @@ class LinkedCapsulePart extends CapsulePart {
 
     boolean verify(Predicate<CapsulePart> condition) {
         return condition.test(this) && condition.test(linked);
+    }
+
+    boolean verticalVerify(Predicate<CapsulePart> condition) {
+        return orientation().isVertical() ? atLeastOneVerify(condition) : verify(condition);
     }
 
     void applyForEach(Consumer<CapsulePart> action, Consumer<CapsulePart> linkedAction) {

@@ -226,13 +226,9 @@ class Grid {
     void initEveryCapsuleDropping() {
         var couldDrop = stackCapsules()
           .filter(Predicate.not(CapsulePart::isDropping))
-          .filter(c -> {
-              Predicate<CapsulePart> hasEmptyTileBelow =
-                p -> p.dipped().canStandIn(this) || get(p.dipped().coordinates()).map(GridObject::isDropping).orElse(true);
-              return c.orientation().isVertical() ?
-                       c.atLeastOneVerify(hasEmptyTileBelow) :
-                       c.verify(hasEmptyTileBelow);
-          })
+          .filter(c -> c.verticalVerify(
+            p -> p.dipped().canStandIn(this) || get(p.dipped().coordinates()).map(GridObject::isDropping).orElse(true))
+          )
           .peek(CapsulePart::initDropping)
           .count() > 0;
         if (couldDrop) initEveryCapsuleDropping();
@@ -243,11 +239,7 @@ class Grid {
           .filter(CapsulePart::isDropping)
           .sorted(Comparator.comparingInt(p -> p.coordinates().y))
           .map(c -> {
-              Predicate<CapsulePart> hasEmptyTileBelow = p -> p.dipped().canStandIn(this);
-              var canDip = c.orientation().isVertical() ?
-                             c.atLeastOneVerify(hasEmptyTileBelow) :
-                             c.verify(hasEmptyTileBelow);
-              if (c.isDropping()) if (canDip) {
+              if (c.isDropping()) if (c.verticalVerify(p -> p.dipped().canStandIn(this))) {
                   c.applyToBoth(p -> clear(p.coordinates()));
                   c.applyToBoth(p -> {
                       p.dip();
