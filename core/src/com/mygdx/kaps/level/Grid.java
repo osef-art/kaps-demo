@@ -171,6 +171,12 @@ class Grid {
           .collect(Collectors.toUnmodifiableSet());
     }
 
+    private Stream<CapsulePart> stackCapsules() {
+        return stack().stream()
+          .filter(IGridObject::isCapsule)
+          .map(o -> (CapsulePart) o);
+    }
+
     long germsCount() {
         return stack().stream().filter(IGridObject::isGerm).count();
     }
@@ -178,7 +184,6 @@ class Grid {
     // tiles operations
     private void set(Coordinates coordinates, GridObject obj) {
         rows.get(coordinates.y).set(coordinates.x, obj);
-//        obj.coordinates().set(coordinates);
     }
 
     void put(GridObject obj) {
@@ -202,9 +207,11 @@ class Grid {
     }
 
     private void detach(Coordinates coordinates) {
-        get(coordinates).ifPresent(o -> {
-            if (o.isCapsule()) ((CapsulePart) o).linked().ifPresent(l -> put(new CapsulePart(l)));
-        });
+        get(coordinates)
+          .filter(GridObject::isCapsule)
+          .map(o -> ((CapsulePart) o))
+          .flatMap(CapsulePart::linked)
+          .ifPresent(l -> put(new CapsulePart(l)));
     }
 
     // stack operations
@@ -217,9 +224,7 @@ class Grid {
     }
 
     void initEveryCapsuleDropping() {
-        var couldDip = stack().stream()
-          .filter(IGridObject::isCapsule)
-          .map(o -> (CapsulePart) o)
+        var couldDrop = stackCapsules()
           .filter(Predicate.not(CapsulePart::isDropping))
           .filter(c -> {
               Predicate<CapsulePart> hasEmptyTileBelow =
@@ -230,13 +235,11 @@ class Grid {
           })
           .peek(CapsulePart::initDropping)
           .count() > 0;
-        if (couldDip) initEveryCapsuleDropping();
+        if (couldDrop) initEveryCapsuleDropping();
     }
 
     boolean dipOrFreezeDroppingCapsules() {
-        return stack().stream()
-          .filter(IGridObject::isCapsule)
-          .map(o -> (CapsulePart) o)
+        return stackCapsules()
           .filter(CapsulePart::isDropping)
           .sorted(Comparator.comparingInt(p -> p.coordinates().y))
           .map(c -> {
