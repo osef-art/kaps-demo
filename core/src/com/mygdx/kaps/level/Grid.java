@@ -225,6 +225,7 @@ class Grid {
     Set<? extends GridObject> hitMatches() {
         return matchBrowser.allMatchesFoundIn(this).stream()
           .peek(this::hit)
+          .filter(GridObject::isDestroyed)
           .collect(Collectors.toUnmodifiableSet());
     }
 

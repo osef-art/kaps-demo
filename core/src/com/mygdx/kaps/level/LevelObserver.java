@@ -2,12 +2,14 @@ package com.mygdx.kaps.level;
 
 import com.mygdx.kaps.sound.SoundStream;
 
+import java.util.Set;
+
 interface LevelObserver {
     void onCapsuleFlipped();
 
     void onCapsuleFreeze();
 
-    void onMatchDeleted();
+    void onMatchPerformed(Set<? extends GridObject> destroyed);
 
     void onIllegalMove();
 
@@ -28,7 +30,7 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
-    public void onMatchDeleted() {
+    public void onMatchPerformed(Set<? extends GridObject> destroyed) {
         stream.play(SoundStream.SoundStore.LIGHT_IMPACT);
     }
 
