@@ -117,7 +117,7 @@ class CapsulePart extends GridObject {
     }
 }
 
-class LinkedCapsulePart extends CapsulePart {
+final class LinkedCapsulePart extends CapsulePart {
     private final HashMap<Orientation, Sprite> sprites = new HashMap<>();
     private Orientation orientation;
     private LinkedCapsulePart linked;

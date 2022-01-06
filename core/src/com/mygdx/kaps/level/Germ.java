@@ -89,7 +89,7 @@ public abstract class Germ extends GridObject {
 }
 
 
-class BasicGerm extends Germ {
+final class BasicGerm extends Germ {
     public BasicGerm(Coordinates coordinates, Color color) {
         super(coordinates, color, GermKind.BASIC);
     }
@@ -99,7 +99,7 @@ class BasicGerm extends Germ {
     }
 }
 
-class WallGerm extends Germ {
+final class WallGerm extends Germ {
     private static final int maxHealth = 4;
     private final List<AnimatedSprite> animations;
     private int health;
@@ -140,13 +140,13 @@ class WallGerm extends Germ {
     }
 }
 
-class VirusGerm extends Germ {
+final class VirusGerm extends Germ {
     public VirusGerm(Color color) {
         super(color, GermKind.VIRUS);
     }
 }
 
-class ThornGerm extends Germ {
+final class ThornGerm extends Germ {
     public ThornGerm(Color color) {
         super(color, GermKind.THORN);
     }
