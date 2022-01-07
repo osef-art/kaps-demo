@@ -60,7 +60,7 @@ public class InputHandler implements InputProcessor {
     }
 
     public void update() {
-        pressedKeys.values().forEach(Timer::updateAndResetIfExceeds);
+        pressedKeys.values().forEach(Timer::resetIfExceeds);
     }
 
     // input detection

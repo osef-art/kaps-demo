@@ -148,7 +148,6 @@ public class Level {
     public void dropCapsule() {
         dipOrAcceptCapsule();
         observers.forEach(LevelObserver::onCapsuleDrop);
-        controlledCapsules.forEach(Capsule::startDropping);
         acceptAndSpawnNew(controlledCapsules.get(0));
     }
 
@@ -214,6 +213,6 @@ public class Level {
             System.out.println("LEVEL CLEARED !");
             System.exit(0);
         }
-        timers.forEach(Timer::updateAndResetIfExceeds);
+        timers.forEach(Timer::resetIfExceeds);
     }
 }

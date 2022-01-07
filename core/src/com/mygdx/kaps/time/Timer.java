@@ -1,6 +1,6 @@
 package com.mygdx.kaps.time;
 
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,22 +8,18 @@ import java.util.List;
 
 public class Timer {
     private static class Chrono {
-        private float elapsedTime = 0;
+        private long startStamp;
 
         private Chrono() {
             reset();
         }
 
         private double elapsedTime() {
-            return elapsedTime;
+            return TimeUtils.nanoTime() - startStamp;
         }
 
         private void reset() {
-            elapsedTime = 0;
-        }
-
-        private void update() {
-            elapsedTime += Gdx.graphics.getDeltaTime();
+            startStamp = TimeUtils.nanoTime();
         }
     }
 
@@ -38,24 +34,19 @@ public class Timer {
     }
 
     public static Timer ofSeconds(double limit, Runnable... jobs) {
-        return new Timer(limit, jobs);
+        return new Timer(limit * 1_000_000_000, jobs);
     }
 
     public static Timer ofMilliseconds(double limit, Runnable... jobs) {
-        return new Timer(limit / 1000, jobs);
+        return new Timer(limit * 1_000_000, jobs);
     }
 
     private boolean isExceeded() {
         return chrono.elapsedTime() > limit;
     }
 
-    public void updateAndResetIfExceeds() {
-        update();
+    public void resetIfExceeds() {
         if (isExceeded()) reset();
-    }
-
-    private void update() {
-        chrono.update();
     }
 
     public void reset() {
