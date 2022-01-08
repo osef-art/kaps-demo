@@ -24,11 +24,10 @@ public class Timer {
     }
 
     private final List<Runnable> jobs = new ArrayList<>();
-    private final Chrono chrono;
+    private final Chrono chrono = new Chrono();
     private final double limit;
 
     private Timer(double limit, Runnable... jobs) {
-        chrono = new Chrono();
         this.limit = limit;
         this.jobs.addAll(Arrays.asList(jobs));
     }
@@ -46,12 +45,14 @@ public class Timer {
     }
 
     public void resetIfExceeds() {
-        if (isExceeded()) reset();
+        if (isExceeded()) {
+            reset();
+            jobs.forEach(Runnable::run);
+        }
     }
 
     public void reset() {
         chrono.reset();
-        jobs.forEach(Runnable::run);
     }
 
     public double ratio() {

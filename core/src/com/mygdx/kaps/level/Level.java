@@ -122,7 +122,10 @@ public class Level {
     }
 
     public void dipOrAcceptCapsule() {
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.dipped().canStandIn(grid), Capsule::dip, c -> {
+        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.dipped().canStandIn(grid), capsule -> {
+            capsule.dip();
+            gridRefresher.reset();
+        }, c -> {
             acceptAndSpawnNew(c);
             observers.forEach(LevelObserver::onCapsuleFreeze);
         });
