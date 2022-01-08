@@ -31,15 +31,18 @@ public class Level {
     private final LinkedList<Capsule> upcomingCapsules;
     private final List<Capsule> controlledCapsules = new ArrayList<>();
     private final List<GridObject> popping = new ArrayList<>();
+    private final List<Sidekick> sidekicks;
+    private final Set<Color> colors;
     private final List<Timer> timers;
-    private final Set<Color> colorSet;
     private final Timer gridRefresher;
     private final Grid grid;
 
-    Level(Grid grid, Set<Color> colors) {
+    Level(Grid grid, Set<Sidekick> sidekicks, Color blankColor) {
         this.grid = grid;
-        colorSet = colors;
         parameters = new LevelParameters(this);
+        this.sidekicks = new ArrayList<>(sidekicks);
+        colors = Color.getSetFrom(sidekicks, blankColor);
+
         upcomingCapsules = IntStream.range(0, 2)
           .mapToObj(n -> Capsule.randomNewInstance(this))
           .collect(Collectors.toCollection(LinkedList::new));
@@ -53,8 +56,12 @@ public class Level {
         spawnCapsule();
     }
 
+    public Sidekick getSidekick(int index) {
+        return sidekicks.get(index);
+    }
+
     Set<Color> getColorSet() {
-        return colorSet;
+        return colors;
     }
 
     Grid getGrid() {
@@ -168,7 +175,7 @@ public class Level {
     private boolean gameIsOver() {
         return grid.germsCount() <= 0 && popping.isEmpty() ||
                  controlledCapsules.stream()
-                   .filter(Predicate.not(Capsule::isDropping))
+//                   .filter(Predicate.not(Capsule::isDropping))
                    .map(c -> !c.canStandIn(grid))
                    .reduce(Boolean::logicalOr)
                    .orElse(false);
@@ -211,6 +218,7 @@ public class Level {
 
     public void update() {
         grid.updateSprites();
+        sidekicks.forEach(Sidekick::updateSprite);
         popping.forEach(GridObject::updatePoppingSprite);
         if (popping.removeIf(GridObject::hasVanished) && gameIsOver()) {
             System.out.println("LEVEL CLEARED !");

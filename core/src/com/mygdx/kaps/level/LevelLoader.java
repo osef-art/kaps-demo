@@ -3,7 +3,6 @@ package com.mygdx.kaps.level;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -19,10 +18,9 @@ public class LevelLoader {
         if (germNumber > width * Math.min(height, 3))
             throw new IllegalArgumentException("Too many germs for a " + width + "x" + height + " grid: " + germNumber);
 
-        var colors = new HashSet<Color>();
         var grid = new Grid(width, height);
-        while (colors.size() < 3)
-            colors.add(Color.randomNonBlank());
+        var sidekicks = Sidekick.randomSet(2);
+        var blank = Color.randomBlank();
 
         do {
             var randomTile = new Coordinates(
@@ -30,20 +28,19 @@ public class LevelLoader {
               new Random().nextInt(3)
             );
             if (grid.isEmptyTile(randomTile)) {
-                grid.put(new BasicGerm(randomTile, Color.random(colors)));
+                grid.put(new BasicGerm(randomTile, Color.random(Color.getSetFrom(sidekicks, blank))));
                 germNumber--;
             }
         } while (germNumber > 0);
 
-        var lvl =  new Level(grid, colors);
+        var lvl = new Level(grid, sidekicks, blank);
         return isValid(lvl) ? lvl : randomLevel(width, height, germNumber);
     }
 
     public static Level loadFrom(String filePath) {
         List<String> gridData;
-        var colors = new HashSet<Color>();
-        while (colors.size() < 3)
-            colors.add(Color.randomNonBlank());
+        var sidekicks = Sidekick.randomSet(2);
+        var blankColor = Color.randomBlank();
 
         try {
             Stream<String> lines = Files.lines(Path.of(filePath));
@@ -57,12 +54,12 @@ public class LevelLoader {
             var chars = line.toCharArray();
             var germs = IntStream.range(0, chars.length)
               .mapToObj(n -> chars[n])
-              .map(c -> c == '.' ? null : Germ.ofSymbol(c, colors))
+              .map(c -> c == '.' ? null : Germ.ofSymbol(c, Color.getSetFrom(sidekicks, blankColor)))
               .collect(Collectors.toList());
             return new Grid.Row(germs);
         }).collect(Collectors.toList());
 
-        var lvl = new Level(new Grid(rows), colors);
+        var lvl = new Level(new Grid(rows), sidekicks, blankColor);
         return isValid(lvl) ? lvl : loadFrom(filePath);
     }
 }

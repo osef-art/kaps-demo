@@ -17,6 +17,8 @@ public class GameView implements Renderable {
         private final Rectangle gridTile;
         private final Rectangle timeBar;
         private final Rectangle sidekickZone;
+        private final Rectangle sidekick1;
+        private final Rectangle sidekick2;
         private final Rectangle infoZone;
         private final Rectangle nextBox;
         private final Level level;
@@ -31,6 +33,7 @@ public class GameView implements Renderable {
             float timeBarHeight = (topSpaceHeight - gridHeight) / 4;
             float topSpaceMargin = (topSpaceHeight - gridHeight - timeBarHeight) / 3;
             float infoZoneHeight = (screen.height - topSpaceHeight) / 2;
+            float sidekickSize = infoZoneHeight * 2 / 3;
             float nextBoxSize = infoZoneHeight * 5 / 4;
 
             level = lvl;
@@ -38,6 +41,9 @@ public class GameView implements Renderable {
             gridTile = new Rectangle(0, 0, tileSize, tileSize);
             timeBar = new Rectangle((screen.width - gridWidth) / 2, gridHeight + 2 * topSpaceMargin, gridWidth, timeBarHeight);
             sidekickZone = new Rectangle(0, topSpaceHeight, screen.width, infoZoneHeight);
+            sidekick1 = new Rectangle(0, topSpaceHeight + infoZoneHeight - sidekickSize, sidekickSize, sidekickSize);
+            sidekick2 = new Rectangle(screen.width - sidekickSize, topSpaceHeight + infoZoneHeight - sidekickSize, sidekickSize,
+              sidekickSize);
             infoZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
             nextBox = new Rectangle((screen.width - nextBoxSize) / 2, screen.height - nextBoxSize, nextBoxSize, nextBoxSize);
         }
@@ -116,6 +122,7 @@ public class GameView implements Renderable {
             c.applyToBoth(this::renderCapsulePart);
         });
     }
+
     private void renderPoppingObjects() {
         model.poppingObjects().forEach(c -> spra.render(c.getPoppingSprite(), dimensions.tileAt(c.coordinates())));
     }
@@ -126,6 +133,11 @@ public class GameView implements Renderable {
         tra.drawText("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 / 8, nextBox.width, nextBox.height / 8);
     }
 
+    private void renderSidekicks() {
+        spra.render(model.getSidekick(0).getFlippedSprite(), dimensions.sidekick1);
+        spra.render(model.getSidekick(1).getSprite(), dimensions.sidekick2);
+    }
+
     @Override
     public void render() {
         renderLayout();
@@ -133,6 +145,7 @@ public class GameView implements Renderable {
         renderFallingCapsules();
         renderPoppingObjects();
         renderUpcoming();
+        renderSidekicks();
     }
 
     public void dispose() {

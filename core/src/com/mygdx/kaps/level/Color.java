@@ -4,7 +4,9 @@ import com.mygdx.kaps.Utils;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public enum Color {
     COLOR_1(new java.awt.Color(110, 80, 235)),
@@ -38,13 +40,6 @@ public enum Color {
         );
     }
 
-    static Color randomNonBlank() {
-        return random(Arrays.stream(values())
-          .filter(c -> !c.blank)
-          .collect(Collectors.toSet())
-        );
-    }
-
     static Color randomBlank() {
         return random(Arrays.stream(values())
           .filter(c -> c.blank)
@@ -54,6 +49,12 @@ public enum Color {
 
     static Color random(Set<Color> colors) {
         return Utils.getRandomFrom(colors);
+    }
+
+    static Set<Color> getSetFrom(Set<Sidekick> sidekicks, Color ... colors) {
+        return Stream.of(sidekicks.stream().map(Sidekick::getColor), Arrays.stream(colors))
+                 .flatMap(Function.identity())
+                 .collect(Collectors.toUnmodifiableSet());
     }
 
     int id() {

@@ -14,16 +14,16 @@ public class AnimatedSprite {
     private final boolean looping;
 
     public AnimatedSprite(String path, int nbFrames, float animSpeed) {
-        this(path, nbFrames, animSpeed, true);
+        this(path, nbFrames, animSpeed, true, false);
     }
 
-    public AnimatedSprite(String path, int nbFrames, float animSpeed, boolean looping) {
+    public AnimatedSprite(String path, int nbFrames, float animSpeed, boolean looping, boolean flip) {
         var frames = new Sprite[nbFrames];
         IntStream.range(0, nbFrames).forEach(n -> {
             var sprite = new Sprite(new Texture(
               Objects.requireNonNull(path) + (nbFrames >= 9 && n < 10 ? "0" : "") + n + ".png"
             ));
-            sprite.flip(false, true);
+            sprite.flip(flip, true);
             frames[n] = sprite;
         });
         anim = new Animation<>(animSpeed, frames);

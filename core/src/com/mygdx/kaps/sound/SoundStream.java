@@ -47,14 +47,9 @@ public class SoundStream {
     private final float volume;
     private Sound sound;
 
-    public SoundStream() {
-        this(1);
-    }
-
     public SoundStream(float volume) {
         this.volume = volume;
     }
-
 
     public void play(SoundStore sound) {
         play(sound.getRandomPath());
