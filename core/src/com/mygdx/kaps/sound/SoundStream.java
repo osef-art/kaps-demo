@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.mygdx.kaps.Utils;
 
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -15,12 +15,13 @@ public class SoundStream {
         PAINT(3),
         FIRE(2),
         FLIP(3),
+        PLOP(4),
         IMPACT,
         DROP,
         CANT,
         ;
 
-        private final Set<String> paths;
+        private final List<String> paths;
 
         SoundStore() {
             this(1);
@@ -31,23 +32,41 @@ public class SoundStream {
             paths = IntStream.range(0, set)
               .mapToObj(n -> toString() + (set > 1 ? n : ""))
               .map(name -> "android/assets/sounds/" + name + ".wav")
-              .collect(Collectors.toSet());
+              .collect(Collectors.toUnmodifiableList());
         }
 
         private String getRandomPath() {
             return Utils.getRandomFrom(paths);
         }
+
+        private String getPathOfInstance(int instance) {
+            return paths.get(instance);
+        }
     }
 
+    private final float volume;
     private Sound sound;
+
+    public SoundStream() {
+        this(1);
+    }
+
+    public SoundStream(float volume) {
+        this.volume = volume;
+    }
+
 
     public void play(SoundStore sound) {
         play(sound.getRandomPath());
     }
 
+    public void play(SoundStore sound, int instance) {
+        play(sound.getPathOfInstance(instance));
+    }
+
     public void play(String path) {
         if (sound != null) sound.dispose();
         sound = Gdx.audio.newSound(Gdx.files.internal(path));
-        sound.setVolume(sound.play(), .5f);
+        sound.setVolume(sound.play(), volume);
     }
 }

@@ -17,30 +17,33 @@ interface LevelObserver {
 }
 
 class SoundPlayerObserver implements LevelObserver {
-    private final SoundStream stream = new SoundStream();
+    private final SoundStream mainStream = new SoundStream(.5f);
+    private final SoundStream subStream = new SoundStream(.25f);
 
     @Override
     public void onCapsuleFlipped() {
-        stream.play(SoundStream.SoundStore.FLIP);
+        mainStream.play(SoundStream.SoundStore.FLIP);
     }
 
     @Override
     public void onCapsuleFreeze() {
-        stream.play(SoundStream.SoundStore.IMPACT);
+        subStream.play(SoundStream.SoundStore.LIGHT_IMPACT);
     }
 
     @Override
     public void onMatchPerformed(Set<? extends GridObject> destroyed) {
-        stream.play(SoundStream.SoundStore.LIGHT_IMPACT);
+        var containsGerms = destroyed.stream().anyMatch(GridObject::isGerm);
+        if (containsGerms) mainStream.play(SoundStream.SoundStore.PLOP, 0);
+        else subStream.play(SoundStream.SoundStore.IMPACT);
     }
 
     @Override
     public void onIllegalMove() {
-        stream.play(SoundStream.SoundStore.CANT);
+        mainStream.play(SoundStream.SoundStore.CANT);
     }
 
     @Override
     public void onCapsuleDrop() {
-        stream.play(SoundStream.SoundStore.DROP);
+        mainStream.play(SoundStream.SoundStore.DROP);
     }
 }

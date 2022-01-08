@@ -252,7 +252,7 @@ class Grid {
                   });
                   c.linked().ifPresent(CapsulePart::freeze);
               } else {
-                  c.freeze();
+                  c.applyToBoth(CapsulePart::freeze);
                   return true;
               }
               return false;
