@@ -7,6 +7,7 @@ import com.mygdx.kaps.renderer.AnimatedSprite;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 public enum Sidekick {
@@ -32,8 +33,8 @@ public enum Sidekick {
         var animPath = "android/assets/sprites/sidekicks/" + this + "_";
         anim = new AnimatedSprite(animPath, 4, 0.2f);
         flippedAnim = new AnimatedSprite(animPath, 4, 0.2f, true, true);
-        this.cooldown = mana > 0 ? new Gauge(mana) : null;
-        this.mana = mana < 0 ? Gauge.full(-mana) : null;
+        this.cooldown = mana < 0 ? new Gauge(-mana) : null;
+        this.mana = mana > 0 ? Gauge.full(mana) : null;
         this.color = color;
     }
 
@@ -43,7 +44,7 @@ public enum Sidekick {
         return str.charAt(0) + str.substring(1).toLowerCase();
     }
 
-    public Color getColor() {
+    public Color color() {
         return color;
     }
 
@@ -65,5 +66,17 @@ public enum Sidekick {
         while (sidekicks.size() < n)
             sidekicks.add(Utils.getRandomFrom(Arrays.stream(Sidekick.values())));
         return sidekicks;
+    }
+
+    public double manaRatio() {
+        return Optional.ofNullable(mana).map(Gauge::ratio).orElse(0.);
+    }
+
+    public void increaseGauge() {
+         Optional.ofNullable(mana).ifPresent(Gauge::increase);
+    }
+
+    public Gauge gauge() {
+        return mana;
     }
 }

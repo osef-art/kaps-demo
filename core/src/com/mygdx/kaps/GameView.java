@@ -88,7 +88,7 @@ public class GameView implements Renderable {
     }
 
     private void renderLayout() {
-        sra.drawRect(dimensions.sidekickZone, new Color(.3f, .3f, .375f, 1f));
+        sra.drawRect(dimensions.sidekickZone, new Color(.2f, .2f, .275f, 1f));
         sra.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
     }
 
@@ -145,8 +145,18 @@ public class GameView implements Renderable {
         var sidekicks = IntStream.range(0, 2)
           .mapToObj(model::getSidekick)
           .collect(Collectors.toUnmodifiableList());
-        renderGauge(dimensions.sidekickGauge1, 0, sidekicks.get(0).getColor().value(.3f), sidekicks.get(0).getColor().value(.3f));
-        renderGauge(dimensions.sidekickGauge2, 0, sidekicks.get(1).getColor().value(.3f), sidekicks.get(1).getColor().value(.3f));
+        renderGauge(
+          dimensions.sidekickGauge1,
+          sidekicks.get(0).manaRatio(),
+          sidekicks.get(0).color().value(.3f),
+          sidekicks.get(0).color().value(.3f)
+        );
+        renderGauge(
+          dimensions.sidekickGauge2,
+          sidekicks.get(1).manaRatio(),
+          sidekicks.get(1).color().value(.3f),
+          sidekicks.get(1).color().value(.3f)
+        );
         spra.render(sidekicks.get(0).getFlippedSprite(), dimensions.sidekick1);
         spra.render(sidekicks.get(1).getSprite(), dimensions.sidekick2);
     }

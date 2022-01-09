@@ -16,11 +16,20 @@ public class Gauge {
         return new Gauge(max);
     }
 
+    @Override
+    public String toString() {
+        return "[" + value + " / " + max + "]";
+    }
+
     void empty() {
         value = 0;
     }
 
     void increase() {
         value++;
+    }
+
+    public double ratio() {
+        return (double) value / max;
     }
 }

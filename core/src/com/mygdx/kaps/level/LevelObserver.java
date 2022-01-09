@@ -1,8 +1,11 @@
 package com.mygdx.kaps.level;
 
+import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.sound.SoundStream;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 interface LevelObserver {
@@ -46,5 +49,40 @@ class SoundPlayerObserver implements LevelObserver {
     @Override
     public void onCapsuleDrop() {
         mainStream.play(SoundStream.SoundStore.DROP);
+    }
+}
+
+class SidekicksObserver implements LevelObserver {
+    private final HashMap<Color, Sidekick> colorMap = new HashMap<>();
+
+    SidekicksObserver(List<Sidekick> sidekicks) {
+        sidekicks.forEach(s -> colorMap.put(s.color(), s));
+    }
+
+    @Override
+    public void onCapsuleFlipped() {
+
+    }
+
+    @Override
+    public void onCapsuleFreeze() {
+
+    }
+
+    @Override
+    public void onMatchPerformed(Set<? extends GridObject> destroyed) {
+        destroyed.forEach(o -> {
+            if (colorMap.containsKey(o.color())) colorMap.get(o.color()).increaseGauge();
+        });
+    }
+
+    @Override
+    public void onIllegalMove() {
+
+    }
+
+    @Override
+    public void onCapsuleDrop() {
+
     }
 }

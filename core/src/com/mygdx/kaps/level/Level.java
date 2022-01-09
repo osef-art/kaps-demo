@@ -31,7 +31,7 @@ public class Level {
     }
 
     private final LevelParameters parameters;
-    private final List<LevelObserver> observers = new ArrayList<>();
+    private final List<LevelObserver> observers;
     private final LinkedList<Capsule> upcomingCapsules;
     private final List<Capsule> controlledCapsules = new ArrayList<>();
     private final List<GridObject> popping = new ArrayList<>();
@@ -47,7 +47,7 @@ public class Level {
         this.sidekicks = new ArrayList<>(sidekicks);
         colors = Color.getSetFrom(sidekicks, blankColor);
         sidekicks.forEach(s -> {
-            if (!colors.contains(s.getColor())) throw new IllegalArgumentException("Insufficient color set.");
+            if (!colors.contains(s.color())) throw new IllegalArgumentException("Insufficient color set.");
         });
 
         upcomingCapsules = IntStream.range(0, 2)
@@ -58,7 +58,7 @@ public class Level {
         Timer droppingTimer = Timer.ofMilliseconds(10, this::dipOrFreezeDroppingCapsules);
         timers = Arrays.asList(gridRefresher, droppingTimer);
 
-        observers.add(new SoundPlayerObserver());
+        observers = Arrays.asList(new SoundPlayerObserver(), new SidekicksObserver(this.sidekicks));
 
         spawnCapsule();
     }
@@ -202,7 +202,7 @@ public class Level {
     private void deleteMatchesIfAny() {
         if (grid.containsMatches()) {
             var destroyed = grid.hitMatches();
-            observers.forEach(levelObserver -> levelObserver.onMatchPerformed(destroyed));
+            observers.forEach(obs -> obs.onMatchPerformed(destroyed));
             popping.addAll(destroyed);
             grid.initEveryCapsuleDropping();
         }
