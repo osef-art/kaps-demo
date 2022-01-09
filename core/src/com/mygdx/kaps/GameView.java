@@ -1,8 +1,9 @@
-package com.mygdx.kaps.level;
+package com.mygdx.kaps;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Rectangle;
+import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.level.gridobject.Capsule;
 import com.mygdx.kaps.level.gridobject.CapsulePart;
 import com.mygdx.kaps.level.gridobject.Coordinates;

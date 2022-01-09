@@ -47,11 +47,11 @@ public enum Sidekick {
         return color;
     }
 
-    Sprite getSprite() {
+    public Sprite getSprite() {
         return anim.getCurrentSprite();
     }
 
-    Sprite getFlippedSprite() {
+    public Sprite getFlippedSprite() {
         return flippedAnim.getCurrentSprite();
     }
 

@@ -140,11 +140,11 @@ public class Grid {
     }
 
     // getters
-    int getWidth() {
+    public int getWidth() {
         return rows.get(0).width();
     }
 
-    int getHeight() {
+    public int getHeight() {
         return rows.size();
     }
 
@@ -164,7 +164,7 @@ public class Grid {
         return get(coordinates.x, coordinates.y);
     }
 
-    Optional<? extends GridObject> get(int x, int y) {
+    public Optional<? extends GridObject> get(int x, int y) {
         return isInGridBounds(x, y) ? rows.get(y).get(x) : Optional.empty();
     }
 

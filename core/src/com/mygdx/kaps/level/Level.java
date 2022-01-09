@@ -71,7 +71,7 @@ public class Level {
         return colors;
     }
 
-    Grid getGrid() {
+    public Grid getGrid() {
         return grid;
     }
 
@@ -79,11 +79,11 @@ public class Level {
         return parameters;
     }
 
-    List<Capsule> controlledCapsules() {
+    public List<Capsule> controlledCapsules() {
         return controlledCapsules;
     }
 
-    List<Capsule> upcoming() {
+    public List<Capsule> upcoming() {
         return upcomingCapsules;
     }
 
@@ -95,7 +95,7 @@ public class Level {
         return popping;
     }
 
-    double refreshingProgression() {
+    public double refreshingProgression() {
         return gridRefresher.ratio();
     }
 
