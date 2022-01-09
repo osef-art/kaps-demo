@@ -10,6 +10,7 @@ public class Gauge {
 
     Gauge(int value, int max) {
         this.max = max;
+        this.value = value;
     }
 
     static Gauge full(int max) {
@@ -18,7 +19,7 @@ public class Gauge {
 
     @Override
     public String toString() {
-        return "[" + value + " / " + max + "]";
+        return value + " / " + max;
     }
 
     void empty() {

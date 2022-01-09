@@ -12,6 +12,7 @@ import com.mygdx.kaps.renderer.ShapeRendererAdapter;
 import com.mygdx.kaps.renderer.SpriteRendererAdapter;
 import com.mygdx.kaps.renderer.TextRendererAdaptor;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -22,8 +23,7 @@ public class GameView implements Renderable {
         private final Rectangle gridTile;
         private final Rectangle timeBar;
         private final Rectangle sidekickZone;
-        private final Rectangle sidekickGauge1;
-        private final Rectangle sidekickGauge2;
+        private final List<Rectangle> sidekickGauges;
         private final Rectangle sidekick1;
         private final Rectangle sidekick2;
         private final Rectangle infoZone;
@@ -48,8 +48,9 @@ public class GameView implements Renderable {
             gridTile = new Rectangle(0, 0, tileSize, tileSize);
             timeBar = new Rectangle((screen.width - gridWidth) / 2, gridHeight + 2 * topSpaceMargin, gridWidth, timeBarHeight);
             sidekickZone = new Rectangle(0, topSpaceHeight, screen.width, infoZoneHeight);
-            sidekickGauge1 = new Rectangle(sidekickZone.x, sidekickZone.y, sidekickZone.width / 2, sidekickZone.height);
-            sidekickGauge2 = new Rectangle(sidekickZone.x + sidekickZone.width / 2, sidekickZone.y, sidekickZone.width / 2, sidekickZone.height);
+            sidekickGauges = IntStream.range(0, 2)
+              .mapToObj(n -> new Rectangle(sidekickZone.x + n * (sidekickZone.width / 2), sidekickZone.y, sidekickZone.width / 2, sidekickZone.height))
+              .collect(Collectors.toUnmodifiableList());
             sidekick1 = new Rectangle(sidekickSize / 8, topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize);
             sidekick2 = new Rectangle(screen.width - sidekickSize * 9 / 8, topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize);
             infoZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
@@ -82,13 +83,22 @@ public class GameView implements Renderable {
         model = lvl;
     }
 
-    private void renderGauge(Rectangle rectangle, double ratio, Color back, Color front) {
+    private void renderGauge(Rectangle rectangle, double ratio, Color back, Color front, boolean reversed) {
         sra.drawRect(rectangle, back);
-        sra.drawRect(new Rectangle(rectangle.x, rectangle.y, (float) ratio * rectangle.width, rectangle.height), front);
+        sra.drawRect(new Rectangle(
+          rectangle.x + (reversed ? rectangle.width * (1 - (float) ratio) : 0),
+          rectangle.y,
+          (float) ratio * rectangle.width,
+          rectangle.height
+        ), front);
+    }
+
+    private void renderGauge(Rectangle rectangle, double ratio, Color back, Color front) {
+        renderGauge(rectangle, ratio, back, front, false);
     }
 
     private void renderLayout() {
-        sra.drawRect(dimensions.sidekickZone, new Color(.2f, .2f, .275f, 1f));
+        sra.drawRect(dimensions.sidekickZone, new Color(.1f, .1f, .175f, 1f));
         sra.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
     }
 
@@ -142,23 +152,19 @@ public class GameView implements Renderable {
     }
 
     private void renderSidekicks() {
-        var sidekicks = IntStream.range(0, 2)
-          .mapToObj(model::getSidekick)
-          .collect(Collectors.toUnmodifiableList());
-        renderGauge(
-          dimensions.sidekickGauge1,
-          sidekicks.get(0).manaRatio(),
-          sidekicks.get(0).color().value(.3f),
-          sidekicks.get(0).color().value(.3f)
-        );
-        renderGauge(
-          dimensions.sidekickGauge2,
-          sidekicks.get(1).manaRatio(),
-          sidekicks.get(1).color().value(.3f),
-          sidekicks.get(1).color().value(.3f)
-        );
-        spra.render(sidekicks.get(0).getFlippedSprite(), dimensions.sidekick1);
-        spra.render(sidekicks.get(1).getSprite(), dimensions.sidekick2);
+        IntStream.range(0, 2)
+          .forEach(n -> renderGauge(
+            dimensions.sidekickGauges.get(n),
+            model.getSidekick(n).manaRatio(),
+            model.getSidekick(n).color().value(.2f),
+            model.getSidekick(n).color().value(.4f),
+            n > 0
+          ));
+
+        spra.render(model.getSidekick(0).getFlippedSprite(), dimensions.sidekick1);
+        spra.render(model.getSidekick(1).getSprite(), dimensions.sidekick2);
+        tra.drawText(model.getSidekick(0).gauge().toString(), dimensions.sidekick1.x, dimensions.sidekick1.y);
+        tra.drawText(model.getSidekick(1).gauge().toString(), dimensions.sidekick2.x, dimensions.sidekick2.y);
     }
 
     @Override
