@@ -1,5 +1,9 @@
 package com.mygdx.kaps.level;
 
+import com.mygdx.kaps.level.gridobject.Capsule;
+import com.mygdx.kaps.level.gridobject.Color;
+import com.mygdx.kaps.level.gridobject.Coordinates;
+import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
@@ -63,7 +67,7 @@ public class Level {
         return sidekicks.get(index);
     }
 
-    Set<Color> getColorSet() {
+    public Set<Color> getColorSet() {
         return colors;
     }
 
@@ -83,7 +87,7 @@ public class Level {
         return upcomingCapsules;
     }
 
-    Coordinates spawningCoordinates() {
+    public Coordinates spawningCoordinates() {
         return new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1);
     }
 

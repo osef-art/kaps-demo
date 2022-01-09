@@ -1,4 +1,4 @@
-package com.mygdx.kaps.level;
+package com.mygdx.kaps.level.gridobject;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -10,114 +10,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-class CapsulePart extends GridObject {
-    private final Sprite sprite;
-    private boolean dropping;
-
-    CapsulePart(LinkedCapsulePart caps) {
-        this(caps.coordinates(), caps.color());
-    }
-
-    CapsulePart(Coordinates coordinates, Color color) {
-        super(coordinates, color, "android/assets/sprites/" + color.id() + "/caps");
-        sprite = new Sprite(
-          new Texture("android/assets/sprites/" + color.id() + "/caps/" + Orientation.NONE + ".png")
-        );
-    }
-
-    CapsulePart copy() {
-        return new CapsulePart(coordinates(), color());
-    }
-
-    @Override
-    public String toString() {
-        return super.toString();
-    }
-
-    @Override
-    public Sprite getSprite() {
-        return sprite;
-    }
-
-    public Optional<LinkedCapsulePart> linked() {
-        return Optional.empty();
-    }
-
-    Orientation orientation() {
-        return Orientation.NONE;
-    }
-
-    @Override
-    public boolean isCapsule() {
-        return true;
-    }
-
-    @Override
-    public boolean isDropping() {
-        return dropping;
-    }
-
-    void initDropping() {
-        dropping = true;
-    }
-
-    void freeze() {
-        dropping = false;
-    }
-
-    private boolean isInGridBounds(Grid grid) {
-        return grid.isInGridBounds(coordinates());
-    }
-
-    private boolean overlapsStack(Grid grid) {
-        return grid.get(coordinates()).isPresent();
-    }
-
-    boolean canStandIn(Grid grid) {
-        return isInGridBounds(grid) && !overlapsStack(grid);
-    }
-
-    boolean verify(Predicate<CapsulePart> condition) {
-        return condition.test(this);
-    }
-
-    boolean verticalVerify(Predicate<CapsulePart> condition) {
-        return condition.test(this);
-    }
-
-    void applyToBoth(Consumer<CapsulePart> action) {
-        action.accept(this);
-    }
-
-    /**
-     * Makes the instance move in the direction specified by {@param orientation}
-     *
-     * @param orientation the direction in which the movement is made
-     */
-    void moveTowards(Orientation orientation) {
-        coordinates().add(orientation.directionVector());
-    }
-
-    void moveLeft() {
-        moveTowards(Orientation.LEFT);
-    }
-
-    void moveRight() {
-        moveTowards(Orientation.RIGHT);
-    }
-
-    void dip() {
-        moveTowards(Orientation.DOWN);
-    }
-
-    CapsulePart dipped() {
-        var test = copy();
-        test.dip();
-        return test;
-    }
-}
-
-final class LinkedCapsulePart extends CapsulePart {
+public final class LinkedCapsulePart extends CapsulePart {
     private final HashMap<Orientation, Sprite> sprites = new HashMap<>();
     private Orientation orientation;
     private LinkedCapsulePart linked;
@@ -198,7 +91,7 @@ final class LinkedCapsulePart extends CapsulePart {
         return condition.test(this) && condition.test(linked);
     }
 
-    boolean verticalVerify(Predicate<CapsulePart> condition) {
+    public boolean verticalVerify(Predicate<CapsulePart> condition) {
         return orientation().isVertical() ? atLeastOneVerify(condition) : verify(condition);
     }
 
@@ -207,7 +100,7 @@ final class LinkedCapsulePart extends CapsulePart {
         linkedAction.accept(linked);
     }
 
-    void applyToBoth(Consumer<CapsulePart> action) {
+    public void applyToBoth(Consumer<CapsulePart> action) {
         applyForEach(action, action);
     }
 }

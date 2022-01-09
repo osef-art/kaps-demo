@@ -1,35 +1,11 @@
-package com.mygdx.kaps.level;
+package com.mygdx.kaps.level.gridobject;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.renderer.AnimatedSprite;
 
 import java.util.Objects;
 
-interface IGridObject {
-    boolean isGerm();
-
-    boolean isCapsule();
-
-    boolean isDropping();
-
-    boolean isDestroyed();
-
-    boolean hasVanished();
-
-    void pop();
-
-    void takeHit();
-
-    void updateSprite();
-
-    void updatePoppingSprite();
-
-    Sprite getSprite();
-
-    Sprite getPoppingSprite();
-}
-
-abstract class GridObject implements IGridObject {
+public abstract class GridObject implements IGridObject {
     private final AnimatedSprite poppingAnim;
     private final Coordinates coordinates;
     private final Color color;
@@ -46,11 +22,11 @@ abstract class GridObject implements IGridObject {
         return coordinates.toString();
     }
 
-    Coordinates coordinates() {
+    public Coordinates coordinates() {
         return coordinates;
     }
 
-    Color color() {
+    public Color color() {
         return color;
     }
 

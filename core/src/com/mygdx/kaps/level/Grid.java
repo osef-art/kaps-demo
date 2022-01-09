@@ -1,5 +1,10 @@
 package com.mygdx.kaps.level;
 
+import com.mygdx.kaps.level.gridobject.CapsulePart;
+import com.mygdx.kaps.level.gridobject.Coordinates;
+import com.mygdx.kaps.level.gridobject.GridObject;
+import com.mygdx.kaps.level.gridobject.IGridObject;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -7,7 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-class Grid {
+public class Grid {
     static class Row {
         private final List<Optional<? extends GridObject>> tiles;
 
@@ -147,7 +152,7 @@ class Grid {
         return 0 <= x && x < getWidth() && 0 <= y && y < getHeight();
     }
 
-    boolean isInGridBounds(Coordinates coordinates) {
+    public boolean isInGridBounds(Coordinates coordinates) {
         return isInGridBounds(coordinates.x, coordinates.y);
     }
 
@@ -155,7 +160,7 @@ class Grid {
         return isInGridBounds(coordinates) && get(coordinates).isEmpty();
     }
 
-    Optional<? extends GridObject> get(Coordinates coordinates) {
+    public Optional<? extends GridObject> get(Coordinates coordinates) {
         return get(coordinates.x, coordinates.y);
     }
 

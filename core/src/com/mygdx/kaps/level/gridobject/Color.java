@@ -1,6 +1,7 @@
-package com.mygdx.kaps.level;
+package com.mygdx.kaps.level.gridobject;
 
 import com.mygdx.kaps.Utils;
+import com.mygdx.kaps.level.Sidekick;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -40,18 +41,18 @@ public enum Color {
         );
     }
 
-    static Color randomBlank() {
+    public static Color randomBlank() {
         return random(Arrays.stream(values())
           .filter(c -> c.blank)
           .collect(Collectors.toSet())
         );
     }
 
-    static Color random(Set<Color> colors) {
+    public static Color random(Set<Color> colors) {
         return Utils.getRandomFrom(colors);
     }
 
-    static Set<Color> getSetFrom(Set<Sidekick> sidekicks, Color ... colors) {
+    public static Set<Color> getSetFrom(Set<Sidekick> sidekicks, Color... colors) {
         return Stream.of(sidekicks.stream().map(Sidekick::getColor), Arrays.stream(colors))
                  .flatMap(Function.identity())
                  .collect(Collectors.toUnmodifiableSet());
@@ -65,7 +66,7 @@ public enum Color {
         return gdxColor;
     }
 
-    com.badlogic.gdx.graphics.Color value(float alpha) {
+    public com.badlogic.gdx.graphics.Color value(float alpha) {
         return new com.badlogic.gdx.graphics.Color(
           gdxColor.r, gdxColor.g, gdxColor.b, alpha
         );

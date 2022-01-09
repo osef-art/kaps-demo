@@ -1,4 +1,4 @@
-package com.mygdx.kaps.level;
+package com.mygdx.kaps.level.gridobject;
 
 @SuppressWarnings("DuplicatedCode")
 enum Orientation {

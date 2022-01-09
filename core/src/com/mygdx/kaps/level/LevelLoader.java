@@ -1,5 +1,9 @@
 package com.mygdx.kaps.level;
 
+import com.mygdx.kaps.level.gridobject.Color;
+import com.mygdx.kaps.level.gridobject.Coordinates;
+import com.mygdx.kaps.level.gridobject.Germ;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,7 +32,7 @@ public class LevelLoader {
               new Random().nextInt(3)
             );
             if (grid.isEmptyTile(randomTile)) {
-                grid.put(new BasicGerm(randomTile, Color.random(Color.getSetFrom(sidekicks, blank))));
+                grid.put(Germ.random(randomTile, Color.random(Color.getSetFrom(sidekicks, blank))));
                 germNumber--;
             }
         } while (germNumber > 0);

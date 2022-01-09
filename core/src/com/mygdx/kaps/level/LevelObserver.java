@@ -1,5 +1,6 @@
 package com.mygdx.kaps.level;
 
+import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.sound.SoundStream;
 
 import java.util.Set;

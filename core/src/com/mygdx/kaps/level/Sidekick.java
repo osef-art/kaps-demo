@@ -2,13 +2,14 @@ package com.mygdx.kaps.level;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.Utils;
+import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.renderer.AnimatedSprite;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-enum Sidekick {
+public enum Sidekick {
     SEAN(Color.COLOR_1, 20),
     ZYRAME(Color.COLOR_2, 18),
     RED(Color.COLOR_3, 25),
@@ -42,7 +43,7 @@ enum Sidekick {
         return str.charAt(0) + str.substring(1).toLowerCase();
     }
 
-    Color getColor() {
+    public Color getColor() {
         return color;
     }
 

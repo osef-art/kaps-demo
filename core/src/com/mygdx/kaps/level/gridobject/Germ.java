@@ -1,4 +1,4 @@
-package com.mygdx.kaps.level;
+package com.mygdx.kaps.level.gridobject;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.Utils;
@@ -55,6 +55,7 @@ public abstract class Germ extends GridObject {
         }
     }
 
+
     private final AnimatedSprite anim;
 
     Germ(Coordinates coordinates, Color color, GermKind kind) {
@@ -68,8 +69,12 @@ public abstract class Germ extends GridObject {
         this(new Coordinates(), color, kind);
     }
 
-    static Germ ofSymbol(char symbol, Set<Color> colors) {
+    public static Germ ofSymbol(char symbol, Set<Color> colors) {
         return GermSupplier.getKindOfSymbol(symbol).apply(Utils.getRandomFrom(colors));
+    }
+
+    public static Germ random(Coordinates coordinates, Color color) {
+        return new BasicGerm(coordinates, color);
     }
 
     @Override

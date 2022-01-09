@@ -1,15 +1,15 @@
-package com.mygdx.kaps.level;
+package com.mygdx.kaps.level.gridobject;
 
 import java.util.function.Function;
 
-class Coordinates {
-    int x, y;
+public class Coordinates {
+    public int x, y;
 
     Coordinates() {
         this(0, 0);
     }
 
-    Coordinates(int x, int y) {
+    public Coordinates(int x, int y) {
         this.x = x;
         this.y = y;
     }
@@ -30,7 +30,7 @@ class Coordinates {
         y = functionY.apply(y);
     }
 
-    void set(int x, int y) {
+    public void set(int x, int y) {
         map(n -> x, n -> y);
     }
 
@@ -69,7 +69,7 @@ class Coordinates {
         return addedTo(coordinates.x, coordinates.y);
     }
 
-    Coordinates addedTo(int addedX, int addedY) {
+    public Coordinates addedTo(int addedX, int addedY) {
         return mapped(x -> x + addedX, y -> y + addedY);
     }
 }
