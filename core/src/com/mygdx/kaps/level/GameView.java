@@ -9,6 +9,7 @@ import com.mygdx.kaps.renderer.SpriteRendererAdapter;
 import com.mygdx.kaps.renderer.TextRendererAdaptor;
 
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GameView implements Renderable {
@@ -17,6 +18,8 @@ public class GameView implements Renderable {
         private final Rectangle gridTile;
         private final Rectangle timeBar;
         private final Rectangle sidekickZone;
+        private final Rectangle sidekickGauge1;
+        private final Rectangle sidekickGauge2;
         private final Rectangle sidekick1;
         private final Rectangle sidekick2;
         private final Rectangle infoZone;
@@ -33,7 +36,7 @@ public class GameView implements Renderable {
             float timeBarHeight = (topSpaceHeight - gridHeight) / 4;
             float topSpaceMargin = (topSpaceHeight - gridHeight - timeBarHeight) / 3;
             float infoZoneHeight = (screen.height - topSpaceHeight) / 2;
-            float sidekickSize = infoZoneHeight * 2 / 3;
+            float sidekickSize = infoZoneHeight * 3 / 4;
             float nextBoxSize = infoZoneHeight * 5 / 4;
 
             level = lvl;
@@ -41,9 +44,10 @@ public class GameView implements Renderable {
             gridTile = new Rectangle(0, 0, tileSize, tileSize);
             timeBar = new Rectangle((screen.width - gridWidth) / 2, gridHeight + 2 * topSpaceMargin, gridWidth, timeBarHeight);
             sidekickZone = new Rectangle(0, topSpaceHeight, screen.width, infoZoneHeight);
-            sidekick1 = new Rectangle(0, topSpaceHeight + infoZoneHeight - sidekickSize, sidekickSize, sidekickSize);
-            sidekick2 = new Rectangle(screen.width - sidekickSize, topSpaceHeight + infoZoneHeight - sidekickSize, sidekickSize,
-              sidekickSize);
+            sidekickGauge1 = new Rectangle(sidekickZone.x, sidekickZone.y, sidekickZone.width / 2, sidekickZone.height);
+            sidekickGauge2 = new Rectangle(sidekickZone.x + sidekickZone.width / 2, sidekickZone.y, sidekickZone.width / 2, sidekickZone.height);
+            sidekick1 = new Rectangle(sidekickSize / 8, topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize);
+            sidekick2 = new Rectangle(screen.width - sidekickSize * 9 / 8, topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize);
             infoZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
             nextBox = new Rectangle((screen.width - nextBoxSize) / 2, screen.height - nextBoxSize, nextBoxSize, nextBoxSize);
         }
@@ -82,8 +86,6 @@ public class GameView implements Renderable {
     private void renderLayout() {
         sra.drawRect(dimensions.sidekickZone, new Color(.3f, .3f, .375f, 1f));
         sra.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
-        sra.drawCircle(dimensions.nextBox.x + dimensions.nextBox.width / 2, dimensions.nextBox.y + dimensions.nextBox.height,
-          dimensions.nextBox.width, new Color(.45f, .45f, .6f, 1f));
     }
 
     private void renderGrid() {
@@ -129,13 +131,20 @@ public class GameView implements Renderable {
 
     private void renderUpcoming() {
         Rectangle nextBox = dimensions.nextBox;
+        sra.drawCircle(dimensions.nextBox.x + dimensions.nextBox.width / 2, dimensions.nextBox.y + dimensions.nextBox.height,
+          dimensions.nextBox.width, new Color(.45f, .45f, .6f, 1f));
         renderCapsule(model.upcoming().get(0), nextBox);
         tra.drawText("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 / 8, nextBox.width, nextBox.height / 8);
     }
 
     private void renderSidekicks() {
-        spra.render(model.getSidekick(0).getFlippedSprite(), dimensions.sidekick1);
-        spra.render(model.getSidekick(1).getSprite(), dimensions.sidekick2);
+        var sidekicks = IntStream.range(0, 2)
+          .mapToObj(model::getSidekick)
+          .collect(Collectors.toUnmodifiableList());
+        renderGauge(dimensions.sidekickGauge1, 0, sidekicks.get(0).getColor().value(.3f), sidekicks.get(0).getColor().value(.3f));
+        renderGauge(dimensions.sidekickGauge2, 0, sidekicks.get(1).getColor().value(.3f), sidekicks.get(1).getColor().value(.3f));
+        spra.render(sidekicks.get(0).getFlippedSprite(), dimensions.sidekick1);
+        spra.render(sidekicks.get(1).getSprite(), dimensions.sidekick2);
     }
 
     @Override
@@ -144,8 +153,8 @@ public class GameView implements Renderable {
         renderGrid();
         renderFallingCapsules();
         renderPoppingObjects();
-        renderUpcoming();
         renderSidekicks();
+        renderUpcoming();
     }
 
     public void dispose() {

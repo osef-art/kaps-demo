@@ -42,6 +42,9 @@ public class Level {
         parameters = new LevelParameters(this);
         this.sidekicks = new ArrayList<>(sidekicks);
         colors = Color.getSetFrom(sidekicks, blankColor);
+        sidekicks.forEach(s -> {
+            if (!colors.contains(s.getColor())) throw new IllegalArgumentException("Insufficient color set.");
+        });
 
         upcomingCapsules = IntStream.range(0, 2)
           .mapToObj(n -> Capsule.randomNewInstance(this))

@@ -1,0 +1,26 @@
+package com.mygdx.kaps.level;
+
+public class Gauge {
+    private final int max;
+    private int value;
+
+    Gauge(int max) {
+        this(0, max);
+    }
+
+    Gauge(int value, int max) {
+        this.max = max;
+    }
+
+    static Gauge full(int max) {
+        return new Gauge(max);
+    }
+
+    void empty() {
+        value = 0;
+    }
+
+    void increase() {
+        value++;
+    }
+}

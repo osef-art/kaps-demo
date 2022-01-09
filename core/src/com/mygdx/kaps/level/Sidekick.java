@@ -9,33 +9,30 @@ import java.util.HashSet;
 import java.util.Set;
 
 enum Sidekick {
-    SEAN(Color.COLOR_1),
-    ZYRAME(Color.COLOR_2),
-    R3D(Color.COLOR_3, "Red"),
-    MIMAPS(Color.COLOR_4),
-    PAINTER(Color.COLOR_5, "Paint"),
-    XERETH(Color.COLOR_6),
-    BOMBER(Color.COLOR_7),
-    JIM(Color.COLOR_10),
-    UNI(Color.COLOR_11, "Color"),
-    SNIPER(Color.COLOR_12),
+    SEAN(Color.COLOR_1, 20),
+    ZYRAME(Color.COLOR_2, 18),
+    RED(Color.COLOR_3, 25),
+    MIMAPS(Color.COLOR_4, 15),
+    PAINT(Color.COLOR_5, 10),
+    XERETH(Color.COLOR_6, 25),
+    BOMBER(Color.COLOR_7, -13),
+    JIM(Color.COLOR_10, 18),
+    COLOR(Color.COLOR_11, -4),
+    SNIPER(Color.COLOR_12, 20),
     ;
 
     private final AnimatedSprite flippedAnim;
     private final AnimatedSprite anim;
     private final Color color;
+    private final Gauge cooldown;
+    private final Gauge mana;
 
-    Sidekick(Color color, String name) {
-        var animPath = "android/assets/sprites/sidekicks/" + name + "_";
-        anim = new AnimatedSprite(animPath, 4, 0.2f);
-        flippedAnim = new AnimatedSprite(animPath, 4, 0.2f, true, true);
-        this.color = color;
-    }
-
-    Sidekick(Color color) {
+    Sidekick(Color color, int mana) {
         var animPath = "android/assets/sprites/sidekicks/" + this + "_";
         anim = new AnimatedSprite(animPath, 4, 0.2f);
         flippedAnim = new AnimatedSprite(animPath, 4, 0.2f, true, true);
+        this.cooldown = mana > 0 ? new Gauge(mana) : null;
+        this.mana = mana < 0 ? Gauge.full(-mana) : null;
         this.color = color;
     }
 
