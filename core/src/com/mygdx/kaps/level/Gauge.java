@@ -1,6 +1,6 @@
 package com.mygdx.kaps.level;
 
-public class Gauge {
+class Gauge {
     private final int max;
     private int value;
 
@@ -14,7 +14,7 @@ public class Gauge {
     }
 
     static Gauge full(int max) {
-        return new Gauge(max);
+        return new Gauge(max, max);
     }
 
     @Override
@@ -22,15 +22,39 @@ public class Gauge {
         return value + " / " + max;
     }
 
-    void empty() {
-        value = 0;
+    boolean isFull() {
+        return value >= max;
+    }
+
+    boolean isEmpty() {
+        return value <= 0;
+    }
+
+    double ratio() {
+        return (double) value / max;
     }
 
     void increase() {
         value++;
     }
 
-    public double ratio() {
-        return (double) value / max;
+    private void decrease() {
+        value--;
+    }
+
+    void decreaseIfPossible() {
+        if (!isEmpty()) decrease();
+    }
+
+    void increaseIfPossible() {
+        if (!isFull()) increase();
+    }
+
+    void empty() {
+        value = 0;
+    }
+
+    void fill() {
+        value = max;
     }
 }

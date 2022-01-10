@@ -155,7 +155,7 @@ public class GameView implements Renderable {
         IntStream.range(0, 2)
           .forEach(n -> renderGauge(
             dimensions.sidekickGauges.get(n),
-            model.getSidekick(n).manaRatio(),
+            Math.min(1, model.getSidekick(n).gaugeRatio()),
             model.getSidekick(n).color().value(.2f),
             model.getSidekick(n).color().value(.4f),
             n > 0
@@ -163,8 +163,8 @@ public class GameView implements Renderable {
 
         spra.render(model.getSidekick(0).getFlippedSprite(), dimensions.sidekick1);
         spra.render(model.getSidekick(1).getSprite(), dimensions.sidekick2);
-        tra.drawText(model.getSidekick(0).gauge().toString(), dimensions.sidekick1.x, dimensions.sidekick1.y);
-        tra.drawText(model.getSidekick(1).gauge().toString(), dimensions.sidekick2.x, dimensions.sidekick2.y);
+        tra.drawText(model.getSidekick(0).toString(), dimensions.sidekick1.x, dimensions.sidekick1.y);
+        tra.drawText(model.getSidekick(1).toString(), dimensions.sidekick2.x, dimensions.sidekick2.y);
     }
 
     @Override

@@ -220,6 +220,7 @@ public class Level {
         if (controlledCapsules.isEmpty()) {
             gridRefresher.reset();
             spawnCapsule();
+            observers.forEach(LevelObserver::onCapsuleSpawn);
         }
     }
 

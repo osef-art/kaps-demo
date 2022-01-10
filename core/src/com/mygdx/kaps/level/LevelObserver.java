@@ -18,6 +18,8 @@ interface LevelObserver {
     void onIllegalMove();
 
     void onCapsuleDrop();
+
+    void onCapsuleSpawn();
 }
 
 class SoundPlayerObserver implements LevelObserver {
@@ -38,7 +40,7 @@ class SoundPlayerObserver implements LevelObserver {
     public void onMatchPerformed(Set<? extends GridObject> destroyed) {
         var containsGerms = destroyed.stream().anyMatch(GridObject::isGerm);
         if (containsGerms) mainStream.play(SoundStream.SoundStore.PLOP, 0);
-        else subStream.play(SoundStream.SoundStore.IMPACT);
+        else mainStream.play(SoundStream.SoundStore.IMPACT);
     }
 
     @Override
@@ -50,13 +52,18 @@ class SoundPlayerObserver implements LevelObserver {
     public void onCapsuleDrop() {
         mainStream.play(SoundStream.SoundStore.DROP);
     }
+
+    @Override
+    public void onCapsuleSpawn() {
+
+    }
 }
 
 class SidekicksObserver implements LevelObserver {
-    private final HashMap<Color, Sidekick> colorMap = new HashMap<>();
+    private final HashMap<Color, Sidekick> sidekickMap = new HashMap<>();
 
     SidekicksObserver(List<Sidekick> sidekicks) {
-        sidekicks.forEach(s -> colorMap.put(s.color(), s));
+        sidekicks.forEach(s -> sidekickMap.put(s.color(), s));
     }
 
     @Override
@@ -72,7 +79,7 @@ class SidekicksObserver implements LevelObserver {
     @Override
     public void onMatchPerformed(Set<? extends GridObject> destroyed) {
         destroyed.forEach(o -> {
-            if (colorMap.containsKey(o.color())) colorMap.get(o.color()).increaseGauge();
+            if (sidekickMap.containsKey(o.color())) sidekickMap.get(o.color()).increaseMana();
         });
     }
 
@@ -84,5 +91,13 @@ class SidekicksObserver implements LevelObserver {
     @Override
     public void onCapsuleDrop() {
 
+    }
+
+    @Override
+    public void onCapsuleSpawn() {
+        sidekickMap.values().forEach(sidekick -> {
+            sidekick.decreaseCooldown();
+            sidekick.triggerIfReady();
+        });
     }
 }
