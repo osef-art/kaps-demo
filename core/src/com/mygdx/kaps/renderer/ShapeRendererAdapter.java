@@ -50,6 +50,21 @@ public class ShapeRendererAdapter implements RendererAdapter {
         draw(rd -> rd.line(origin, vector), color);
     }
 
+    public void renderGauge(Rectangle rectangle, double ratio, Color back, Color front, boolean reversed) {
+        drawRect(rectangle, back);
+        drawRect(
+          rectangle.x + (reversed ? rectangle.width * (1 - (float) ratio) : 0),
+          rectangle.y,
+          (float) ratio * rectangle.width,
+          rectangle.height,
+          front
+        );
+    }
+
+    public void renderGauge(Rectangle rectangle, double ratio, Color back, Color front) {
+        renderGauge(rectangle, ratio, back, front, false);
+    }
+
     @Override
     public void dispose() {
         rd.dispose();

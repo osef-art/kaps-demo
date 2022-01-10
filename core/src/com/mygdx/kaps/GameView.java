@@ -83,20 +83,6 @@ public class GameView implements Renderable {
         model = lvl;
     }
 
-    private void renderGauge(Rectangle rectangle, double ratio, Color back, Color front, boolean reversed) {
-        sra.drawRect(rectangle, back);
-        sra.drawRect(new Rectangle(
-          rectangle.x + (reversed ? rectangle.width * (1 - (float) ratio) : 0),
-          rectangle.y,
-          (float) ratio * rectangle.width,
-          rectangle.height
-        ), front);
-    }
-
-    private void renderGauge(Rectangle rectangle, double ratio, Color back, Color front) {
-        renderGauge(rectangle, ratio, back, front, false);
-    }
-
     private void renderLayout() {
         sra.drawRect(dimensions.sidekickZone, new Color(.1f, .1f, .175f, 1f));
         sra.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
@@ -112,7 +98,7 @@ public class GameView implements Renderable {
               model.getGrid().get(x, y).ifPresent(o -> spra.render(o.getSprite(), dimensions.tileAt(x, y)));
           })
         );
-        renderGauge(
+        sra.renderGauge(
           dimensions.timeBar, model.refreshingProgression(), new Color(.3f, .3f, .4f, .5f), new Color(.3f, .3f, .4f, 1f)
         );
     }
@@ -153,7 +139,7 @@ public class GameView implements Renderable {
 
     private void renderSidekicks() {
         IntStream.range(0, 2)
-          .forEach(n -> renderGauge(
+          .forEach(n -> sra.renderGauge(
             dimensions.sidekickGauges.get(n),
             Math.min(1, model.getSidekick(n).gaugeRatio()),
             model.getSidekick(n).color().value(.2f),
