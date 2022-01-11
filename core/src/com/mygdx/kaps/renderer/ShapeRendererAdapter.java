@@ -42,6 +42,16 @@ public class ShapeRendererAdapter implements RendererAdapter {
         draw(rd -> rd.arc(x, y, radius, start, degrees), color);
     }
 
+    private void drawRoundedRect(float x, float y, float w, float h, Color color) {
+        drawCircle(x + h / 2, y + h / 2, h / 2, color);
+        drawCircle(x + w - h / 2, y + h / 2, h / 2, color);
+        drawRect(x + h / 2, y, w - h, h, color);
+    }
+
+    public void drawRoundedRect(Rectangle zone, Color color) {
+        drawRoundedRect(zone.x, zone.y, zone.width, zone.height, color);
+    }
+
     public void drawRect(float x, float y, float w, float h, Color color) {
         draw(rd -> rd.rect(x, y, w, h), color);
     }

@@ -125,8 +125,12 @@ class ManaSidekick extends Sidekick {
         this.mana = new Gauge(id.gaugeMax());
     }
 
-    public String toString() {
-        return mana.toString();
+    public int currentMana() {
+        return mana.getValue();
+    }
+
+    public int maxMana() {
+        return mana.getMax();
     }
 
     public double gaugeRatio() {
@@ -159,10 +163,6 @@ class CooldownSidekick extends Sidekick {
     CooldownSidekick(SidekickId id) {
         super(id);
         this.cooldown = Gauge.full(id.gaugeMax());
-    }
-
-    public String toString() {
-        return cooldown.toString();
     }
 
     public int turnsLeft() {

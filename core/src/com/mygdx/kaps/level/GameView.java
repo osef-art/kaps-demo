@@ -20,18 +20,20 @@ import java.util.stream.IntStream;
 
 public class GameView implements Renderable {
     private static class Dimensions {
-
         private static class SidekickZone {
             private final Rectangle zone;
             private final Rectangle head;
             private final Rectangle gauge;
+            private final Rectangle bubble;
             private final Rectangle cooldown;
             private final Rectangle cooldownText;
 
-            private SidekickZone(Rectangle zone, Rectangle head, Rectangle gauge, Rectangle cooldown, Rectangle cooldownText) {
+            private SidekickZone(Rectangle zone, Rectangle head, Rectangle gauge, Rectangle bubble, Rectangle cooldown,
+                                 Rectangle cooldownText) {
                 this.zone = zone;
                 this.head = head;
                 this.gauge = gauge;
+                this.bubble = bubble;
                 this.cooldown = cooldown;
                 this.cooldownText = cooldownText;
             }
@@ -41,7 +43,7 @@ public class GameView implements Renderable {
         private final Rectangle gridZone;
         private final Rectangle gridTile;
         private final Rectangle timeBar;
-        private final List<SidekickZone> sidekickZones= new ArrayList<>();
+        private final List<SidekickZone> sidekickZones = new ArrayList<>();
         private final Rectangle infoZone;
         private final Rectangle nextBox;
         private final Level level;
@@ -58,6 +60,7 @@ public class GameView implements Renderable {
             float infoZoneHeight = (screenHeight - topSpaceHeight) / 2;
             float sidekickSize = infoZoneHeight * 3 / 4;
             float nextBoxSize = infoZoneHeight * 5 / 4;
+            float padding = infoZoneHeight * 3 / 32;
 
             level = lvl;
             gridZone = new Rectangle((screen.width - gridWidth) / 2, topSpaceMargin, gridWidth, gridHeight);
@@ -65,15 +68,17 @@ public class GameView implements Renderable {
             timeBar = new Rectangle((screen.width - gridWidth) / 2, gridHeight + 2 * topSpaceMargin, gridWidth, timeBarHeight);
             sidekickZones.add(new SidekickZone(
               new Rectangle(0, topSpaceHeight, screen.width / 2, infoZoneHeight),
-              new Rectangle(sidekickSize / 8 , topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize),
-              new Rectangle(screen.width * 3 / 16 , topSpaceHeight + infoZoneHeight / 2 - 7.5f, screen.width / 4, 15),
-              new Rectangle(screen.width * 5 / 16 , topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize),
-              new Rectangle(screen.width * 5 / 16 , topSpaceHeight + infoZoneHeight / 2, sidekickSize, sidekickSize / 2)
+              new Rectangle(padding, topSpaceHeight + padding, sidekickSize, sidekickSize),
+              new Rectangle(screen.width * 3 / 16, topSpaceHeight + infoZoneHeight / 2, screen.width / 4, 15),
+              new Rectangle(sidekickSize + padding * 2, topSpaceHeight - padding, screen.width / 5, infoZoneHeight * 2 / 5),
+              new Rectangle(screen.width * 5 / 16, topSpaceHeight + padding, sidekickSize, sidekickSize),
+              new Rectangle(screen.width * 5 / 16, topSpaceHeight + infoZoneHeight / 2, sidekickSize, sidekickSize / 2)
             ));
             sidekickZones.add(new SidekickZone(
               symmetrical(sidekickZones.get(0).zone),
               symmetrical(sidekickZones.get(0).head),
               symmetrical(sidekickZones.get(0).gauge),
+              symmetrical(sidekickZones.get(0).bubble),
               symmetrical(sidekickZones.get(0).cooldown),
               symmetrical(sidekickZones.get(0).cooldownText)
             ));
@@ -100,7 +105,7 @@ public class GameView implements Renderable {
     }
 
     private enum Font {
-        MEDIUM, BIG
+        LITTLE, MEDIUM, MEDIUM_GREY, BIG_GREY
     }
 
     private final SpriteRendererAdapter spra = new SpriteRendererAdapter();
@@ -113,14 +118,15 @@ public class GameView implements Renderable {
         Objects.requireNonNull(lvl);
         dimensions = new Dimensions(lvl, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         model = lvl;
-        tra.put(Font.MEDIUM, new TextRendererAdaptor(spra, 16, Color.WHITE));
-        tra.put(Font.BIG, new TextRendererAdaptor(spra, 24, Color.WHITE));
+        tra.put(Font.LITTLE, new TextRendererAdaptor(spra, 16, Color.WHITE));
+        tra.put(Font.MEDIUM, new TextRendererAdaptor(spra, 24, Color.WHITE));
+        tra.put(Font.MEDIUM_GREY, new TextRendererAdaptor(spra, 20, new Color(.8f, .8f, .9f, 1)));
+        tra.put(Font.BIG_GREY, new TextRendererAdaptor(spra, 32, new Color(.7f, .7f, .8f, 1)));
     }
 
     private void renderLayout() {
         Gdx.gl.glClearColor(.1f, .1f, .15f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
         sra.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
     }
 
@@ -170,22 +176,27 @@ public class GameView implements Renderable {
         sra.drawCircle(dimensions.nextBox.x + dimensions.nextBox.width / 2, dimensions.nextBox.y + dimensions.nextBox.height,
           dimensions.nextBox.width, new Color(.45f, .45f, .6f, 1f));
         renderCapsule(model.upcoming().get(0), nextBox);
-        tra.get(Font.MEDIUM).drawText("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 / 8, nextBox.width, nextBox.height / 8);
+        tra.get(Font.LITTLE).drawText("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 / 8, nextBox.width, nextBox.height / 8);
     }
 
     private void renderSidekicks() {
         IntStream.range(0, 2).forEach(n -> {
             sra.drawRect(dimensions.sidekickZones.get(n).zone, model.getSidekick(n).color().value(.5f));
-            model.getSidekick(n).ifActiveElse(s -> sra.drawRoundedGauge(
-              dimensions.sidekickZones.get(n).gauge,
-              Math.min(1, model.getSidekick(n).gaugeRatio()),
-              new Color(.2f, .2f, .25f, 1),
-              model.getSidekick(n).color().value(),
-              n > 0
-            ), s -> {
+            model.getSidekick(n).ifActiveElse(s -> {
+                sra.drawRoundedRect(dimensions.sidekickZones.get(n).bubble, Color.WHITE);
+                tra.get(Font.BIG_GREY).drawText(s.currentMana() + "    ", dimensions.sidekickZones.get(n).bubble);
+                tra.get(Font.MEDIUM_GREY).drawText("      /" + s.maxMana(), dimensions.sidekickZones.get(n).bubble);
+                sra.drawRoundedGauge(
+                  dimensions.sidekickZones.get(n).gauge,
+                  Math.min(1, model.getSidekick(n).gaugeRatio()),
+                  new Color(.2f, .2f, .25f, 1),
+                  model.getSidekick(n).color().value(),
+                  n > 0
+                );
+            }, s -> {
                 sra.drawArc(dimensions.sidekickZones.get(n).cooldown, 270, 360 * (float) s.gaugeRatio(), new Color(1, 1, 1, .3f));
-                tra.get(Font.BIG).drawText(s.turnsLeft() + "", dimensions.sidekickZones.get(n).cooldown);
-                tra.get(Font.MEDIUM).drawText("turns", dimensions.sidekickZones.get(n).cooldownText);
+                tra.get(Font.MEDIUM).drawText(s.turnsLeft() + "", dimensions.sidekickZones.get(n).cooldown);
+                tra.get(Font.LITTLE).drawText("turns", dimensions.sidekickZones.get(n).cooldownText);
             });
         });
 

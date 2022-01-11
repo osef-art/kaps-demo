@@ -36,7 +36,7 @@ public class TextRendererAdaptor implements RendererAdapter {
     }
 
     public void drawText(String txt, float x, float y, float width, float height) {
-        spra.renderText(txt, font, x, y, width, height - fontSize * 2f);
+        spra.renderText(txt, font, x, y + fontSize / 4, width, height - fontSize * 2f);
     }
 
     public void drawText(String txt, Rectangle zone) {
