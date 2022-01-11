@@ -50,19 +50,32 @@ public class ShapeRendererAdapter implements RendererAdapter {
         draw(rd -> rd.line(origin, vector), color);
     }
 
-    public void renderGauge(Rectangle rectangle, double ratio, Color back, Color front, boolean reversed) {
-        drawRect(rectangle, back);
-        drawRect(
-          rectangle.x + (reversed ? rectangle.width * (1 - (float) ratio) : 0),
-          rectangle.y,
-          (float) ratio * rectangle.width,
-          rectangle.height,
-          front
-        );
+    public void drawRoundedGauge(Rectangle rectangle, double ratio, Color back, Color front, boolean reversed) {
+        float x = rectangle.x + rectangle.height / 2;
+        float width = rectangle.width - rectangle.height;
+        float radius = rectangle.height / 2;
+        drawCircle(x + (reversed ? 0 : width), rectangle.y + radius, radius, back);
+        drawGauge(x, rectangle.y, width, rectangle.height, ratio, back, front, reversed);
+        drawCircle(x + (reversed ? width : 0), rectangle.y + radius, radius, front);
+        drawCircle(x + width * (reversed ? 1 - (float) ratio : (float) ratio), rectangle.y + radius, radius, front);
     }
 
-    public void renderGauge(Rectangle rectangle, double ratio, Color back, Color front) {
-        renderGauge(rectangle, ratio, back, front, false);
+    public void drawRoundedGauge(Rectangle rectangle, double ratio, Color back, Color front) {
+        drawRoundedGauge(rectangle, ratio, back, front, false);
+    }
+
+    private void drawGauge(float x, float y, float width, float height,
+                           double ratio, Color back, Color front, boolean reversed) {
+        drawRect(x, y, width, height, back);
+        drawRect(x + (reversed ? width * (1 - (float) ratio) : 0), y, (float) ratio * width, height, front);
+    }
+
+    public void drawGauge(Rectangle rectangle, double ratio, Color back, Color front, boolean reversed) {
+        drawGauge(rectangle.x, rectangle.y, rectangle.width, rectangle.height, ratio, back, front, reversed);
+    }
+
+    public void drawGauge(Rectangle rectangle, double ratio, Color back, Color front) {
+        drawGauge(rectangle, ratio, back, front, false);
     }
 
     @Override

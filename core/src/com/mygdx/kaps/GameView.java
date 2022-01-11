@@ -2,6 +2,7 @@ package com.mygdx.kaps;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.level.gridobject.Capsule;
@@ -12,9 +13,9 @@ import com.mygdx.kaps.renderer.ShapeRendererAdapter;
 import com.mygdx.kaps.renderer.SpriteRendererAdapter;
 import com.mygdx.kaps.renderer.TextRendererAdaptor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GameView implements Renderable {
@@ -22,10 +23,9 @@ public class GameView implements Renderable {
         private final Rectangle gridZone;
         private final Rectangle gridTile;
         private final Rectangle timeBar;
-        private final Rectangle sidekickZone;
-        private final List<Rectangle> sidekickGauges;
-        private final Rectangle sidekick1;
-        private final Rectangle sidekick2;
+        private final List<Rectangle> sidekickZones = new ArrayList<>();
+        private final List<Rectangle> sidekickHeads = new ArrayList<>();
+        private final List<Rectangle> sidekickGauges = new ArrayList<>();
         private final Rectangle infoZone;
         private final Rectangle nextBox;
         private final Level level;
@@ -47,12 +47,11 @@ public class GameView implements Renderable {
             gridZone = new Rectangle((screen.width - gridWidth) / 2, topSpaceMargin, gridWidth, gridHeight);
             gridTile = new Rectangle(0, 0, tileSize, tileSize);
             timeBar = new Rectangle((screen.width - gridWidth) / 2, gridHeight + 2 * topSpaceMargin, gridWidth, timeBarHeight);
-            sidekickZone = new Rectangle(0, topSpaceHeight, screen.width, infoZoneHeight);
-            sidekickGauges = IntStream.range(0, 2)
-              .mapToObj(n -> new Rectangle(sidekickZone.x + n * (sidekickZone.width / 2), sidekickZone.y, sidekickZone.width / 2, sidekickZone.height))
-              .collect(Collectors.toUnmodifiableList());
-            sidekick1 = new Rectangle(sidekickSize / 8, topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize);
-            sidekick2 = new Rectangle(screen.width - sidekickSize * 9 / 8, topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize);
+            IntStream.range(0, 2).forEach(n -> {
+                sidekickZones.add(new Rectangle(n * screen.width / 2, topSpaceHeight, screen.width / 2, infoZoneHeight));
+                sidekickHeads.add(new Rectangle(n == 0 ? sidekickSize / 8 : screen.width - sidekickSize * 9 / 8, topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize));
+                sidekickGauges.add(new Rectangle(n == 0 ? screen.width * 3 / 16 : screen.width * 9 / 16, topSpaceHeight + infoZoneHeight / 2 - 7.5f, screen.width / 4, 15));
+            });
             infoZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
             nextBox = new Rectangle((screen.width - nextBoxSize) / 2, screen.height - nextBoxSize, nextBoxSize, nextBoxSize);
         }
@@ -84,7 +83,9 @@ public class GameView implements Renderable {
     }
 
     private void renderLayout() {
-        sra.drawRect(dimensions.sidekickZone, new Color(.1f, .1f, .175f, 1f));
+        Gdx.gl.glClearColor(.1f, .1f, .15f, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         sra.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
     }
 
@@ -93,13 +94,13 @@ public class GameView implements Renderable {
           x -> IntStream.range(0, model.getGrid().getHeight()).forEach(y -> {
               sra.drawRect(
                 dimensions.tileAt(x, y),
-                x % 2 == y % 2 ? new Color(.2f, .2f, .3f, 1) : new Color(.175f, .175f, .275f, 1)
+                x % 2 == y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
               );
               model.getGrid().get(x, y).ifPresent(o -> spra.render(o.getSprite(), dimensions.tileAt(x, y)));
           })
         );
-        sra.renderGauge(
-          dimensions.timeBar, model.refreshingProgression(), new Color(.3f, .3f, .4f, .5f), new Color(.3f, .3f, .4f, 1f)
+        sra.drawRoundedGauge(
+          dimensions.timeBar, model.refreshingProgression(), new Color(.2f, .2f, .3f, 1f), new Color(.3f, .3f, .4f, 1f)
         );
     }
 
@@ -138,19 +139,21 @@ public class GameView implements Renderable {
     }
 
     private void renderSidekicks() {
-        IntStream.range(0, 2)
-          .forEach(n -> sra.renderGauge(
-            dimensions.sidekickGauges.get(n),
-            Math.min(1, model.getSidekick(n).gaugeRatio()),
-            model.getSidekick(n).color().value(.2f),
-            model.getSidekick(n).color().value(.4f),
-            n > 0
-          ));
+        IntStream.range(0, 2).forEach(n -> {
+            sra.drawRect(dimensions.sidekickZones.get(n), model.getSidekick(n).color().value(.4f));
+            sra.drawRoundedGauge(
+              dimensions.sidekickGauges.get(n),
+              Math.min(1, model.getSidekick(n).gaugeRatio()),
+              new Color(.2f, .2f, .25f, 1),
+              model.getSidekick(n).color().value(),
+              n > 0
+            );
+        });
 
-        spra.render(model.getSidekick(0).getFlippedSprite(), dimensions.sidekick1);
-        spra.render(model.getSidekick(1).getSprite(), dimensions.sidekick2);
-        tra.drawText(model.getSidekick(0).toString(), dimensions.sidekick1.x, dimensions.sidekick1.y);
-        tra.drawText(model.getSidekick(1).toString(), dimensions.sidekick2.x, dimensions.sidekick2.y);
+        spra.render(model.getSidekick(0).getFlippedSprite(), dimensions.sidekickHeads.get(0));
+        spra.render(model.getSidekick(1).getSprite(), dimensions.sidekickHeads.get(1));
+        tra.drawText(model.getSidekick(0).toString(), dimensions.sidekickHeads.get(0).x, dimensions.sidekickHeads.get(0).y);
+        tra.drawText(model.getSidekick(1).toString(), dimensions.sidekickHeads.get(1).x, dimensions.sidekickHeads.get(1).y);
     }
 
     @Override

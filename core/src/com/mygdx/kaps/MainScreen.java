@@ -2,7 +2,6 @@ package com.mygdx.kaps;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.kaps.controller.InputHandler;
 import com.mygdx.kaps.level.Level;
@@ -45,9 +44,6 @@ public class MainScreen extends ApplicationAdapter {
 
     @Override
     public void render() {
-        Gdx.gl.glClearColor(.1f, .1f, .15f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
         inputs.update();
         game.update();
         view.render();

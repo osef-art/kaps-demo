@@ -62,7 +62,7 @@ public enum Color {
         return ordinal() + 1;
     }
 
-    com.badlogic.gdx.graphics.Color value() {
+    public com.badlogic.gdx.graphics.Color value() {
         return gdxColor;
     }
 
