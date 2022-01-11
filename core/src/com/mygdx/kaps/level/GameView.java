@@ -12,14 +12,15 @@ import com.mygdx.kaps.renderer.ShapeRendererAdapter;
 import com.mygdx.kaps.renderer.SpriteRendererAdapter;
 import com.mygdx.kaps.renderer.TextRendererAdaptor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GameView implements Renderable {
     private static class Dimensions {
+
         private static class SidekickZone {
             private final Rectangle zone;
             private final Rectangle head;
@@ -36,24 +37,25 @@ public class GameView implements Renderable {
             }
         }
 
+        private final Rectangle screen;
         private final Rectangle gridZone;
         private final Rectangle gridTile;
         private final Rectangle timeBar;
-        private final List<SidekickZone> sidekickZones;
+        private final List<SidekickZone> sidekickZones= new ArrayList<>();
         private final Rectangle infoZone;
         private final Rectangle nextBox;
         private final Level level;
 
         private Dimensions(Level lvl, float screenWidth, float screenHeight) {
             Objects.requireNonNull(lvl);
-            Rectangle screen = new Rectangle(0, 0, screenWidth, screenHeight);
+            screen = new Rectangle(0, 0, screenWidth, screenHeight);
             float topSpaceHeight = screenHeight * .8f;
             float gridHeight = topSpaceHeight * .9f;
             float tileSize = gridHeight / lvl.getGrid().getHeight();
             float gridWidth = lvl.getGrid().getWidth() * tileSize;
             float timeBarHeight = (topSpaceHeight - gridHeight) / 4;
             float topSpaceMargin = (topSpaceHeight - gridHeight - timeBarHeight) / 3;
-            float infoZoneHeight = (screen.height - topSpaceHeight) / 2;
+            float infoZoneHeight = (screenHeight - topSpaceHeight) / 2;
             float sidekickSize = infoZoneHeight * 3 / 4;
             float nextBoxSize = infoZoneHeight * 5 / 4;
 
@@ -61,15 +63,26 @@ public class GameView implements Renderable {
             gridZone = new Rectangle((screen.width - gridWidth) / 2, topSpaceMargin, gridWidth, gridHeight);
             gridTile = new Rectangle(0, 0, tileSize, tileSize);
             timeBar = new Rectangle((screen.width - gridWidth) / 2, gridHeight + 2 * topSpaceMargin, gridWidth, timeBarHeight);
-            sidekickZones = IntStream.range(0, 2).mapToObj(n -> new SidekickZone(
-              new Rectangle(n * screen.width / 2, topSpaceHeight, screen.width / 2, infoZoneHeight),
-              new Rectangle(n == 0 ? sidekickSize / 8 : screen.width - sidekickSize * 9 / 8, topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize),
-              new Rectangle(n == 0 ? screen.width * 3 / 16 : screen.width * 9 / 16, topSpaceHeight + infoZoneHeight / 2 - 7.5f, screen.width / 4, 15),
-              new Rectangle(n == 0 ? screen.width * 5 / 16 : screen.width * 9 / 16, topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize),
-              new Rectangle(n == 0 ? screen.width * 5 / 16 : screen.width * 9 / 16, topSpaceHeight + infoZoneHeight / 2, sidekickSize, sidekickSize / 2)
-            )).collect(Collectors.toUnmodifiableList());
+            sidekickZones.add(new SidekickZone(
+              new Rectangle(0, topSpaceHeight, screen.width / 2, infoZoneHeight),
+              new Rectangle(sidekickSize / 8 , topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize),
+              new Rectangle(screen.width * 3 / 16 , topSpaceHeight + infoZoneHeight / 2 - 7.5f, screen.width / 4, 15),
+              new Rectangle(screen.width * 5 / 16 , topSpaceHeight + sidekickSize / 8, sidekickSize, sidekickSize),
+              new Rectangle(screen.width * 5 / 16 , topSpaceHeight + infoZoneHeight / 2, sidekickSize, sidekickSize / 2)
+            ));
+            sidekickZones.add(new SidekickZone(
+              symmetrical(sidekickZones.get(0).zone),
+              symmetrical(sidekickZones.get(0).head),
+              symmetrical(sidekickZones.get(0).gauge),
+              symmetrical(sidekickZones.get(0).cooldown),
+              symmetrical(sidekickZones.get(0).cooldownText)
+            ));
             infoZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
             nextBox = new Rectangle((screen.width - nextBoxSize) / 2, screen.height - nextBoxSize, nextBoxSize, nextBoxSize);
+        }
+
+        private Rectangle symmetrical(Rectangle rectangle) {
+            return new Rectangle(screen.width - rectangle.x - rectangle.width, rectangle.y, rectangle.width, rectangle.height);
         }
 
         private Rectangle tileAt(Coordinates coordinates) {
