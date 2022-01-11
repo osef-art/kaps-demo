@@ -34,7 +34,11 @@ public class ShapeRendererAdapter implements RendererAdapter {
         drawCircle(zone.x + zone.width / 2, zone.y + zone.height / 2, Math.min(zone.width, zone.height) / 2, color);
     }
 
-    public void drawArc(float x, float y, float radius, float start, float degrees, Color color) {
+    public void drawArc(Rectangle zone, float start, float degrees, Color color) {
+        drawArc(zone.x + zone.width / 2, zone.y + zone.height / 2, Math.min(zone.width, zone.height) / 2, start, degrees, color);
+    }
+
+    private void drawArc(float x, float y, float radius, float start, float degrees, Color color) {
         draw(rd -> rd.arc(x, y, radius, start, degrees), color);
     }
 

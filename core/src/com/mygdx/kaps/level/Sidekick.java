@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
@@ -21,6 +22,8 @@ interface ISidekick {
     void resetGauge();
 
     boolean isReady();
+
+    void ifActiveElse(Consumer<ManaSidekick> activeAction, Consumer<CooldownSidekick> passiveAction);
 }
 
 public abstract class Sidekick implements ISidekick {
@@ -144,6 +147,10 @@ class ManaSidekick extends Sidekick {
     public boolean isReady() {
         return mana.isFull();
     }
+
+    public void ifActiveElse(Consumer<ManaSidekick> activeAction, Consumer<CooldownSidekick> passiveAction) {
+        activeAction.accept(this);
+    }
 }
 
 class CooldownSidekick extends Sidekick {
@@ -156,6 +163,10 @@ class CooldownSidekick extends Sidekick {
 
     public String toString() {
         return cooldown.toString();
+    }
+
+    public int turnsLeft() {
+        return cooldown.getValue();
     }
 
     public double gaugeRatio() {
@@ -175,6 +186,10 @@ class CooldownSidekick extends Sidekick {
 
     public boolean isReady() {
         return cooldown.isEmpty();
+    }
+
+    public void ifActiveElse(Consumer<ManaSidekick> activeAction, Consumer<CooldownSidekick> passiveAction) {
+        passiveAction.accept(this);
     }
 }
 

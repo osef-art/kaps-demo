@@ -22,6 +22,10 @@ class Gauge {
         return value + " / " + max;
     }
 
+    public int getValue() {
+        return value;
+    }
+
     boolean isFull() {
         return value >= max;
     }

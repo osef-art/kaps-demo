@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.kaps.controller.InputHandler;
+import com.mygdx.kaps.level.GameView;
 import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.level.LevelLoader;
 

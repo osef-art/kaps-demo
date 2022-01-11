@@ -54,8 +54,8 @@ public enum Color {
 
     public static Set<Color> getSetFrom(Set<Sidekick> sidekicks, Color... colors) {
         return Stream.of(sidekicks.stream().map(Sidekick::color), Arrays.stream(colors))
-                 .flatMap(Function.identity())
-                 .collect(Collectors.toUnmodifiableSet());
+          .flatMap(Function.identity())
+          .collect(Collectors.toUnmodifiableSet());
     }
 
     int id() {
