@@ -28,33 +28,35 @@ interface ISidekick {
 
 public abstract class Sidekick implements ISidekick {
     enum SidekickId {
-        SEAN(Color.COLOR_1, 20),
-        ZYRAME(Color.COLOR_2, 18),
-        R3D(Color.COLOR_3, 25, "Red"),
-        MIMAPS(Color.COLOR_4, 15),
-        PAINTER(Color.COLOR_5, 10, "Paint"),
-        XERETH(Color.COLOR_6, 25),
-        BOMBER(Color.COLOR_7, 13, true),
-        JIM(Color.COLOR_10, 18),
-        UNI(Color.COLOR_11, 4, true, "Color"),
-        SNIPER(Color.COLOR_12, 20),
+        SEAN(Color.COLOR_1, Level::update, 20),
+        ZYRAME(Color.COLOR_2, Level::update, 18),
+        R3D(Color.COLOR_3, Level::update, 25, "Red"),
+        MIMAPS(Color.COLOR_4, Level::update, 15),
+        PAINTER(Color.COLOR_5, Level::update, 10, "Paint"),
+        XERETH(Color.COLOR_6, Level::update, 25),
+        BOMBER(Color.COLOR_7, Level::update, 13, true),
+        JIM(Color.COLOR_10, Level::update, 18),
+        UNI(Color.COLOR_11, Level::update, 4, true, "Color"),
+        SNIPER(Color.COLOR_12, Level::update, 20),
         ;
 
+        private final Consumer<Level> power;
         private final boolean passive;
         private final String animPath;
         private final Color color;
         private final int mana;
 
-        SidekickId(Color color, int mana, boolean passive, String... names) {
+        SidekickId(Color color, Consumer<Level> power, int mana, boolean passive, String... names) {
             var name = names.length > 0 ? names[0] : toString();
             animPath = "android/assets/sprites/sidekicks/" + name + "_";
             this.passive = passive;
+            this.power = power;
             this.color = color;
             this.mana = mana;
         }
 
-        SidekickId(Color color, int mana, String... names) {
-            this(color, mana, false, names);
+        SidekickId(Color color, Consumer<Level> power, int mana, String... names) {
+            this(color, power, mana, false, names);
         }
 
         public String toString() {
