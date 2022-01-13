@@ -60,9 +60,11 @@ class SoundPlayerObserver implements LevelObserver {
 }
 
 class SidekicksObserver implements LevelObserver {
+    private final Level level;
     private final HashMap<Color, Sidekick> sidekickMap = new HashMap<>();
 
-    SidekicksObserver(List<Sidekick> sidekicks) {
+    SidekicksObserver(Level level, List<Sidekick> sidekicks) {
+        this.level = level;
         sidekicks.forEach(s -> sidekickMap.put(s.color(), s));
     }
 
@@ -97,7 +99,7 @@ class SidekicksObserver implements LevelObserver {
     public void onCapsuleSpawn() {
         sidekickMap.values().forEach(sidekick -> {
             sidekick.decreaseCooldown();
-            sidekick.triggerIfReady();
+            sidekick.triggerIfReady(level);
         });
     }
 }

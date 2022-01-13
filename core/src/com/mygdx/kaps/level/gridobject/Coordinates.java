@@ -65,7 +65,7 @@ public class Coordinates {
         return mapped(Function.identity());
     }
 
-    Coordinates addedTo(Coordinates coordinates) {
+    public Coordinates addedTo(Coordinates coordinates) {
         return addedTo(coordinates.x, coordinates.y);
     }
 

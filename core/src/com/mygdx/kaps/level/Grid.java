@@ -1,9 +1,6 @@
 package com.mygdx.kaps.level;
 
-import com.mygdx.kaps.level.gridobject.CapsulePart;
-import com.mygdx.kaps.level.gridobject.Coordinates;
-import com.mygdx.kaps.level.gridobject.GridObject;
-import com.mygdx.kaps.level.gridobject.IGridObject;
+import com.mygdx.kaps.level.gridobject.*;
 
 import java.util.*;
 import java.util.function.Function;
@@ -140,11 +137,11 @@ public class Grid {
     }
 
     // getters
-    public int getWidth() {
+    int getWidth() {
         return rows.get(0).width();
     }
 
-    public int getHeight() {
+    int getHeight() {
         return rows.size();
     }
 
@@ -164,11 +161,11 @@ public class Grid {
         return get(coordinates.x, coordinates.y);
     }
 
-    public Optional<? extends GridObject> get(int x, int y) {
+    Optional<? extends GridObject> get(int x, int y) {
         return isInGridBounds(x, y) ? rows.get(y).get(x) : Optional.empty();
     }
 
-    private Set<? extends GridObject> stack() {
+    Set<? extends GridObject> stack() {
         return rows.stream()
           .flatMap(Row::stream)
           .filter(Optional::isPresent)
@@ -176,10 +173,16 @@ public class Grid {
           .collect(Collectors.toUnmodifiableSet());
     }
 
-    private Stream<CapsulePart> stackCapsules() {
+    private Stream<CapsulePart> capsuleStack() {
         return stack().stream()
           .filter(IGridObject::isCapsule)
           .map(o -> (CapsulePart) o);
+    }
+
+    Stream<Germ> germStack() {
+        return stack().stream()
+          .filter(IGridObject::isGerm)
+          .map(o -> (Germ) o);
     }
 
     long germsCount() {
@@ -200,18 +203,26 @@ public class Grid {
         rows.get(coordinates.y).clear(coordinates.x);
     }
 
-    private void hit(Coordinates coordinates) {
-        get(coordinates).ifPresent(o -> {
+    private void hit(Coordinates coordinates, int damage) {
+        IntStream.range(0, damage).forEach(n -> get(coordinates).ifPresent(o -> {
             o.takeHit();
             if (o.isDestroyed()) {
                 o.pop();
                 clear(coordinates);
             }
-        });
+        }));
     }
 
-    private void hit(GridObject o) {
-        hit(o.coordinates());
+    void hit(Coordinates coordinates) {
+        hit(coordinates, 1);
+    }
+
+    void hit(GridObject o, int damage) {
+        hit(o.coordinates(), damage);
+    }
+
+    void hit(GridObject o) {
+        hit(o, 1);
     }
 
     private void detach(Coordinates coordinates) {
@@ -221,6 +232,11 @@ public class Grid {
           .flatMap(CapsulePart::linked)
           .ifPresent(l -> put(new CapsulePart(l)));
     }
+
+    void repaint(GridObject obj, Color color) {
+        get(obj.coordinates()).ifPresent(o -> o.repaint(color));
+    }
+
 
     // stack operations
     boolean containsMatches() {
@@ -234,7 +250,7 @@ public class Grid {
     }
 
     void initEveryCapsuleDropping() {
-        var couldDrop = stackCapsules()
+        var couldDrop = capsuleStack()
           .filter(Predicate.not(CapsulePart::isDropping))
           .filter(c -> c.verticalVerify(
             p -> p.dipped().canStandIn(this) || get(p.dipped().coordinates()).map(GridObject::isDropping).orElse(true))
@@ -245,7 +261,7 @@ public class Grid {
     }
 
     boolean dipOrFreezeDroppingCapsules() {
-        return stackCapsules()
+        return capsuleStack()
           .filter(CapsulePart::isDropping)
           .sorted(Comparator.comparingInt(p -> p.coordinates().y))
           .map(c -> {

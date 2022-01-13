@@ -1,8 +1,6 @@
 package com.mygdx.kaps;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,5 +13,25 @@ public class Utils {
         if (collection.size() == 0)
             throw new IllegalArgumentException("Can't get random from empty collection.");
         return new ArrayList<>(collection).get(new Random().nextInt(collection.size()));
+    }
+
+    public static <T> Optional<T> getOptionalRandomFrom(Stream<? extends T> stream) {
+        return getOptionalRandomFrom(stream.collect(Collectors.toList()));
+    }
+
+    public static <T> Optional<T> getOptionalRandomFrom(Collection<? extends T> collection) {
+        if (collection.size() == 0)
+            return Optional.empty();
+        return Optional.of(new ArrayList<>(collection).get(new Random().nextInt(collection.size())));
+    }
+
+    public static <T> Set<T> getRandomSetOf(Stream<? extends T> stream, int size) {
+        return getRandomSetOf(stream.collect(Collectors.toList()), size);
+    }
+
+    public static <T> Set<T> getRandomSetOf(Collection<? extends T> collection, int size) {
+        List<T> lst = new ArrayList<>(collection);
+        Collections.shuffle(lst);
+        return new HashSet<>(size >= lst.size() ? lst : lst.subList(0, size));
     }
 }

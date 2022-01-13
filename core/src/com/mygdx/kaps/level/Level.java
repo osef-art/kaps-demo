@@ -21,7 +21,7 @@ public class Level {
             model = lvl;
         }
 
-        public void togglePreview() {
+         public void togglePreview() {
             enablePreview = !enablePreview;
             model.controlledCapsules.forEach(c -> {
                 if (enablePreview) model.updatePreview(c);
@@ -58,12 +58,12 @@ public class Level {
         Timer droppingTimer = Timer.ofMilliseconds(10, this::dipOrFreezeDroppingCapsules);
         timers = Arrays.asList(gridRefresher, droppingTimer);
 
-        observers = Arrays.asList(new SoundPlayerObserver(), new SidekicksObserver(this.sidekicks));
+        observers = Arrays.asList(new SoundPlayerObserver(), new SidekicksObserver(this, this.sidekicks));
 
         spawnCapsule();
     }
 
-    public Sidekick getSidekick(int index) {
+    Sidekick getSidekick(int index) {
         return sidekicks.get(index);
     }
 
@@ -71,7 +71,7 @@ public class Level {
         return colors;
     }
 
-    public Grid getGrid() {
+    Grid getGrid() {
         return grid;
     }
 
@@ -79,11 +79,11 @@ public class Level {
         return parameters;
     }
 
-    public List<Capsule> controlledCapsules() {
+    List<Capsule> controlledCapsules() {
         return controlledCapsules;
     }
 
-    public List<Capsule> upcoming() {
+    List<Capsule> upcoming() {
         return upcomingCapsules;
     }
 
@@ -91,11 +91,11 @@ public class Level {
         return new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1);
     }
 
-    public List<GridObject> poppingObjects() {
+    List<GridObject> poppingObjects() {
         return popping;
     }
 
-    public double refreshingProgression() {
+    double refreshingProgression() {
         return gridRefresher.ratio();
     }
 
@@ -224,7 +224,7 @@ public class Level {
         }
     }
 
-    public void update() {
+    void update() {
         grid.updateSprites();
         sidekicks.forEach(Sidekick::updateSprite);
         popping.forEach(GridObject::updatePoppingSprite);

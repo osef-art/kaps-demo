@@ -8,8 +8,8 @@ import java.util.Objects;
 public abstract class GridObject implements IGridObject {
     private final AnimatedSprite poppingAnim;
     private final Coordinates coordinates;
-    private final Color color;
     private boolean destroyed;
+    private Color color;
 
     GridObject(Coordinates coordinates, Color color, String path) {
         this.color = color;
@@ -68,5 +68,9 @@ public abstract class GridObject implements IGridObject {
 
     public void updatePoppingSprite() {
         poppingAnim.updateExistenceTime();
+    }
+
+    public void repaint(Color color) {
+        this.color = color;
     }
 }

@@ -28,8 +28,7 @@ public class GameView implements Renderable {
             private final Rectangle cooldown;
             private final Rectangle cooldownText;
 
-            private SidekickZone(Rectangle zone, Rectangle head, Rectangle gauge, Rectangle bubble, Rectangle cooldown,
-                                 Rectangle cooldownText) {
+            private SidekickZone(Rectangle zone, Rectangle head, Rectangle gauge, Rectangle bubble, Rectangle cooldown, Rectangle cooldownText) {
                 this.zone = zone;
                 this.head = head;
                 this.gauge = gauge;

@@ -1,15 +1,14 @@
 package com.mygdx.kaps.level;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.renderer.AnimatedSprite;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 
 interface ISidekick {
@@ -27,36 +26,51 @@ interface ISidekick {
 }
 
 public abstract class Sidekick implements ISidekick {
+    enum AttackType {
+        SLICE, FIRE, FIREARM, MELEE, MAGIC, BRUSH,
+    }
+
     enum SidekickId {
-        SEAN(Color.COLOR_1, Level::update, 20),
-        ZYRAME(Color.COLOR_2, Level::update, 18),
-        R3D(Color.COLOR_3, Level::update, 25, "Red"),
-        MIMAPS(Color.COLOR_4, Level::update, 15),
-        PAINTER(Color.COLOR_5, Level::update, 10, "Paint"),
-        XERETH(Color.COLOR_6, Level::update, 25),
-        BOMBER(Color.COLOR_7, Level::update, 13, true),
-        JIM(Color.COLOR_10, Level::update, 18),
-        UNI(Color.COLOR_11, Level::update, 4, true, "Color"),
-        SNIPER(Color.COLOR_12, Level::update, 20),
+        SEAN(Color.COLOR_1, AttackType.MELEE, SidekickPower.hit1RandomObjectAndAdjacents(), 20, 2),
+        ZYRAME(Color.COLOR_2, AttackType.SLICE, SidekickPower.hit2RandomGerms(), 18, 2),
+        R3D(Color.COLOR_3, AttackType.SLICE, SidekickPower.hitRandomColumn(), 25, 2, "Red"),
+        MIMAPS(Color.COLOR_4, AttackType.FIRE, SidekickPower.hit3RandomObjects(), 15, 2),
+        PAINTER(Color.COLOR_5, AttackType.BRUSH, SidekickPower.paint5RandomObjects(), 10, 1, "Paint"),
+        XERETH(Color.COLOR_6, AttackType.SLICE, SidekickPower.hitRandomDiagonals(), 25, 1),
+        BOMBER(Color.COLOR_7, AttackType.FIREARM, SidekickPower.doNothing(), 13, true),
+        JIM(Color.COLOR_10, AttackType.SLICE, SidekickPower.hitRandomLine(), 18, 1),
+        UNI(Color.COLOR_11, AttackType.BRUSH, SidekickPower.doNothing(), 4, true, "Color"),
+        SNIPER(Color.COLOR_12, AttackType.FIREARM, SidekickPower.hit1RandomGerm(), 20, 3),
         ;
 
-        private final Consumer<Level> power;
+        private final Consumer<Grid> power;
+        private final AttackType type;
         private final boolean passive;
         private final String animPath;
         private final Color color;
+        private final int damage;
         private final int mana;
 
-        SidekickId(Color color, Consumer<Level> power, int mana, boolean passive, String... names) {
+        SidekickId(Color color, AttackType type, BiConsumer<SidekickId, Grid> power, int mana, boolean passive,
+                   int damage, String... names) {
             var name = names.length > 0 ? names[0] : toString();
             animPath = "android/assets/sprites/sidekicks/" + name + "_";
+            this.power = grid -> power.accept(this, grid);
             this.passive = passive;
-            this.power = power;
+            this.damage = damage;
             this.color = color;
             this.mana = mana;
+            this.type = type;
         }
 
-        SidekickId(Color color, Consumer<Level> power, int mana, String... names) {
-            this(color, power, mana, false, names);
+        SidekickId(Color color, AttackType type, BiConsumer<SidekickId, Grid> power, int mana, boolean passive,
+                   String... names) {
+            this(color, type, power, mana, passive, 0, names);
+        }
+
+        SidekickId(Color color, AttackType type, BiConsumer<SidekickId, Grid> power, int mana, int damage,
+                   String... names) {
+            this(color, type, power, mana, false, damage, names);
         }
 
         public String toString() {
@@ -64,27 +78,31 @@ public abstract class Sidekick implements ISidekick {
             return str.charAt(0) + str.substring(1).toLowerCase();
         }
 
-        public int gaugeMax() {
+        public Color color() {
+            return color;
+        }
+
+        int gaugeMax() {
             return mana;
+        }
+
+        int damage() {
+            return damage;
         }
     }
 
     private final AnimatedSprite flippedAnim;
     private final AnimatedSprite anim;
-    private final Color color;
+    private final SidekickId id;
 
-    Sidekick(SidekickId data) {
-        flippedAnim = new AnimatedSprite(data.animPath, 4, 0.2f, true, true);
-        anim = new AnimatedSprite(data.animPath, 4, 0.2f);
-        color = data.color;
+    Sidekick(SidekickId id) {
+        flippedAnim = new AnimatedSprite(id.animPath, 4, 0.2f, true, true);
+        anim = new AnimatedSprite(id.animPath, 4, 0.2f);
+        this.id = id;
     }
 
     static Set<Sidekick> randomSet(int n) {
-        var sdkList = Arrays.stream(SidekickId.values())
-          .map(Sidekick::ofId)
-          .collect(Collectors.toList());
-        Collections.shuffle(sdkList);
-        return new HashSet<>(sdkList.subList(0, n));
+        return Utils.getRandomSetOf(Arrays.stream(SidekickId.values()).map(Sidekick::ofId), n);
     }
 
     static Sidekick ofId(SidekickId id) {
@@ -92,14 +110,14 @@ public abstract class Sidekick implements ISidekick {
     }
 
     public Color color() {
-        return color;
+        return id.color;
     }
 
-    public Sprite getSprite() {
+    Sprite getSprite() {
         return anim.getCurrentSprite();
     }
 
-    public Sprite getFlippedSprite() {
+    Sprite getFlippedSprite() {
         return flippedAnim.getCurrentSprite();
     }
 
@@ -108,12 +126,13 @@ public abstract class Sidekick implements ISidekick {
         flippedAnim.updateExistenceTime();
     }
 
-    void trigger() {
+    void trigger(Level level) {
+        id.power.accept(level.getGrid());
     }
 
-    void triggerIfReady() {
+    void triggerIfReady(Level level) {
         if (isReady()) {
-            trigger();
+            trigger(level);
             resetGauge();
         }
     }
@@ -127,11 +146,11 @@ class ManaSidekick extends Sidekick {
         this.mana = new Gauge(id.gaugeMax());
     }
 
-    public int currentMana() {
+    int currentMana() {
         return mana.getValue();
     }
 
-    public int maxMana() {
+    int maxMana() {
         return mana.getMax();
     }
 
@@ -167,7 +186,7 @@ class CooldownSidekick extends Sidekick {
         this.cooldown = Gauge.full(id.gaugeMax());
     }
 
-    public int turnsLeft() {
+    int turnsLeft() {
         return cooldown.getValue();
     }
 
