@@ -1,3 +1,4 @@
+
 package com.mygdx.kaps.level.gridobject;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -102,6 +103,11 @@ final class BasicGerm extends Germ {
     public BasicGerm(Color color) {
         super(color, GermKind.BASIC);
     }
+
+    @Override
+    public GridObject copy(Color color) {
+        return new BasicGerm(coordinates(), color);
+    }
 }
 
 final class WallGerm extends Germ {
@@ -109,8 +115,8 @@ final class WallGerm extends Germ {
     private final List<AnimatedSprite> animations;
     private int health;
 
-    public WallGerm(Color color, int health) {
-        super(color, GermKind.BASIC);
+    public WallGerm(Coordinates coordinates, Color color, int health) {
+        super(coordinates, color, GermKind.BASIC);
         if (health <= 0 || maxHealth < health)
             throw new IllegalArgumentException("Invalid health: " + health + " / " + maxHealth);
 
@@ -120,10 +126,20 @@ final class WallGerm extends Germ {
           n > 1 ? 4 : 8,
           n > 1 ? .2f : .15f
         )).collect(Collectors.toList());
+
+    }
+
+    public WallGerm(Color color, int health) {
+        this(new Coordinates(), color, health);
     }
 
     public WallGerm(Color color) {
         this(color, maxHealth);
+    }
+
+    @Override
+    public GridObject copy(Color color) {
+        return new WallGerm(coordinates(), color, health);
     }
 
     @Override
@@ -146,13 +162,31 @@ final class WallGerm extends Germ {
 }
 
 final class VirusGerm extends Germ {
+    public VirusGerm(Coordinates coordinates, Color color) {
+        super(coordinates, color, GermKind.VIRUS);
+    }
+
     public VirusGerm(Color color) {
         super(color, GermKind.VIRUS);
+    }
+
+    @Override
+    public GridObject copy(Color color) {
+        return new VirusGerm(coordinates(), color);
     }
 }
 
 final class ThornGerm extends Germ {
+    public ThornGerm(Coordinates coordinates, Color color) {
+        super(coordinates, color, GermKind.THORN);
+    }
+
     public ThornGerm(Color color) {
         super(color, GermKind.THORN);
+    }
+
+    @Override
+    public GridObject copy(Color color) {
+        return new ThornGerm(coordinates(), color);
     }
 }

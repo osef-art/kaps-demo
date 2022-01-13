@@ -28,6 +28,11 @@ public class CapsulePart extends GridObject {
     }
 
     @Override
+    public GridObject copy(Color color) {
+        return new CapsulePart(coordinates(), color);
+    }
+
+    @Override
     public String toString() {
         return super.toString();
     }

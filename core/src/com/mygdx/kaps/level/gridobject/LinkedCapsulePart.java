@@ -43,6 +43,10 @@ public final class LinkedCapsulePart extends CapsulePart {
         return new LinkedCapsulePart(coordinates(), color(), orientation);
     }
 
+    public GridObject copy(Color color) {
+        return new LinkedCapsulePart(coordinates(), color, orientation);
+    }
+
     public Optional<LinkedCapsulePart> linked() {
         return Optional.of(linked);
     }

@@ -24,4 +24,6 @@ public interface IGridObject {
     Sprite getSprite();
 
     Sprite getPoppingSprite();
+
+    GridObject copy(Color color);
 }

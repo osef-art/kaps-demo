@@ -234,7 +234,7 @@ public class Grid {
     }
 
     void repaint(GridObject obj, Color color) {
-        get(obj.coordinates()).ifPresent(o -> o.repaint(color));
+        get(obj.coordinates()).ifPresent(o -> set(obj.coordinates(), o.copy(color)));
     }
 
 
