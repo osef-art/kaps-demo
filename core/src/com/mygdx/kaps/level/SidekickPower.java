@@ -32,22 +32,27 @@ public class SidekickPower {
     }
 
     public static BiConsumer<Sidekick.SidekickId, Grid> hitRandomLine() {
-        return (id, grid) -> grid.stack().stream()
-          .filter(o -> o.coordinates().y == Utils.getRandomFrom(grid.stack()).coordinates().y)
-          .forEach(o -> grid.hit(o, id.damage()));
+        return (id, grid) -> Utils.getOptionalRandomFrom(grid.stack()).ifPresent(
+          picked -> grid.stack().stream()
+            .filter(o -> o.coordinates().y == picked.coordinates().y)
+            .forEach(o -> grid.hit(o, id.damage()))
+        );
     }
 
     public static BiConsumer<Sidekick.SidekickId, Grid> hitRandomColumn() {
-        return (id, grid) -> grid.stack().stream()
-          .filter(o -> o.coordinates().x == Utils.getRandomFrom(grid.stack()).coordinates().x)
-          .forEach(o -> grid.hit(o, id.damage()));
+        return (id, grid) -> Utils.getOptionalRandomFrom(grid.stack()).ifPresent(
+          picked -> grid.stack().stream()
+            .filter(o -> o.coordinates().x == picked.coordinates().x)
+            .forEach(o -> grid.hit(o, id.damage()))
+        );
     }
 
     public static BiConsumer<Sidekick.SidekickId, Grid> hitRandomDiagonals() {
         return (id, grid) -> Utils.getOptionalRandomFrom(grid.stack()).ifPresent(
           picked -> grid.stack().stream()
             .filter(o -> Math.abs(o.coordinates().x - picked.coordinates().x) ==
-                           Math.abs(o.coordinates().y - picked.coordinates().y))
+                           Math.abs(o.coordinates().y - picked.coordinates().y)
+            )
             .forEach(o -> grid.hit(o, id.damage()))
         );
     }

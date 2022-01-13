@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 public class Utils {
     public static <T> T getRandomFrom(Stream<? extends T> stream) {
-        return getRandomFrom(stream.collect(Collectors.toList()));
+        return getRandomFrom(stream.collect(Collectors.toUnmodifiableList()));
     }
 
     public static <T> T getRandomFrom(Collection<? extends T> collection) {
@@ -16,17 +16,17 @@ public class Utils {
     }
 
     public static <T> Optional<T> getOptionalRandomFrom(Stream<? extends T> stream) {
-        return getOptionalRandomFrom(stream.collect(Collectors.toList()));
+        return getOptionalRandomFrom(stream.collect(Collectors.toUnmodifiableList()));
     }
 
     public static <T> Optional<T> getOptionalRandomFrom(Collection<? extends T> collection) {
         if (collection.size() == 0)
             return Optional.empty();
-        return Optional.of(new ArrayList<>(collection).get(new Random().nextInt(collection.size())));
+        return Optional.of(getRandomFrom(collection));
     }
 
     public static <T> Set<T> getRandomSetOf(Stream<? extends T> stream, int size) {
-        return getRandomSetOf(stream.collect(Collectors.toList()), size);
+        return getRandomSetOf(stream.collect(Collectors.toUnmodifiableList()), size);
     }
 
     public static <T> Set<T> getRandomSetOf(Collection<? extends T> collection, int size) {

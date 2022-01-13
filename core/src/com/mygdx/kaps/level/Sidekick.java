@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.renderer.AnimatedSprite;
+import com.mygdx.kaps.sound.SoundStream;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -27,7 +28,19 @@ interface ISidekick {
 
 public abstract class Sidekick implements ISidekick {
     enum AttackType {
-        SLICE, FIRE, FIREARM, MELEE, MAGIC, BRUSH,
+        SLICE(SoundStream.SoundStore.SLICE),
+        FIRE(SoundStream.SoundStore.FIRE),
+        FIREARM(SoundStream.SoundStore.SHOT),
+        MELEE(SoundStream.SoundStore.SHOT),
+        MAGIC(SoundStream.SoundStore.SLICE),
+        BRUSH(SoundStream.SoundStore.PAINT),
+        ;
+
+        private final SoundStream.SoundStore sound;
+
+        AttackType(SoundStream.SoundStore sound) {
+            this.sound = sound;
+        }
     }
 
     enum SidekickId {
@@ -55,7 +68,10 @@ public abstract class Sidekick implements ISidekick {
                    int damage, String... names) {
             var name = names.length > 0 ? names[0] : toString();
             animPath = "android/assets/sprites/sidekicks/" + name + "_";
-            this.power = grid -> power.accept(this, grid);
+            this.power = grid -> {
+                power.accept(this, grid);
+                grid.initEveryCapsuleDropping();
+            };
             this.passive = passive;
             this.damage = damage;
             this.color = color;
@@ -135,6 +151,10 @@ public abstract class Sidekick implements ISidekick {
             trigger(level);
             resetGauge();
         }
+    }
+
+    SoundStream.SoundStore sound() {
+        return id.type.sound;
     }
 }
 

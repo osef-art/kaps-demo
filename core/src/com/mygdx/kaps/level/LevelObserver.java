@@ -40,6 +40,7 @@ class SoundPlayerObserver implements LevelObserver {
     public void onMatchPerformed(Set<? extends GridObject> destroyed) {
         var containsGerms = destroyed.stream().anyMatch(GridObject::isGerm);
         if (containsGerms) mainStream.play(SoundStream.SoundStore.PLOP, 0);
+        else if (destroyed.size() >= 5) mainStream.play(SoundStream.SoundStore.MATCH_FIVE);
         else mainStream.play(SoundStream.SoundStore.IMPACT);
     }
 
@@ -62,6 +63,7 @@ class SoundPlayerObserver implements LevelObserver {
 class SidekicksObserver implements LevelObserver {
     private final Level level;
     private final HashMap<Color, Sidekick> sidekickMap = new HashMap<>();
+    private final SoundStream stream = new SoundStream(.25f);
 
     SidekicksObserver(Level level, List<Sidekick> sidekicks) {
         this.level = level;
@@ -70,12 +72,10 @@ class SidekicksObserver implements LevelObserver {
 
     @Override
     public void onCapsuleFlipped() {
-
     }
 
     @Override
     public void onCapsuleFreeze() {
-
     }
 
     @Override
@@ -87,18 +87,17 @@ class SidekicksObserver implements LevelObserver {
 
     @Override
     public void onIllegalMove() {
-
     }
 
     @Override
     public void onCapsuleDrop() {
-
     }
 
     @Override
     public void onCapsuleSpawn() {
         sidekickMap.values().forEach(sidekick -> {
             sidekick.decreaseCooldown();
+            if (sidekick.isReady()) stream.play(sidekick.sound());
             sidekick.triggerIfReady(level);
         });
     }

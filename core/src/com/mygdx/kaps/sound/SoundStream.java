@@ -11,12 +11,14 @@ import java.util.stream.IntStream;
 public class SoundStream {
     public enum SoundStore {
         LIGHT_IMPACT,
+        MATCH_FIVE,
         SLICE(2),
-        PAINT(3),
+        SHOT(3),
         FIRE(2),
         FLIP(3),
         PLOP(4),
         IMPACT,
+        PAINT,
         DROP,
         CANT,
         ;
@@ -59,7 +61,7 @@ public class SoundStream {
         play(sound.getPathOfInstance(instance));
     }
 
-    public void play(String path) {
+    private void play(String path) {
         if (sound != null) sound.dispose();
         sound = Gdx.audio.newSound(Gdx.files.internal(path));
         sound.setVolume(sound.play(), volume);

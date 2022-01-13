@@ -224,7 +224,7 @@ public class Level {
         }
     }
 
-    void update() {
+    public void update() {
         grid.updateSprites();
         sidekicks.forEach(Sidekick::updateSprite);
         popping.forEach(GridObject::updatePoppingSprite);
