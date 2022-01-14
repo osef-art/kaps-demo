@@ -1,5 +1,6 @@
 package com.mygdx.kaps.level;
 
+import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.Germ;
@@ -7,24 +8,31 @@ import com.mygdx.kaps.level.gridobject.Germ;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class LevelLoader {
-    private static boolean isValid(Level level) {
+public class LevelBuilder {
+    private final Set<Sidekick> sidekicks = new HashSet<>();
+    private final Color blank = Color.randomBlank();
+    private final int maxSidekicks = 2;
+    private int levelNum = -1;
+
+    private boolean isValid(Level level) {
         return !level.getGrid().containsMatches();
     }
 
-    public static Level randomLevel(int width, int height, int germNumber) {
+    private Level generateRandomLevel(int width, int height, int germNumber) {
         if (germNumber > width * Math.min(height, 3))
             throw new IllegalArgumentException("Too many germs for a " + width + "x" + height + " grid: " + germNumber);
 
         var grid = new Grid(width, height);
-        var sidekicks = Sidekick.randomSet(2);
-        var blank = Color.randomBlank();
+        while (sidekicks.size() < maxSidekicks)
+            sidekicks.add(Sidekick.random());
 
         do {
             var randomTile = new Coordinates(
@@ -32,19 +40,19 @@ public class LevelLoader {
               new Random().nextInt(3)
             );
             if (grid.isEmptyTile(randomTile)) {
-                grid.put(Germ.random(randomTile, Color.random(Color.getSetFrom(sidekicks, blank))));
+                grid.put(Germ.random(randomTile, Utils.getRandomFrom(Color.getSetFrom(sidekicks, blank))));
                 germNumber--;
             }
         } while (germNumber > 0);
 
         var lvl = new Level(grid, sidekicks, blank);
-        return isValid(lvl) ? lvl : randomLevel(width, height, germNumber);
+        return isValid(lvl) ? lvl : generateRandomLevel(width, height, germNumber);
     }
 
-    public static Level loadFrom(String filePath) {
+    private Level loadLevelFrom(String filePath) {
         List<String> gridData;
-        var sidekicks = Sidekick.randomSet(2);
-        var blankColor = Color.randomBlank();
+        while (sidekicks.size() < maxSidekicks)
+            sidekicks.add(Sidekick.random());
 
         try {
             Stream<String> lines = Files.lines(Path.of(filePath));
@@ -58,12 +66,26 @@ public class LevelLoader {
             var chars = line.toCharArray();
             var germs = IntStream.range(0, chars.length)
               .mapToObj(n -> chars[n])
-              .map(c -> c == '.' ? null : Germ.ofSymbol(c, Color.getSetFrom(sidekicks, blankColor)))
+              .map(c -> c == '.' ? null : Germ.ofSymbol(c, Color.getSetFrom(sidekicks, blank)))
               .collect(Collectors.toList());
             return new Grid.Row(germs);
         }).collect(Collectors.toList());
 
-        var lvl = new Level(new Grid(rows), sidekicks, blankColor);
-        return isValid(lvl) ? lvl : loadFrom(filePath);
+        var lvl = new Level(new Grid(rows), sidekicks, blank);
+        return isValid(lvl) ? lvl : loadLevelFrom(filePath);
+    }
+
+    public void addSidekick(Sidekick sdk) {
+        sidekicks.add(sdk);
+    }
+
+    public void setLevel(int lvl) {
+        levelNum = lvl;
+    }
+
+    public Level build() {
+        return levelNum <= -1 ?
+                 generateRandomLevel(6, 15, 10) :
+                 loadLevelFrom("android/assets/levels/level" + levelNum);
     }
 }

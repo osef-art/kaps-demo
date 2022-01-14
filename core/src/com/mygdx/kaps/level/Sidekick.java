@@ -7,7 +7,7 @@ import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.sound.SoundStream;
 
 import java.util.Arrays;
-import java.util.Set;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -35,7 +35,6 @@ public abstract class Sidekick implements ISidekick {
         MAGIC(SoundStream.SoundStore.SLICE),
         BRUSH(SoundStream.SoundStore.PAINT),
         ;
-
         private final SoundStream.SoundStore sound;
 
         AttackType(SoundStream.SoundStore sound) {
@@ -105,6 +104,13 @@ public abstract class Sidekick implements ISidekick {
         int damage() {
             return damage;
         }
+
+        private static SidekickId ofName(String name) {
+            return Arrays.stream(values())
+              .filter(s -> s.toString().equalsIgnoreCase(name))
+              .findFirst()
+              .orElseThrow(() -> new IllegalArgumentException("Can't resolve sidekick of name " + name));
+        }
     }
 
     private final AnimatedSprite flippedAnim;
@@ -117,12 +123,29 @@ public abstract class Sidekick implements ISidekick {
         this.id = id;
     }
 
-    static Set<Sidekick> randomSet(int n) {
-        return Utils.getRandomSetOf(Arrays.stream(SidekickId.values()).map(Sidekick::ofId), n);
-    }
-
     static Sidekick ofId(SidekickId id) {
         return id.passive ? new CooldownSidekick(id) : new ManaSidekick(id);
+    }
+
+    public static Sidekick ofName(String name) {
+        return ofId(SidekickId.ofName(name));
+    }
+
+    public static Sidekick random() {
+        return ofId(Utils.getRandomFrom(Arrays.stream(SidekickId.values())));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Sidekick)) return false;
+        Sidekick sidekick = (Sidekick) o;
+        return id == sidekick.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     public Color color() {

@@ -6,7 +6,8 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.kaps.controller.InputHandler;
 import com.mygdx.kaps.level.GameView;
 import com.mygdx.kaps.level.Level;
-import com.mygdx.kaps.level.LevelLoader;
+import com.mygdx.kaps.level.LevelBuilder;
+import com.mygdx.kaps.level.Sidekick;
 
 import java.util.Random;
 
@@ -23,11 +24,24 @@ public class MainScreen extends ApplicationAdapter {
     }
 
     private Level loadedLevel() {
-        if (args.length > 0 && args[0].equals("-l")) {
-            int lvl = args.length > 1 ? Integer.parseInt(args[1]) : new Random().nextInt(21);
-            return LevelLoader.loadFrom("android/assets/levels/level" + lvl);
+        LevelBuilder lvlBuilder = new LevelBuilder();
+        int flags = 0;
+
+        while (args.length > flags) {
+            switch (args[flags]) {
+                case "-s":
+                    if (args.length > flags + 1)
+                        lvlBuilder.addSidekick(Sidekick.ofName(args[flags + 1]));
+                    break;
+                case "-l":
+                    lvlBuilder.setLevel(new Random().nextInt(21));
+                    if (args.length > flags + 1 && args[flags + 1].charAt(0) != '-')
+                        lvlBuilder.setLevel(Integer.parseInt(args[flags + 1]));
+                    break;
+            }
+            flags ++;
         }
-        return LevelLoader.randomLevel(6, 15, 10);
+        return lvlBuilder.build();
     }
 
     @Override

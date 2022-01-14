@@ -42,14 +42,10 @@ public enum Color {
     }
 
     public static Color randomBlank() {
-        return random(Arrays.stream(values())
+        return Utils.getRandomFrom(Arrays.stream(values())
           .filter(c -> c.blank)
           .collect(Collectors.toSet())
         );
-    }
-
-    public static Color random(Set<Color> colors) {
-        return Utils.getRandomFrom(colors);
     }
 
     public static Set<Color> getSetFrom(Set<Sidekick> sidekicks, Color... colors) {
