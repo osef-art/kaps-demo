@@ -54,7 +54,7 @@ public enum Color {
           .collect(Collectors.toUnmodifiableSet());
     }
 
-    int id() {
+    public int id() {
         return ordinal() + 1;
     }
 

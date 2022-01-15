@@ -1,15 +1,14 @@
 package com.mygdx.kaps.level.gridobject;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.level.Grid;
+import com.mygdx.kaps.renderer.SpriteData;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class CapsulePart extends GridObject {
-    private final Sprite sprite;
     private boolean dropping;
 
     public CapsulePart(LinkedCapsulePart caps) {
@@ -17,19 +16,11 @@ public class CapsulePart extends GridObject {
     }
 
     CapsulePart(Coordinates coordinates, Color color) {
-        super(coordinates, color, "android/assets/sprites/" + color.id() + "/caps");
-        sprite = new Sprite(
-          new Texture("android/assets/sprites/" + color.id() + "/caps/" + Orientation.NONE + ".png")
-        );
+        super(coordinates, color);
     }
 
     CapsulePart copy() {
         return new CapsulePart(coordinates(), color());
-    }
-
-    @Override
-    public GridObject copy(Color color) {
-        return new CapsulePart(coordinates(), color);
     }
 
     @Override
@@ -38,8 +29,8 @@ public class CapsulePart extends GridObject {
     }
 
     @Override
-    public Sprite getSprite() {
-        return sprite;
+    public Sprite getSprite(SpriteData spriteData) {
+        return spriteData.getCapsule(orientation(), color());
     }
 
     public Optional<LinkedCapsulePart> linked() {

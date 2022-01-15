@@ -1,20 +1,34 @@
 package com.mygdx.kaps.level.gridobject;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.mygdx.kaps.renderer.AnimatedSprite;
+import com.mygdx.kaps.renderer.SpriteData;
 
 import java.util.Objects;
 
-public abstract class GridObject implements IGridObject {
-    private final AnimatedSprite poppingAnim;
-    private final Coordinates coordinates;
-    private final Color color;
-    private boolean destroyed;
+interface IGridObject {
+    boolean isGerm();
 
-    GridObject(Coordinates coordinates, Color color, String path) {
+    boolean isCapsule();
+
+    boolean isDropping();
+
+    boolean isDestroyed();
+
+    void takeHit();
+
+    Sprite getSprite(SpriteData data);
+
+    void repaint(Color color);
+}
+
+public abstract class GridObject implements IGridObject {
+    private final Coordinates coordinates;
+    private boolean destroyed;
+    private Color color;
+
+    GridObject(Coordinates coordinates, Color color) {
         this.color = color;
         this.coordinates = Objects.requireNonNull(coordinates).copy();
-        poppingAnim = new AnimatedSprite(path + "/pop_", 8, 0.075f);
     }
 
     @Override
@@ -46,27 +60,11 @@ public abstract class GridObject implements IGridObject {
         return false;
     }
 
-    @Override
-    public boolean hasVanished() {
-        return poppingAnim.isFinished();
-    }
-
-    public Sprite getPoppingSprite() {
-        return poppingAnim.getCurrentSprite();
-    }
-
     public void takeHit() {
         destroyed = true;
     }
 
-    public void updateSprite() {
-    }
-
-    public void pop() {
-        poppingAnim.reset();
-    }
-
-    public void updatePoppingSprite() {
-        poppingAnim.updateExistenceTime();
+    public void repaint(Color color) {
+        this.color = color;
     }
 }

@@ -175,18 +175,18 @@ public class Grid {
 
     private Stream<CapsulePart> capsuleStack() {
         return stack().stream()
-          .filter(IGridObject::isCapsule)
+          .filter(GridObject::isCapsule)
           .map(o -> (CapsulePart) o);
     }
 
     Stream<Germ> germStack() {
         return stack().stream()
-          .filter(IGridObject::isGerm)
+          .filter(GridObject::isGerm)
           .map(o -> (Germ) o);
     }
 
     long germsCount() {
-        return stack().stream().filter(IGridObject::isGerm).count();
+        return stack().stream().filter(GridObject::isGerm).count();
     }
 
     // tiles operations
@@ -206,10 +206,7 @@ public class Grid {
     private void hit(Coordinates coordinates, int damage) {
         IntStream.range(0, damage).forEach(n -> get(coordinates).ifPresent(o -> {
             o.takeHit();
-            if (o.isDestroyed()) {
-                o.pop();
-                clear(coordinates);
-            }
+            if (o.isDestroyed()) clear(coordinates);
         }));
     }
 
@@ -234,9 +231,8 @@ public class Grid {
     }
 
     void repaint(GridObject obj, Color color) {
-        get(obj.coordinates()).ifPresent(o -> set(obj.coordinates(), o.copy(color)));
+        get(obj.coordinates()).ifPresent(o -> o.repaint(color));
     }
-
 
     // stack operations
     boolean containsMatches() {
@@ -280,9 +276,5 @@ public class Grid {
           })
           .reduce(Boolean::logicalOr)
           .orElse(false);
-    }
-
-    void updateSprites() {
-        stack().forEach(IGridObject::updateSprite);
     }
 }

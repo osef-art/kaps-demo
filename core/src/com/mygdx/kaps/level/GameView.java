@@ -7,8 +7,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.kaps.level.gridobject.Capsule;
 import com.mygdx.kaps.level.gridobject.CapsulePart;
 import com.mygdx.kaps.level.gridobject.Coordinates;
-import com.mygdx.kaps.renderer.Renderable;
 import com.mygdx.kaps.renderer.ShapeRendererAdapter;
+import com.mygdx.kaps.renderer.SpriteData;
 import com.mygdx.kaps.renderer.SpriteRendererAdapter;
 import com.mygdx.kaps.renderer.TextRendererAdaptor;
 
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
-public class GameView implements Renderable {
+public class GameView {
     private static class Dimensions {
         private static class SidekickZone {
             private final Rectangle zone;
@@ -104,13 +104,14 @@ public class GameView implements Renderable {
     }
 
     private enum Font {
-        LITTLE, MEDIUM, MEDIUM_GREY, BIG_GREY
+        LITTLE, MEDIUM, MEDIUM_GREY, BIG, BIG_GREY
     }
 
     private final SpriteRendererAdapter spra = new SpriteRendererAdapter();
     private final ShapeRendererAdapter sra = new ShapeRendererAdapter();
     private final HashMap<Font, TextRendererAdaptor> tra = new HashMap<>();
     private final Dimensions dimensions;
+    private final SpriteData spriteData = new SpriteData();
     private final Level model;
 
     public GameView(Level lvl) {
@@ -119,6 +120,7 @@ public class GameView implements Renderable {
         model = lvl;
         tra.put(Font.LITTLE, new TextRendererAdaptor(spra, 16, Color.WHITE));
         tra.put(Font.MEDIUM, new TextRendererAdaptor(spra, 24, Color.WHITE));
+        tra.put(Font.BIG, new TextRendererAdaptor(spra, 32, Color.WHITE));
         tra.put(Font.MEDIUM_GREY, new TextRendererAdaptor(spra, 20, new Color(.8f, .8f, .9f, 1)));
         tra.put(Font.BIG_GREY, new TextRendererAdaptor(spra, 32, new Color(.7f, .7f, .8f, 1)));
     }
@@ -136,7 +138,7 @@ public class GameView implements Renderable {
                 dimensions.tileAt(x, y),
                 x % 2 == y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
               );
-              model.getGrid().get(x, y).ifPresent(o -> spra.render(o.getSprite(), dimensions.tileAt(x, y)));
+              model.getGrid().get(x, y).ifPresent(o -> spra.render(o.getSprite(spriteData), dimensions.tileAt(x, y)));
           })
         );
         sra.drawRoundedGauge(
@@ -145,17 +147,18 @@ public class GameView implements Renderable {
     }
 
     private void renderCapsulePart(CapsulePart part, float alpha) {
-        spra.render(part.getSprite(), dimensions.tileAt(part.coordinates()), alpha);
+        spra.render(part.getSprite(spriteData), dimensions.tileAt(part.coordinates()), alpha);
     }
 
     private void renderCapsulePart(CapsulePart part) {
-        spra.render(part.getSprite(), dimensions.tileAt(part.coordinates()));
+        spra.render(part.getSprite(spriteData), dimensions.tileAt(part.coordinates()));
     }
 
     private void renderCapsule(Capsule caps, Rectangle zone) {
         caps.applyForEach(
-          p -> spra.render(p.getSprite(), zone.x, zone.y + zone.height / 4, zone.width / 2, zone.height / 2),
-          p -> spra.render(p.getSprite(), zone.x + zone.width / 2, zone.y + zone.height / 4, zone.width / 2, zone.height / 2)
+          p -> spra.render(p.getSprite(spriteData), zone.x, zone.y + zone.height / 4, zone.width / 2, zone.height / 2),
+          p -> spra.render(p.getSprite(spriteData), zone.x + zone.width / 2, zone.y + zone.height / 4, zone.width / 2,
+            zone.height / 2)
         );
     }
 
@@ -167,7 +170,7 @@ public class GameView implements Renderable {
     }
 
     private void renderPoppingObjects() {
-        model.poppingObjects().forEach(c -> spra.render(c.getPoppingSprite(), dimensions.tileAt(c.coordinates())));
+//        model.poppingObjects().forEach(c -> spra.render(c.getPoppingSprite(), dimensions.tileAt(c.coordinates())));
     }
 
     private void renderUpcoming() {
@@ -194,7 +197,7 @@ public class GameView implements Renderable {
                 );
             }, s -> {
                 sra.drawArc(dimensions.sidekickZones.get(n).cooldown, 270, 360 * (float) s.gaugeRatio(), new Color(1, 1, 1, .3f));
-                tra.get(Font.MEDIUM).drawText(s.turnsLeft() + "", dimensions.sidekickZones.get(n).cooldown);
+                tra.get(Font.BIG).drawText(s.turnsLeft() + "", dimensions.sidekickZones.get(n).cooldown);
                 tra.get(Font.LITTLE).drawText("turns", dimensions.sidekickZones.get(n).cooldownText);
             });
         });
@@ -203,8 +206,8 @@ public class GameView implements Renderable {
         spra.render(model.getSidekick(1).getSprite(), dimensions.sidekickZones.get(1).head);
     }
 
-    @Override
     public void render() {
+        spriteData.updateSprites();
         renderLayout();
         renderGrid();
         renderFallingCapsules();

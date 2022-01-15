@@ -69,7 +69,7 @@ public abstract class Sidekick implements ISidekick {
             animPath = "android/assets/sprites/sidekicks/" + name + "_";
             this.power = grid -> {
                 power.accept(this, grid);
-                grid.initEveryCapsuleDropping();
+//                grid.initEveryCapsuleDropping();
             };
             this.passive = passive;
             this.damage = damage;
@@ -78,13 +78,11 @@ public abstract class Sidekick implements ISidekick {
             this.type = type;
         }
 
-        SidekickId(Color color, AttackType type, BiConsumer<SidekickId, Grid> power, int mana, boolean passive,
-                   String... names) {
+        SidekickId(Color color, AttackType type, BiConsumer<SidekickId, Grid> power, int mana, boolean passive, String... names) {
             this(color, type, power, mana, passive, 0, names);
         }
 
-        SidekickId(Color color, AttackType type, BiConsumer<SidekickId, Grid> power, int mana, int damage,
-                   String... names) {
+        SidekickId(Color color, AttackType type, BiConsumer<SidekickId, Grid> power, int mana, int damage, String... names) {
             this(color, type, power, mana, false, damage, names);
         }
 

@@ -1,6 +1,7 @@
 package com.mygdx.kaps.level.gridobject;
 
 @SuppressWarnings("DuplicatedCode")
+public
 enum Orientation {
     NONE("unlinked"), LEFT("left"), UP("up"), RIGHT("right"), DOWN("down");
 

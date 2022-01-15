@@ -9,8 +9,6 @@ import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.level.LevelBuilder;
 import com.mygdx.kaps.level.Sidekick;
 
-import java.util.Random;
-
 public class MainScreen extends ApplicationAdapter {
     public static OrthographicCamera camera;
     private InputHandler inputs;
@@ -34,7 +32,7 @@ public class MainScreen extends ApplicationAdapter {
                         lvlBuilder.addSidekick(Sidekick.ofName(args[flags + 1]));
                     break;
                 case "-l":
-                    lvlBuilder.setLevel(new Random().nextInt(21));
+                    lvlBuilder.setRandomLevel();
                     if (args.length > flags + 1 && args[flags + 1].charAt(0) != '-')
                         lvlBuilder.setLevel(Integer.parseInt(args[flags + 1]));
                     break;

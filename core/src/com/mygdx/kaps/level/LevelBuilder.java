@@ -19,7 +19,8 @@ import java.util.stream.Stream;
 public class LevelBuilder {
     private final Set<Sidekick> sidekicks = new HashSet<>();
     private final Color blank = Color.randomBlank();
-    private final int maxSidekicks = 2;
+    private final static int maxSidekicks = 2;
+    private final static int maxLevels = 20;
     private int levelNum = -1;
 
     private boolean isValid(Level level) {
@@ -76,7 +77,12 @@ public class LevelBuilder {
     }
 
     public void addSidekick(Sidekick sdk) {
-        sidekicks.add(sdk);
+        if (sidekicks.size() < maxSidekicks)
+            sidekicks.add(sdk);
+    }
+
+    public void setRandomLevel() {
+        setLevel(new Random().nextInt(maxLevels + 1));
     }
 
     public void setLevel(int lvl) {

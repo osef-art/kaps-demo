@@ -4,6 +4,7 @@ import com.mygdx.kaps.level.gridobject.Capsule;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
+import com.mygdx.kaps.renderer.SpriteData;
 import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
@@ -225,10 +226,8 @@ public class Level {
     }
 
     public void update() {
-        grid.updateSprites();
         sidekicks.forEach(Sidekick::updateSprite);
-        popping.forEach(GridObject::updatePoppingSprite);
-        if (popping.removeIf(GridObject::hasVanished) && gameIsOver()) {
+        if (gameIsOver()) {
             System.out.println("LEVEL CLEARED !");
             System.exit(0);
         }

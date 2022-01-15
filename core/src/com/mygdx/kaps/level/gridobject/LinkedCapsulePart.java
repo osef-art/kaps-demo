@@ -1,31 +1,16 @@
 package com.mygdx.kaps.level.gridobject;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public final class LinkedCapsulePart extends CapsulePart {
-    private final HashMap<Orientation, Sprite> sprites = new HashMap<>();
     private Orientation orientation;
     private LinkedCapsulePart linked;
 
     LinkedCapsulePart(Coordinates coordinates, Color color) {
         super(coordinates, color);
-        Arrays.stream(Orientation.values())
-          .forEach(o -> {
-              var sprite = new Sprite(
-                new Texture("android/assets/sprites/" + color.id() + "/caps/" + o + ".png")
-              );
-              sprite.flip(false, true);
-              sprites.put(o, sprite);
-          });
-        sprites.put(Orientation.NONE, super.getSprite());
     }
 
     private LinkedCapsulePart(Coordinates coordinates, Color color, Orientation orientation) {
@@ -43,20 +28,12 @@ public final class LinkedCapsulePart extends CapsulePart {
         return new LinkedCapsulePart(coordinates(), color(), orientation);
     }
 
-    public GridObject copy(Color color) {
-        return new LinkedCapsulePart(coordinates(), color, orientation);
-    }
-
     public Optional<LinkedCapsulePart> linked() {
         return Optional.of(linked);
     }
 
     Orientation orientation() {
         return orientation;
-    }
-
-    public Sprite getSprite() {
-        return sprites.get(orientation);
     }
 
     void linkTo(LinkedCapsulePart linked, Orientation side) {
