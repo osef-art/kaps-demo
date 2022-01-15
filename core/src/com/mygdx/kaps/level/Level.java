@@ -4,7 +4,6 @@ import com.mygdx.kaps.level.gridobject.Capsule;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
-import com.mygdx.kaps.renderer.SpriteData;
 import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
@@ -68,6 +67,12 @@ public class Level {
         return sidekicks.get(index);
     }
 
+    Set<Sidekick> matesOf(Sidekick sidekick) {
+        return sidekicks.stream()
+          .filter(s -> !s.equals(sidekick))
+          .collect(Collectors.toUnmodifiableSet());
+    }
+
     public Set<Color> getColorSet() {
         return colors;
     }
@@ -90,10 +95,6 @@ public class Level {
 
     public Coordinates spawningCoordinates() {
         return new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1);
-    }
-
-    List<GridObject> poppingObjects() {
-        return popping;
     }
 
     double refreshingProgression() {
@@ -183,7 +184,6 @@ public class Level {
     private boolean gameIsOver() {
         return grid.germsCount() <= 0 && popping.isEmpty() ||
                  controlledCapsules.stream()
-//                   .filter(Predicate.not(Capsule::isDropping))
                    .map(c -> !c.canStandIn(grid))
                    .reduce(Boolean::logicalOr)
                    .orElse(false);

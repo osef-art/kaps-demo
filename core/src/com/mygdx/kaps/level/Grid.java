@@ -173,7 +173,7 @@ public class Grid {
           .collect(Collectors.toUnmodifiableSet());
     }
 
-    private Stream<CapsulePart> capsuleStack() {
+    Stream<CapsulePart> capsuleStack() {
         return stack().stream()
           .filter(GridObject::isCapsule)
           .map(o -> (CapsulePart) o);
