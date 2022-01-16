@@ -3,7 +3,6 @@ package com.mygdx.kaps.level;
 import com.mygdx.kaps.level.gridobject.Capsule;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
-import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
@@ -21,7 +20,7 @@ public class Level {
             model = lvl;
         }
 
-         public void togglePreview() {
+        public void togglePreview() {
             enablePreview = !enablePreview;
             model.controlledCapsules.forEach(c -> {
                 if (enablePreview) model.updatePreview(c);
@@ -31,10 +30,10 @@ public class Level {
     }
 
     private final LevelParameters parameters;
+    private final ParticleManager particleManager;
     private final List<LevelObserver> observers;
     private final LinkedList<Capsule> upcomingCapsules;
     private final List<Capsule> controlledCapsules = new ArrayList<>();
-    private final List<GridObject> popping = new ArrayList<>();
     private final List<Sidekick> sidekicks;
     private final Set<Color> colors;
     private final List<Timer> timers;
@@ -58,7 +57,12 @@ public class Level {
         Timer droppingTimer = Timer.ofMilliseconds(10, this::dipOrFreezeDroppingCapsules);
         timers = Arrays.asList(gridRefresher, droppingTimer);
 
-        observers = Arrays.asList(new SoundPlayerObserver(), new SidekicksObserver(this, this.sidekicks));
+        particleManager = new ParticleManager();
+        observers = Arrays.asList(
+          new SoundPlayerObserver(),
+          new SidekicksObserver(this, this.sidekicks),
+          particleManager
+        );
 
         spawnCapsule();
     }
@@ -95,6 +99,10 @@ public class Level {
 
     public Coordinates spawningCoordinates() {
         return new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1);
+    }
+
+    List<ParticleManager.PoppingObject> visualParticles() {
+        return particleManager.getPoppingObjects();
     }
 
     double refreshingProgression() {
@@ -182,11 +190,10 @@ public class Level {
 
     // update
     private boolean gameIsOver() {
-        return grid.germsCount() <= 0 && popping.isEmpty() ||
-                 controlledCapsules.stream()
-                   .map(c -> !c.canStandIn(grid))
-                   .reduce(Boolean::logicalOr)
-                   .orElse(false);
+        return grid.germsCount() <= 0 || controlledCapsules.stream()
+          .map(c -> !c.canStandIn(grid))
+          .reduce(Boolean::logicalOr)
+          .orElse(false);
     }
 
     private void updatePreview(Capsule capsule) {
@@ -204,7 +211,6 @@ public class Level {
         if (grid.containsMatches()) {
             var destroyed = grid.hitMatches();
             observers.forEach(obs -> obs.onMatchPerformed(destroyed));
-            popping.addAll(destroyed);
             grid.initEveryCapsuleDropping();
         }
     }
@@ -227,6 +233,7 @@ public class Level {
 
     public void update() {
         sidekicks.forEach(Sidekick::updateSprite);
+        observers.forEach(LevelObserver::onLevelUpdate);
         if (gameIsOver()) {
             System.out.println("LEVEL CLEARED !");
             System.exit(0);

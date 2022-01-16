@@ -50,7 +50,7 @@ public class SoundStream {
     private Sound sound;
 
     public SoundStream(float volume) {
-        this.volume = volume / 10;
+        this.volume = volume;
     }
 
     public void play(SoundStore sound) {

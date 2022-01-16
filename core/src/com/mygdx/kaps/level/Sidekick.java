@@ -152,7 +152,7 @@ public abstract class Sidekick implements ISidekick {
         return id;
     }
 
-    Color color() {
+    public Color color() {
         return id.color;
     }
 

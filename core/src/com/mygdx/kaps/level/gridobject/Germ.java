@@ -3,6 +3,7 @@ package com.mygdx.kaps.level.gridobject;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.Utils;
+import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.renderer.SpriteData;
 
 import java.util.Arrays;
@@ -75,19 +76,23 @@ public abstract class Germ extends GridObject {
     }
 
     @Override
+    public boolean isGerm() {
+        return true;
+    }
+
+    @Override
     public Sprite getSprite(SpriteData data) {
         return data.getGerm(kind, color()).getCurrentSprite();
     }
 
     @Override
-    public boolean isGerm() {
-        return true;
+    public AnimatedSprite poppingAnim() {
+        return SpriteData.poppingGermAnimation(kind, color());
     }
 }
 
-
 final class BasicGerm extends Germ {
-    public BasicGerm(Color color) {
+    BasicGerm(Color color) {
         super(color, GermKind.BASIC);
     }
 }
@@ -96,7 +101,7 @@ final class WallGerm extends Germ {
     private static final int maxHealth = 4;
     private int health;
 
-    public WallGerm(Color color, int health) {
+    WallGerm(Color color, int health) {
         super(color, GermKind.BASIC);
         if (health <= 0 || maxHealth < health)
             throw new IllegalArgumentException("Invalid health: " + health + " / " + maxHealth);
@@ -104,13 +109,8 @@ final class WallGerm extends Germ {
         this.health = health;
     }
 
-    public WallGerm(Color color) {
+    WallGerm(Color color) {
         this(color, maxHealth);
-    }
-
-    @Override
-    public Sprite getSprite(SpriteData data) {
-        return data.getWallGerm(health, color()).getCurrentSprite();
     }
 
     public boolean isDestroyed() {
@@ -120,16 +120,26 @@ final class WallGerm extends Germ {
     public void takeHit() {
         if (health > 0) health--;
     }
+
+    @Override
+    public Sprite getSprite(SpriteData data) {
+        return data.getWallGerm(health, color()).getCurrentSprite();
+    }
+
+    @Override
+    public AnimatedSprite poppingAnim() {
+        return SpriteData.poppingWallAnimation(health, color());
+    }
 }
 
 final class VirusGerm extends Germ {
-    public VirusGerm(Color color) {
+    VirusGerm(Color color) {
         super(color, GermKind.VIRUS);
     }
 }
 
 final class ThornGerm extends Germ {
-    public ThornGerm(Color color) {
+    ThornGerm(Color color) {
         super(color, GermKind.THORN);
     }
 }

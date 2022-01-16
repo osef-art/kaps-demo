@@ -1,6 +1,7 @@
 package com.mygdx.kaps.level.gridobject;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.renderer.SpriteData;
 
 import java.util.Objects;
@@ -66,5 +67,9 @@ public abstract class GridObject implements IGridObject {
 
     public void repaint(Color color) {
         this.color = color;
+    }
+
+    public AnimatedSprite poppingAnim() {
+        return SpriteData.poppingAnimation(color);
     }
 }

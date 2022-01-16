@@ -77,8 +77,7 @@ public class LevelBuilder {
     }
 
     public void addSidekick(Sidekick sdk) {
-        if (sidekicks.size() < maxSidekicks)
-            sidekicks.add(sdk);
+        if (sidekicks.size() < maxSidekicks) sidekicks.add(sdk);
     }
 
     public void setRandomLevel() {
@@ -91,7 +90,7 @@ public class LevelBuilder {
 
     public Level build() {
         return levelNum <= -1 ?
-                 generateRandomLevel(6, 15, 10) :
+                 generateRandomLevel(6, 12, 10) :
                  loadLevelFrom("android/assets/levels/level" + levelNum);
     }
 }

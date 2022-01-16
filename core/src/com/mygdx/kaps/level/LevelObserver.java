@@ -1,9 +1,13 @@
 package com.mygdx.kaps.level;
 
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.level.gridobject.Color;
+import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
+import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.sound.SoundStream;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -20,6 +24,8 @@ interface LevelObserver {
     void onCapsuleDrop();
 
     void onCapsuleSpawn();
+
+    void onLevelUpdate();
 }
 
 class SoundPlayerObserver implements LevelObserver {
@@ -56,6 +62,10 @@ class SoundPlayerObserver implements LevelObserver {
 
     @Override
     public void onCapsuleSpawn() {
+    }
+
+    @Override
+    public void onLevelUpdate() {
 
     }
 }
@@ -63,7 +73,7 @@ class SoundPlayerObserver implements LevelObserver {
 class SidekicksObserver implements LevelObserver {
     private final Level level;
     private final HashMap<Color, Sidekick> sidekickMap = new HashMap<>();
-    private final SoundStream stream = new SoundStream(.25f);
+    private final SoundStream stream = new SoundStream(.5f);
 
     SidekicksObserver(Level level, List<Sidekick> sidekicks) {
         this.level = level;
@@ -100,5 +110,75 @@ class SidekicksObserver implements LevelObserver {
             if (sidekick.isReady()) stream.play(sidekick.sound());
             sidekick.triggerIfReady(level);
         });
+    }
+
+    @Override
+    public void onLevelUpdate() {
+
+    }
+}
+
+class ParticleManager implements LevelObserver {
+    static class PoppingObject {
+        private final Coordinates coordinates;
+        private final AnimatedSprite anim;
+
+        private PoppingObject(GridObject obj) {
+            coordinates = obj.coordinates();
+            anim = obj.poppingAnim();
+        }
+
+        Sprite getSprite() {
+            return anim.getCurrentSprite();
+        }
+
+        public Coordinates coordinates() {
+            return coordinates;
+        }
+    }
+
+    private final List<PoppingObject> popping = new ArrayList<>();
+
+    List<PoppingObject> getPoppingObjects() {
+        return popping;
+    }
+
+    @Override
+    public void onCapsuleFlipped() {
+    }
+
+    @Override
+    public void onCapsuleFreeze() {
+    }
+
+    @Override
+    public void onMatchPerformed(Set<? extends GridObject> destroyed) {
+        destroyed.forEach(o -> popping.add(new PoppingObject(o)));
+    }
+
+    @Override
+    public void onIllegalMove() {
+    }
+
+    @Override
+    public void onCapsuleDrop() {
+    }
+
+    @Override
+    public void onCapsuleSpawn() {
+    }
+
+    @Override
+    public void onLevelUpdate() {
+        updateAnimations();
+        filterFinished();
+    }
+
+    private void updateAnimations() {
+        popping.forEach(p -> p.anim.updateExistenceTime());
+    }
+
+    private void filterFinished() {
+        popping.removeIf(p -> p.anim.isFinished());
     }
 }

@@ -206,6 +206,10 @@ public class GameView {
         spra.render(model.getSidekick(1).getSprite(), dimensions.sidekickZones.get(1).head);
     }
 
+    private void renderParticles() {
+        model.visualParticles().forEach(p -> spra.render(p.getSprite(), dimensions.tileAt(p.coordinates())));
+    }
+
     public void render() {
         spriteData.updateSprites();
         renderLayout();
@@ -214,6 +218,7 @@ public class GameView {
         renderPoppingObjects();
         renderSidekicks();
         renderUpcoming();
+        renderParticles();
     }
 
     public void dispose() {
