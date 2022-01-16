@@ -190,21 +190,22 @@ public class Level {
     }
 
     // grid operations
-    private void hit(Coordinates coordinates, int damage, Sidekick.AttackType type) {
-        grid.hit(coordinates, damage);
+    private void attack(Coordinates coordinates, int damage, Sidekick.AttackType type) {
+        var hit = grid.hit(coordinates, damage);
+        hit.ifPresent(obj -> observers.forEach(obs -> obs.onObjectHit(obj)));
         particleManager.addEffect(type, coordinates);
     }
 
-    void hit(Coordinates coordinates, Sidekick.AttackType type) {
-        hit(coordinates, 1, type);
+    void attack(Coordinates coordinates, Sidekick.AttackType type) {
+        attack(coordinates, 1, type);
     }
 
-    void hit(Coordinates coordinates, Sidekick sdk) {
-        hit(coordinates, sdk.damage(), sdk.type());
+    void attack(Coordinates coordinates, Sidekick sdk) {
+        attack(coordinates, sdk.damage(), sdk.type());
     }
 
-    void hit(GridObject obj, Sidekick sdk) {
-        hit(obj.coordinates(), sdk);
+    void attack(GridObject obj, Sidekick sdk) {
+        attack(obj.coordinates(), sdk);
     }
 
     private void deleteMatchesIfAny() {

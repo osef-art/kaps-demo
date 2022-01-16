@@ -203,25 +203,27 @@ public class Grid {
         rows.get(coordinates.y).clear(coordinates.x);
     }
 
-    void hit(Coordinates coordinates, int damage) {
-        IntStream.range(0, damage).forEach(n -> get(coordinates).ifPresent(o -> {
+    Optional<? extends GridObject> hit(Coordinates coordinates, int damage) {
+        var obj = get(coordinates);
+        IntStream.range(0, damage).forEach(n -> obj.ifPresent(o -> {
             o.takeHit();
             if (o.isDestroyed()) clear(coordinates);
         }));
+        return obj;
     }
 
-    void hit(GridObject o, int damage) {
-        hit(o.coordinates(), damage);
+    Optional<? extends GridObject> hit(GridObject o, int damage) {
+        return hit(o.coordinates(), damage);
     }
 
-    void hit(GridObject o) {
-        hit(o, 1);
+    Optional<? extends GridObject> hit(GridObject o) {
+        return hit(o, 1);
     }
 
     private void detach(Coordinates coordinates) {
         get(coordinates)
           .filter(GridObject::isCapsule)
-          .map(o -> ((CapsulePart) o))
+          .map(o -> (CapsulePart) o)
           .flatMap(CapsulePart::linked)
           .ifPresent(l -> put(new CapsulePart(l)));
     }
@@ -237,7 +239,8 @@ public class Grid {
 
     Set<? extends GridObject> hitMatches() {
         return matchBrowser.allMatchesFoundIn(this).stream()
-          .peek(this::hit)
+          .map(this::hit)
+          .map(Optional::get)
           .collect(Collectors.toUnmodifiableSet());
     }
 

@@ -18,7 +18,11 @@ interface LevelObserver {
 
     void onCapsuleFreeze();
 
-    void onMatchPerformed(Set<? extends GridObject> destroyed);
+    void onObjectHit(GridObject obj);
+
+    default void onMatchPerformed(Set<? extends GridObject> destroyed) {
+        destroyed.forEach(this::onObjectHit);
+    }
 
     void onIllegalMove();
 
@@ -41,6 +45,11 @@ class SoundPlayerObserver implements LevelObserver {
     @Override
     public void onCapsuleFreeze() {
         subStream.play(SoundStream.SoundStore.LIGHT_IMPACT);
+    }
+
+    @Override
+    public void onObjectHit(GridObject obj) {
+
     }
 
     @Override
@@ -67,7 +76,6 @@ class SoundPlayerObserver implements LevelObserver {
 
     @Override
     public void onLevelUpdate() {
-
     }
 }
 
@@ -90,10 +98,8 @@ class SidekicksObserver implements LevelObserver {
     }
 
     @Override
-    public void onMatchPerformed(Set<? extends GridObject> destroyed) {
-        destroyed.forEach(o -> {
-            if (sidekickMap.containsKey(o.color())) sidekickMap.get(o.color()).increaseMana();
-        });
+    public void onObjectHit(GridObject obj) {
+        if (sidekickMap.containsKey(obj.color())) sidekickMap.get(obj.color()).increaseMana();
     }
 
     @Override
@@ -186,8 +192,8 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
-    public void onMatchPerformed(Set<? extends GridObject> destroyed) {
-        destroyed.forEach(o -> popping.add(new GridParticleEffect(o)));
+    public void onObjectHit(GridObject obj) {
+        popping.add(new GridParticleEffect(obj));
     }
 
     @Override

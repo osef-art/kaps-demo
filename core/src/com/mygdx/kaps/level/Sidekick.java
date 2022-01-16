@@ -287,29 +287,29 @@ class SidekickAttack {
     public static SidekickAttack hit3RandomObjects() {
         return new SidekickAttack(
           (sdk, lvl) -> Utils.getRandomSetOf(lvl.getGrid().stack(), 3)
-            .forEach(o -> lvl.hit(o, sdk))
+            .forEach(o -> lvl.attack(o, sdk))
         );
     }
 
     public static SidekickAttack hit1RandomObjectAndAdjacents() {
         return new SidekickAttack((sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(o -> {
-            lvl.hit(o, sdk);
+            lvl.attack(o, sdk);
             Arrays.asList(new Coordinates(0, 1), new Coordinates(0, -1), new Coordinates(1, 0), new Coordinates(-1, 0))
-              .forEach(c -> lvl.hit(c.addedTo(o.coordinates()), sdk.type()));
+              .forEach(c -> lvl.attack(c.addedTo(o.coordinates()), sdk.type()));
         }));
     }
 
     public static SidekickAttack hit2RandomGerms() {
         return new SidekickAttack(
           (sdk, lvl) -> Utils.getRandomSetOf(lvl.getGrid().germStack(), 2)
-            .forEach(g -> lvl.hit(g, sdk))
+            .forEach(g -> lvl.attack(g, sdk))
         );
     }
 
     public static SidekickAttack hit1RandomGerm() {
         return new SidekickAttack(
           (sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().germStack())
-            .ifPresent(g -> lvl.hit(g, sdk))
+            .ifPresent(g -> lvl.attack(g, sdk))
         );
     }
 
@@ -317,7 +317,7 @@ class SidekickAttack {
         return new SidekickAttack((sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(
           picked -> IntStream.range(0, lvl.getGrid().getWidth())
             .mapToObj(n -> new Coordinates(n, picked.coordinates().y))
-            .forEach(c -> lvl.hit(c, sdk))
+            .forEach(c -> lvl.attack(c, sdk))
         ));
     }
 
@@ -325,7 +325,7 @@ class SidekickAttack {
         return new SidekickAttack((sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(
           picked -> IntStream.range(0, lvl.getGrid().getHeight())
             .mapToObj(n -> new Coordinates(picked.coordinates().x, n))
-            .forEach(c -> lvl.hit(c, sdk))
+            .forEach(c -> lvl.attack(c, sdk))
         ));
     }
 
@@ -335,7 +335,7 @@ class SidekickAttack {
             .forEach(y -> IntStream.range(0, lvl.getGrid().getWidth())
               .mapToObj(x -> new Coordinates(x, y))
               .filter(c -> Math.abs(c.x - picked.coordinates().x) == Math.abs(c.y - picked.coordinates().y))
-              .forEach(c -> lvl.hit(c, sdk))
+              .forEach(c -> lvl.attack(c, sdk))
             )
         ));
     }
