@@ -12,8 +12,10 @@ public class SoundStream {
     public enum SoundStore {
         LIGHT_IMPACT,
         MATCH_FIVE,
-        TRIGGER,
+        GAME_OVER,
         SLICE(2),
+        TRIGGER,
+        CLEARED,
         SHOT(3),
         FIRE(2),
         FLIP(3),

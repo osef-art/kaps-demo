@@ -62,6 +62,7 @@ public class Level {
         observers = Arrays.asList(
           new SoundPlayerObserver(),
           new SidekicksObserver(this, this.sidekicks),
+          new GameEndManager(this),
           particleManager
         );
 
@@ -146,14 +147,17 @@ public class Level {
         }, c -> observers.forEach(LevelObserver::onIllegalMove));
     }
 
-    public void dipOrAcceptCapsule() {
+    public boolean dipOrAcceptCapsule() {
+        final boolean[] accepted = {false};
         performIfPossible(Predicate.not(Capsule::isDropping), c -> c.dipped().canStandIn(grid), capsule -> {
             capsule.dip();
             gridRefresher.reset();
         }, c -> {
             acceptAndSpawnNew(c);
+            accepted[0] = true;
             observers.forEach(LevelObserver::onCapsuleFreeze);
         });
+        return accepted[0];
     }
 
     public void flipCapsule() {
@@ -174,9 +178,12 @@ public class Level {
     }
 
     public void dropCapsule() {
-        dipOrAcceptCapsule();
+        if (!dipOrAcceptCapsule())
+            // ^ instead of this, find a way to filter dropping
+            // capsules, so they don't immediately
+            // overlap with just spawned capsules
+            acceptAndSpawnNew(controlledCapsules.get(0));
         observers.forEach(LevelObserver::onCapsuleDrop);
-        acceptAndSpawnNew(controlledCapsules.get(0));
     }
 
     public void holdCapsule() {
@@ -191,8 +198,9 @@ public class Level {
 
     // grid operations
     private void attack(Coordinates coordinates, int damage, Sidekick.AttackType type) {
-        var hit = grid.hit(coordinates, damage);
-        hit.ifPresent(obj -> observers.forEach(obs -> obs.onObjectHit(obj)));
+        grid.hit(coordinates, damage).ifPresent(
+          obj -> observers.forEach(obs -> obs.onObjectHit(obj))
+        );
         particleManager.addEffect(type, coordinates);
     }
 
@@ -232,14 +240,6 @@ public class Level {
         }
     }
 
-    // update
-    private boolean gameIsOver() {
-        return grid.germsCount() <= 0 || controlledCapsules.stream()
-          .map(c -> !c.canStandIn(grid))
-          .reduce(Boolean::logicalOr)
-          .orElse(false);
-    }
-
     private void updatePreview(Capsule capsule) {
         if (parameters.enablePreview) capsule.updatePreview(grid);
     }
@@ -259,10 +259,6 @@ public class Level {
     public void update() {
         sidekicks.forEach(Sidekick::updateSprite);
         observers.forEach(LevelObserver::onLevelUpdate);
-        if (gameIsOver()) {
-            System.out.println("LEVEL CLEARED !");
-            System.exit(0);
-        }
         timers.forEach(Timer::resetIfExceeds);
     }
 }

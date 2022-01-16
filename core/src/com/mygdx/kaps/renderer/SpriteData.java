@@ -55,7 +55,7 @@ public class SpriteData {
     }
 
     private static float randomAnimSpeed() {
-        return poppingSpeed - 0.025f + new Random().nextFloat() * 0.05f;
+        return poppingSpeed + new Random().nextFloat() * 0.1f;
     }
 
     public static AnimatedSprite attackEffect(Sidekick.AttackType type) {

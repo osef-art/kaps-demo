@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 interface LevelObserver {
     void onCapsuleFlipped();
@@ -220,5 +221,70 @@ class ParticleManager implements LevelObserver {
 
     private void filterVanished() {
         popping.removeIf(Particle::hasVanished);
+    }
+}
+
+class GameEndManager implements LevelObserver {
+    private enum GameEndCase {
+        GERMS_CLEARED(lvl -> lvl.getGrid().germsCount() <= 0, "LEVEL CLEARED !", SoundStream.SoundStore.CLEARED),
+        SPAWN_OVERLAP(lvl -> lvl.controlledCapsules().stream()
+          .map(c -> !c.canStandIn(lvl.getGrid()))
+          .reduce(Boolean::logicalOr)
+          .orElse(false), "GAME OVER !", SoundStream.SoundStore.GAME_OVER);
+
+        private final SoundStream.SoundStore sound;
+        private final Predicate<Level> condition;
+        private final String message;
+
+        GameEndCase(Predicate<Level> condition, String message, SoundStream.SoundStore sound) {
+            this.condition = condition;
+            this.message = message;
+            this.sound = sound;
+        }
+
+        void endGameIfChecked(Level level, SoundStream stream) {
+            if (condition.test(level)) {
+                stream.play(sound);
+                System.out.println(message);
+                System.exit(0);
+            }
+        }
+    }
+
+    private final SoundStream stream = new SoundStream(.75f);
+    private final Level level;
+
+    GameEndManager(Level level) {
+        this.level = level;
+    }
+
+    @Override
+    public void onCapsuleFlipped() {
+    }
+
+    @Override
+    public void onCapsuleFreeze() {
+    }
+
+    @Override
+    public void onObjectHit(GridObject obj) {
+    }
+
+    @Override
+    public void onIllegalMove() {
+    }
+
+    @Override
+    public void onCapsuleDrop() {
+    }
+
+    @Override
+    public void onCapsuleSpawn() {
+        GameEndCase.SPAWN_OVERLAP.endGameIfChecked(level, stream);
+    }
+
+    @Override
+    public void onLevelUpdate() {
+        if (level.visualParticles().isEmpty()) GameEndCase.GERMS_CLEARED.endGameIfChecked(level, stream);
     }
 }
