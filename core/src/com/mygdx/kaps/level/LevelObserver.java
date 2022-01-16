@@ -119,27 +119,47 @@ class SidekicksObserver implements LevelObserver {
 }
 
 class ParticleManager implements LevelObserver {
-    static class PoppingObject {
+    interface Particle {
+        boolean hasVanished();
+
+        Sprite getSprite();
+
+        Coordinates coordinates();
+
+        void updateAnim();
+    }
+
+    private static class GridParticleEffect implements Particle {
         private final Coordinates coordinates;
         private final AnimatedSprite anim;
 
-        private PoppingObject(GridObject obj) {
+        private GridParticleEffect(GridObject obj) {
             coordinates = obj.coordinates();
             anim = obj.poppingAnim();
         }
 
-        Sprite getSprite() {
+        @Override
+        public boolean hasVanished() {
+            return anim.isFinished();
+        }
+
+        public Sprite getSprite() {
             return anim.getCurrentSprite();
         }
 
         public Coordinates coordinates() {
             return coordinates;
         }
+
+        @Override
+        public void updateAnim() {
+            anim.updateExistenceTime();
+        }
     }
 
-    private final List<PoppingObject> popping = new ArrayList<>();
+    private final List<Particle> popping = new ArrayList<>();
 
-    List<PoppingObject> getPoppingObjects() {
+    List<Particle> getPoppingObjects() {
         return popping;
     }
 
@@ -153,7 +173,7 @@ class ParticleManager implements LevelObserver {
 
     @Override
     public void onMatchPerformed(Set<? extends GridObject> destroyed) {
-        destroyed.forEach(o -> popping.add(new PoppingObject(o)));
+        destroyed.forEach(o -> popping.add(new GridParticleEffect(o)));
     }
 
     @Override
@@ -171,14 +191,14 @@ class ParticleManager implements LevelObserver {
     @Override
     public void onLevelUpdate() {
         updateAnimations();
-        filterFinished();
+        filterVanished();
     }
 
     private void updateAnimations() {
-        popping.forEach(p -> p.anim.updateExistenceTime());
+        popping.forEach(Particle::updateAnim);
     }
 
-    private void filterFinished() {
-        popping.removeIf(p -> p.anim.isFinished());
+    private void filterVanished() {
+        popping.removeIf(Particle::hasVanished);
     }
 }

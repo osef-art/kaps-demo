@@ -101,7 +101,7 @@ public class Level {
         return new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1);
     }
 
-    List<ParticleManager.PoppingObject> visualParticles() {
+    List<ParticleManager.Particle> visualParticles() {
         return particleManager.getPoppingObjects();
     }
 
