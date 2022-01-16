@@ -186,8 +186,7 @@ public class Level {
         observers.forEach(LevelObserver::onCapsuleDrop);
     }
 
-    public void holdCapsule() {
-    }
+    public void holdCapsule() {}
 
     private void dipOrFreezeDroppingCapsules() {
         if (grid.dipOrFreezeDroppingCapsules()) {

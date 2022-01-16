@@ -49,9 +49,7 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
-    public void onObjectHit(GridObject obj) {
-
-    }
+    public void onObjectHit(GridObject obj) {}
 
     @Override
     public void onMatchPerformed(Set<? extends GridObject> destroyed) {
@@ -72,12 +70,10 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
-    public void onCapsuleSpawn() {
-    }
+    public void onCapsuleSpawn() {}
 
     @Override
-    public void onLevelUpdate() {
-    }
+    public void onLevelUpdate() {}
 }
 
 class SidekicksObserver implements LevelObserver {
@@ -91,30 +87,34 @@ class SidekicksObserver implements LevelObserver {
     }
 
     @Override
-    public void onCapsuleFlipped() {
-    }
+    public void onCapsuleFlipped() {}
 
     @Override
-    public void onCapsuleFreeze() {
-    }
+    public void onCapsuleFreeze() {}
 
     @Override
     public void onObjectHit(GridObject obj) {
-        if (sidekickMap.containsKey(obj.color())) sidekickMap.get(obj.color()).increaseMana();
+        if (sidekickMap.containsKey(obj.color())) sidekickMap.get(obj.color()).ifActive(ManaSidekick::increaseMana);
     }
 
     @Override
-    public void onIllegalMove() {
+    public void onMatchPerformed(Set<? extends GridObject> destroyed) {
+        LevelObserver.super.onMatchPerformed(destroyed);
+        sidekickMap.forEach((color, sdk) -> sdk.ifPassive(s -> {
+            if (destroyed.stream().filter(o -> o.color() == color).count() >= 5) s.decreaseCooldown();
+        }));
     }
 
     @Override
-    public void onCapsuleDrop() {
-    }
+    public void onIllegalMove() {}
+
+    @Override
+    public void onCapsuleDrop() {}
 
     @Override
     public void onCapsuleSpawn() {
         sidekickMap.values().forEach(sidekick -> {
-            sidekick.decreaseCooldown();
+            sidekick.ifPassive(CooldownSidekick::decreaseCooldown);
             if (sidekick.isReady()) {
                 sidekick.ifActiveElse(
                   s -> stream.play(sidekick.sound()),
@@ -126,8 +126,7 @@ class SidekicksObserver implements LevelObserver {
     }
 
     @Override
-    public void onLevelUpdate() {
-    }
+    public void onLevelUpdate() {}
 }
 
 class ParticleManager implements LevelObserver {
@@ -185,12 +184,10 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
-    public void onCapsuleFlipped() {
-    }
+    public void onCapsuleFlipped() {}
 
     @Override
-    public void onCapsuleFreeze() {
-    }
+    public void onCapsuleFreeze() {}
 
     @Override
     public void onObjectHit(GridObject obj) {
@@ -198,16 +195,13 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
-    public void onIllegalMove() {
-    }
+    public void onIllegalMove() {}
 
     @Override
-    public void onCapsuleDrop() {
-    }
+    public void onCapsuleDrop() {}
 
     @Override
-    public void onCapsuleSpawn() {
-    }
+    public void onCapsuleSpawn() {}
 
     @Override
     public void onLevelUpdate() {
@@ -259,24 +253,19 @@ class GameEndManager implements LevelObserver {
     }
 
     @Override
-    public void onCapsuleFlipped() {
-    }
+    public void onCapsuleFlipped() {}
 
     @Override
-    public void onCapsuleFreeze() {
-    }
+    public void onCapsuleFreeze() {}
 
     @Override
-    public void onObjectHit(GridObject obj) {
-    }
+    public void onObjectHit(GridObject obj) {}
 
     @Override
-    public void onIllegalMove() {
-    }
+    public void onIllegalMove() {}
 
     @Override
-    public void onCapsuleDrop() {
-    }
+    public void onCapsuleDrop() {}
 
     @Override
     public void onCapsuleSpawn() {

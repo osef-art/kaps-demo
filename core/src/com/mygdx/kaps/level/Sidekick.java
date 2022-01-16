@@ -19,15 +19,19 @@ import java.util.stream.IntStream;
 interface ISidekick {
     double gaugeRatio();
 
-    void increaseMana();
-
-    void decreaseCooldown();
-
     void resetGauge();
 
     boolean isReady();
 
     void ifActiveElse(Consumer<ManaSidekick> activeAction, Consumer<CooldownSidekick> passiveAction);
+
+    default void ifActive(Consumer<ManaSidekick> action) {
+        ifActiveElse(action, s -> {});
+    }
+
+    default void ifPassive(Consumer<CooldownSidekick> action) {
+        ifActiveElse(s -> {}, action);
+    }
 }
 
 public abstract class Sidekick implements ISidekick {
@@ -195,7 +199,7 @@ class ManaSidekick extends Sidekick {
 
     ManaSidekick(SidekickId id) {
         super(id);
-        this.mana = new Gauge(5);//id.gaugeMax());
+        this.mana = new Gauge(id.gaugeMax());
     }
 
     int currentMana() {
@@ -212,9 +216,6 @@ class ManaSidekick extends Sidekick {
 
     public void increaseMana() {
         mana.increase();
-    }
-
-    public void decreaseCooldown() {
     }
 
     public void resetGauge() {
@@ -244,9 +245,6 @@ class CooldownSidekick extends Sidekick {
 
     public double gaugeRatio() {
         return cooldown.ratio();
-    }
-
-    public void increaseMana() {
     }
 
     public void decreaseCooldown() {
@@ -345,8 +343,7 @@ class SidekickAttack {
     }
 
     public static SidekickAttack injectExplosiveCapsule() {
-        return new SidekickAttack((sdk, lvl) -> {
-        });
+        return new SidekickAttack((sdk, lvl) -> {});
     }
 
     public void perform(Sidekick sidekick, Level level) {
