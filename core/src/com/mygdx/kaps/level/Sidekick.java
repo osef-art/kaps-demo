@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 
 interface ISidekick {
@@ -29,18 +30,26 @@ interface ISidekick {
 }
 
 public abstract class Sidekick implements ISidekick {
-    enum AttackType {
-        SLICE(SoundStream.SoundStore.SLICE),
-        FIRE(SoundStream.SoundStore.FIRE),
-        FIREARM(SoundStream.SoundStore.SHOT),
-        MELEE(SoundStream.SoundStore.SHOT),
-        MAGIC(SoundStream.SoundStore.SLICE),
-        BRUSH(SoundStream.SoundStore.PAINT),
+    public enum AttackType {
+        SLICE("slice", SoundStream.SoundStore.SLICE),
+        FIRE("fire", SoundStream.SoundStore.FIRE),
+        FIREARM("fire", SoundStream.SoundStore.SHOT),
+        MELEE("pain", SoundStream.SoundStore.SHOT),
+        MAGIC("pain", SoundStream.SoundStore.SLICE),
+        BRUSH("paint", SoundStream.SoundStore.PAINT),
         ;
+
+        private final String path;
         private final SoundStream.SoundStore sound;
 
-        AttackType(SoundStream.SoundStore sound) {
+        AttackType(String path, SoundStream.SoundStore sound) {
             this.sound = sound;
+            this.path = path;
+        }
+
+        @Override
+        public String toString() {
+            return path;
         }
     }
 
@@ -145,12 +154,16 @@ public abstract class Sidekick implements ISidekick {
         return Objects.hash(id);
     }
 
-    int damage() {
-        return id.damage;
-    }
-
     public Color color() {
         return id.color;
+    }
+
+    AttackType type() {
+        return id.type;
+    }
+
+    int damage() {
+        return id.damage;
     }
 
     Sprite getSprite() {
@@ -187,7 +200,7 @@ class ManaSidekick extends Sidekick {
 
     ManaSidekick(SidekickId id) {
         super(id);
-        this.mana = new Gauge(id.gaugeMax());
+        this.mana = new Gauge(5);//id.gaugeMax());
     }
 
     int currentMana() {
@@ -279,55 +292,56 @@ class SidekickAttack {
     public static SidekickAttack hit3RandomObjects() {
         return new SidekickAttack(
           (sdk, lvl) -> Utils.getRandomSetOf(lvl.getGrid().stack(), 3)
-            .forEach(o -> lvl.getGrid().hit(o, sdk.damage()))
+            .forEach(o -> lvl.hit(o, sdk))
         );
     }
 
     public static SidekickAttack hit1RandomObjectAndAdjacents() {
         return new SidekickAttack((sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(o -> {
-            lvl.getGrid().hit(o, sdk.damage());
+            lvl.hit(o, sdk);
             Arrays.asList(new Coordinates(0, 1), new Coordinates(0, -1), new Coordinates(1, 0), new Coordinates(-1, 0))
-              .forEach(c -> lvl.getGrid().hit(c.addedTo(o.coordinates())));
+              .forEach(c -> lvl.hit(c.addedTo(o.coordinates()), sdk.type()));
         }));
     }
 
     public static SidekickAttack hit2RandomGerms() {
         return new SidekickAttack(
           (sdk, lvl) -> Utils.getRandomSetOf(lvl.getGrid().germStack(), 2)
-            .forEach(g -> lvl.getGrid().hit(g, sdk.damage()))
+            .forEach(g -> lvl.hit(g, sdk))
         );
     }
 
     public static SidekickAttack hit1RandomGerm() {
         return new SidekickAttack(
           (sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().germStack())
-            .ifPresent(g -> lvl.getGrid().hit(g, sdk.damage()))
+            .ifPresent(g -> lvl.hit(g, sdk))
         );
     }
 
     public static SidekickAttack hitRandomLine() {
         return new SidekickAttack((sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(
-          picked -> lvl.getGrid().stack().stream()
-            .filter(o -> o.coordinates().y == picked.coordinates().y)
-            .forEach(o -> lvl.getGrid().hit(o, sdk.damage()))
+          picked -> IntStream.range(0, lvl.getGrid().getWidth())
+            .mapToObj(n -> new Coordinates(n, picked.coordinates().y))
+            .forEach(c -> lvl.hit(c, sdk))
         ));
     }
 
     public static SidekickAttack hitRandomColumn() {
         return new SidekickAttack((sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(
-          picked -> lvl.getGrid().stack().stream()
-            .filter(o -> o.coordinates().x == picked.coordinates().x)
-            .forEach(o -> lvl.getGrid().hit(o, sdk.damage()))
+          picked -> IntStream.range(0, lvl.getGrid().getHeight())
+            .mapToObj(n -> new Coordinates(picked.coordinates().x, n))
+            .forEach(c -> lvl.hit(c, sdk))
         ));
     }
 
     public static SidekickAttack hitRandomDiagonals() {
         return new SidekickAttack((sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(
-          picked -> lvl.getGrid().stack().stream()
-            .filter(o -> Math.abs(o.coordinates().x - picked.coordinates().x) ==
-                           Math.abs(o.coordinates().y - picked.coordinates().y)
+          picked -> IntStream.range(0, lvl.getGrid().getHeight())
+            .forEach(y -> IntStream.range(0, lvl.getGrid().getWidth())
+              .mapToObj(x -> new Coordinates(x, y))
+              .filter(c -> Math.abs(c.x - picked.coordinates().x) == Math.abs(c.y - picked.coordinates().y))
+              .forEach(c -> lvl.hit(c, sdk))
             )
-            .forEach(o -> lvl.getGrid().hit(o, sdk.damage()))
         ));
     }
 

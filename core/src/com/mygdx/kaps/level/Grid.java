@@ -203,15 +203,11 @@ public class Grid {
         rows.get(coordinates.y).clear(coordinates.x);
     }
 
-    private void hit(Coordinates coordinates, int damage) {
+    void hit(Coordinates coordinates, int damage) {
         IntStream.range(0, damage).forEach(n -> get(coordinates).ifPresent(o -> {
             o.takeHit();
             if (o.isDestroyed()) clear(coordinates);
         }));
-    }
-
-    void hit(Coordinates coordinates) {
-        hit(coordinates, 1);
     }
 
     void hit(GridObject o, int damage) {

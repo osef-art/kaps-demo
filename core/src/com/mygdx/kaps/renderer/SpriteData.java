@@ -2,14 +2,12 @@ package com.mygdx.kaps.renderer;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.mygdx.kaps.level.Sidekick;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Germ;
 import com.mygdx.kaps.level.gridobject.Orientation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class SpriteData {
@@ -56,6 +54,13 @@ public class SpriteData {
         wallGerms.values().forEach(lst -> lst.forEach(AnimatedSprite::updateExistenceTime));
     }
 
+    private static float randomAnimSpeed() {
+        return poppingSpeed - 0.025f + new Random().nextFloat() * 0.05f;
+    }
+
+    public static AnimatedSprite attackEffect(Sidekick.AttackType type) {
+        return new AnimatedSprite(SPRITES_PATH + "/fx/" + type + "_", 8, randomAnimSpeed());
+    }
 
     private static AnimatedSprite poppingAnimation(String path, Color color) {
         return new AnimatedSprite(SPRITES_PATH + path + "/color" + color.id() + "/pop_", 8, poppingSpeed);

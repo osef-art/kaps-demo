@@ -3,6 +3,7 @@ package com.mygdx.kaps.level;
 import com.mygdx.kaps.level.gridobject.Capsule;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
+import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
@@ -188,23 +189,22 @@ public class Level {
         }
     }
 
-    // update
-    private boolean gameIsOver() {
-        return grid.germsCount() <= 0 || controlledCapsules.stream()
-          .map(c -> !c.canStandIn(grid))
-          .reduce(Boolean::logicalOr)
-          .orElse(false);
+    // grid operations
+    private void hit(Coordinates coordinates, int damage, Sidekick.AttackType type) {
+        grid.hit(coordinates, damage);
+        particleManager.addEffect(type, coordinates);
     }
 
-    private void updatePreview(Capsule capsule) {
-        if (parameters.enablePreview) capsule.updatePreview(grid);
+    void hit(Coordinates coordinates, Sidekick.AttackType type) {
+        hit(coordinates, 1, type);
     }
 
-    private void spawnCapsule() {
-        var upcoming = upcomingCapsules.removeFirst();
-        updatePreview(upcoming);
-        upcomingCapsules.add(Capsule.randomNewInstance(this));
-        controlledCapsules.add(upcoming);
+    void hit(Coordinates coordinates, Sidekick sdk) {
+        hit(coordinates, sdk.damage(), sdk.type());
+    }
+
+    void hit(GridObject obj, Sidekick sdk) {
+        hit(obj.coordinates(), sdk);
     }
 
     private void deleteMatchesIfAny() {
@@ -229,6 +229,25 @@ public class Level {
             spawnCapsule();
             observers.forEach(LevelObserver::onCapsuleSpawn);
         }
+    }
+
+    // update
+    private boolean gameIsOver() {
+        return grid.germsCount() <= 0 || controlledCapsules.stream()
+          .map(c -> !c.canStandIn(grid))
+          .reduce(Boolean::logicalOr)
+          .orElse(false);
+    }
+
+    private void updatePreview(Capsule capsule) {
+        if (parameters.enablePreview) capsule.updatePreview(grid);
+    }
+
+    private void spawnCapsule() {
+        var upcoming = upcomingCapsules.removeFirst();
+        updatePreview(upcoming);
+        upcomingCapsules.add(Capsule.randomNewInstance(this));
+        controlledCapsules.add(upcoming);
     }
 
     public void update() {

@@ -5,6 +5,7 @@ import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.renderer.AnimatedSprite;
+import com.mygdx.kaps.renderer.SpriteData;
 import com.mygdx.kaps.sound.SoundStream;
 
 import java.util.ArrayList;
@@ -114,7 +115,6 @@ class SidekicksObserver implements LevelObserver {
 
     @Override
     public void onLevelUpdate() {
-
     }
 }
 
@@ -136,6 +136,11 @@ class ParticleManager implements LevelObserver {
         private GridParticleEffect(GridObject obj) {
             coordinates = obj.coordinates();
             anim = obj.poppingAnim();
+        }
+
+        public GridParticleEffect(Sidekick.AttackType type, Coordinates coordinates) {
+            this.coordinates = coordinates;
+            anim = SpriteData.attackEffect(type);
         }
 
         @Override
@@ -161,6 +166,10 @@ class ParticleManager implements LevelObserver {
 
     List<Particle> getPoppingObjects() {
         return popping;
+    }
+
+    public void addEffect(Sidekick.AttackType type, Coordinates coordinates) {
+        popping.add(new GridParticleEffect(type, coordinates));
     }
 
     @Override
