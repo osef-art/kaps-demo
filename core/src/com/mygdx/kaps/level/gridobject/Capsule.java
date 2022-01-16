@@ -6,7 +6,6 @@ import com.mygdx.kaps.level.Level;
 
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 public class Capsule {
     private final LinkedCapsulePart main;
@@ -37,7 +36,7 @@ public class Capsule {
         );
     }
 
-    static Capsule randomMonoColorInstance(Level level) {
+    public static Capsule randomMonoColorInstance(Level level) {
         var color = Utils.getRandomFrom(level.getColorSet());
         return new Capsule(level.spawningCoordinates(), color, color);
     }
@@ -72,10 +71,6 @@ public class Capsule {
         return main.verify(CapsulePart::isDropping);
     }
 
-    boolean isFrozen() {
-        return main.verify(Predicate.not(CapsulePart::isDropping));
-    }
-
     public void applyForEach(Consumer<CapsulePart> mainAction, Consumer<CapsulePart> slaveAction) {
         main.applyForEach(mainAction, slaveAction);
     }
@@ -86,11 +81,6 @@ public class Capsule {
 
     public void startDropping() {
         applyToBoth(CapsulePart::initDropping);
-        clearPreview();
-    }
-
-    void freeze() {
-        applyToBoth(CapsulePart::freeze);
         clearPreview();
     }
 

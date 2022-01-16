@@ -74,7 +74,7 @@ class SoundPlayerObserver implements LevelObserver {
 class SidekicksObserver implements LevelObserver {
     private final Level level;
     private final HashMap<Color, Sidekick> sidekickMap = new HashMap<>();
-    private final SoundStream stream = new SoundStream(.5f);
+    private final SoundStream stream = new SoundStream(.45f);
 
     SidekicksObserver(Level level, List<Sidekick> sidekicks) {
         this.level = level;
@@ -108,8 +108,13 @@ class SidekicksObserver implements LevelObserver {
     public void onCapsuleSpawn() {
         sidekickMap.values().forEach(sidekick -> {
             sidekick.decreaseCooldown();
-            if (sidekick.isReady()) stream.play(sidekick.sound());
-            sidekick.triggerIfReady(level);
+            if (sidekick.isReady()) {
+                sidekick.ifActiveElse(
+                  s -> stream.play(sidekick.sound()),
+                  s -> stream.play(SoundStream.SoundStore.TRIGGER)
+                );
+                sidekick.trigger(level);
+            }
         });
     }
 

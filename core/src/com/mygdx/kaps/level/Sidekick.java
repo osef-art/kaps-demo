@@ -2,6 +2,7 @@ package com.mygdx.kaps.level;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.Utils;
+import com.mygdx.kaps.level.gridobject.Capsule;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.renderer.AnimatedSprite;
@@ -60,9 +61,9 @@ public abstract class Sidekick implements ISidekick {
         MIMAPS(Color.COLOR_4, AttackType.FIRE, SidekickAttack.hit3RandomObjects(), 15, 2),
         PAINTER(Color.COLOR_5, AttackType.BRUSH, SidekickAttack.paint5RandomObjects(), 10, 1, "Paint"),
         XERETH(Color.COLOR_6, AttackType.SLICE, SidekickAttack.hitRandomDiagonals(), 25, 1),
-        BOMBER(Color.COLOR_7, AttackType.FIREARM, SidekickAttack.doNothing(), 13, true),
+        BOMBER(Color.COLOR_7, AttackType.FIREARM, SidekickAttack.injectExplosiveCapsule(), 13, true),
         JIM(Color.COLOR_10, AttackType.SLICE, SidekickAttack.hitRandomLine(), 18, 1),
-        UNI(Color.COLOR_11, AttackType.BRUSH, SidekickAttack.doNothing(), 4, true, "Color"),
+        UNI(Color.COLOR_11, AttackType.BRUSH, SidekickAttack.injectMonoColorCapsule(), 4, true, "Color"),
         SNIPER(Color.COLOR_12, AttackType.FIREARM, SidekickAttack.hit1RandomGerm(), 20, 3),
         ;
 
@@ -78,8 +79,8 @@ public abstract class Sidekick implements ISidekick {
                    int damage, String... names) {
             var name = names.length > 0 ? names[0] : toString();
             animPath = "android/assets/sprites/sidekicks/" + name + "_";
-            this.attack = attack;
             this.passive = passive;
+            this.attack = attack;
             this.damage = damage;
             this.color = color;
             this.mana = mana;
@@ -181,13 +182,7 @@ public abstract class Sidekick implements ISidekick {
 
     void trigger(Level level) {
         id.attack.perform(this, level);
-    }
-
-    void triggerIfReady(Level level) {
-        if (isReady()) {
-            trigger(level);
-            resetGauge();
-        }
+        resetGauge();
     }
 
     SoundStream.SoundStore sound() {
@@ -345,7 +340,11 @@ class SidekickAttack {
         ));
     }
 
-    public static SidekickAttack doNothing() {
+    public static SidekickAttack injectMonoColorCapsule() {
+        return new SidekickAttack((sdk, lvl) -> lvl.injectNext(Capsule.randomMonoColorInstance(lvl)));
+    }
+
+    public static SidekickAttack injectExplosiveCapsule() {
         return new SidekickAttack((sdk, lvl) -> {
         });
     }

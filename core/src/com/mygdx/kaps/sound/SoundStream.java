@@ -12,6 +12,7 @@ public class SoundStream {
     public enum SoundStore {
         LIGHT_IMPACT,
         MATCH_FIVE,
+        TRIGGER,
         SLICE(2),
         SHOT(3),
         FIRE(2),
@@ -50,7 +51,7 @@ public class SoundStream {
     private Sound sound;
 
     public SoundStream(float volume) {
-        this.volume = volume;
+        this.volume = volume / 5;
     }
 
     public void play(SoundStore sound) {

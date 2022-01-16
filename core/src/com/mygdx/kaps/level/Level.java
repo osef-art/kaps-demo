@@ -246,8 +246,13 @@ public class Level {
     private void spawnCapsule() {
         var upcoming = upcomingCapsules.removeFirst();
         updatePreview(upcoming);
-        upcomingCapsules.add(Capsule.randomNewInstance(this));
+        if (upcomingCapsules.size() < 2)
+            upcomingCapsules.add(Capsule.randomNewInstance(this));
         controlledCapsules.add(upcoming);
+    }
+
+    void injectNext(Capsule capsule) {
+        upcomingCapsules.add(0, capsule);
     }
 
     public void update() {
