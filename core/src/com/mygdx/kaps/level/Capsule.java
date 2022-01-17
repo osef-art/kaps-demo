@@ -1,14 +1,12 @@
-package com.mygdx.kaps.level.gridobject;
+package com.mygdx.kaps.level;
 
 import com.mygdx.kaps.Utils;
-import com.mygdx.kaps.level.Grid;
-import com.mygdx.kaps.level.Level;
+import com.mygdx.kaps.level.gridobject.*;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-
-public class Capsule {
+ class Capsule {
     private final LinkedCapsulePart main;
     private Capsule preview;
 
@@ -29,7 +27,7 @@ public class Capsule {
         );
     }
 
-    public static Capsule randomNewInstance(Level level) {
+    static Capsule randomNewInstance(Level level) {
         return new Capsule(
           level.spawningCoordinates(),
           Utils.getRandomFrom(level.getColorSet()),
@@ -37,7 +35,7 @@ public class Capsule {
         );
     }
 
-    public static Capsule randomMonoColorInstance(Level level) {
+    static Capsule randomMonoColorInstance(Level level) {
         var color = Utils.getRandomFrom(level.getColorSet());
         return new Capsule(level.spawningCoordinates(), color, color);
     }
@@ -51,40 +49,40 @@ public class Capsule {
         return "(" + main + " | " + main.linked().orElse(main) + ")";
     }
 
-    public Optional<Capsule> preview() {
+    Optional<Capsule> preview() {
         return Optional.ofNullable(preview);
     }
 
-    public void updatePreview(Grid grid) {
+    void updatePreview(Grid grid) {
         preview = copy();
         while (preview.dipped().canStandIn(grid)) preview.dip();
     }
 
-    public void clearPreview() {
+    void clearPreview() {
         preview = null;
     }
 
-    public boolean canStandIn(Grid grid) {
+    boolean canStandIn(Grid grid) {
         return main.verify(p -> p.canStandIn(grid));
     }
 
-    public boolean isDropping() {
+    boolean isDropping() {
         return main.verify(CapsulePart::isDropping);
     }
 
-    public boolean atLeastOneVerify(Predicate<CapsulePart> condition) {
+    boolean atLeastOneVerify(Predicate<CapsulePart> condition) {
         return main.atLeastOneVerify(condition);
     }
 
-    public void applyForEach(Consumer<CapsulePart> mainAction, Consumer<CapsulePart> slaveAction) {
+    void applyForEach(Consumer<CapsulePart> mainAction, Consumer<CapsulePart> slaveAction) {
         main.applyForEach(mainAction, slaveAction);
     }
 
-    public void applyToBoth(Consumer<CapsulePart> action) {
+    void applyToBoth(Consumer<CapsulePart> action) {
         main.applyToBoth(action);
     }
 
-    public void startDropping() {
+    void startDropping() {
         applyToBoth(CapsulePart::initDropping);
         clearPreview();
     }
@@ -99,23 +97,23 @@ public class Capsule {
         main.updateLinked();
     }
 
-    public void dip() {
+    void dip() {
         shift(LinkedCapsulePart::dip);
     }
 
-    public void flip() {
+    void flip() {
         shift(LinkedCapsulePart::flip);
     }
 
-    public void moveLeft() {
+    void moveLeft() {
         shift(LinkedCapsulePart::moveLeft);
     }
 
-    public void moveRight() {
+    void moveRight() {
         shift(LinkedCapsulePart::moveRight);
     }
 
-    public void moveForward() {
+    void moveForward() {
         shift(LinkedCapsulePart::moveForward);
     }
 
@@ -129,23 +127,23 @@ public class Capsule {
         return test;
     }
 
-    public Capsule dipped() {
+    Capsule dipped() {
         return shifted(Capsule::dip);
     }
 
-    public Capsule flipped() {
+    Capsule flipped() {
         return shifted(Capsule::flip);
     }
 
-    public Capsule movedLeft() {
+    Capsule movedLeft() {
         return shifted(Capsule::moveLeft);
     }
 
-    public Capsule movedRight() {
+    Capsule movedRight() {
         return shifted(Capsule::moveRight);
     }
 
-    public Capsule movedBack() {
+    Capsule movedBack() {
         return shifted(Capsule::moveForward);
     }
 }

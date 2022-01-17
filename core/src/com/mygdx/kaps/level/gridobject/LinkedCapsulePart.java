@@ -9,7 +9,7 @@ public final class LinkedCapsulePart extends CapsulePart {
     private Orientation orientation;
     private LinkedCapsulePart linked;
 
-    LinkedCapsulePart(Coordinates coordinates, Color color) {
+    public LinkedCapsulePart(Coordinates coordinates, Color color) {
         super(coordinates, color);
     }
 
@@ -18,13 +18,13 @@ public final class LinkedCapsulePart extends CapsulePart {
         this.orientation = orientation;
     }
 
-    LinkedCapsulePart(Coordinates coordinates, Color color, Orientation side, LinkedCapsulePart linked) {
+    public LinkedCapsulePart(Coordinates coordinates, Color color, Orientation side, LinkedCapsulePart linked) {
         this(coordinates, color);
         Objects.requireNonNull(linked);
         linkTo(linked, side.opposite());
     }
 
-    LinkedCapsulePart copy() {
+    public LinkedCapsulePart copy() {
         return new LinkedCapsulePart(coordinates(), color(), orientation);
     }
 
@@ -32,7 +32,7 @@ public final class LinkedCapsulePart extends CapsulePart {
         return Optional.of(linked);
     }
 
-    Orientation orientation() {
+    public Orientation orientation() {
         return orientation;
     }
 
@@ -43,7 +43,7 @@ public final class LinkedCapsulePart extends CapsulePart {
         updateLinked();
     }
 
-    void updateLinked() {
+    public void updateLinked() {
         linked.face(this);
     }
 
@@ -56,19 +56,19 @@ public final class LinkedCapsulePart extends CapsulePart {
         coordinates().set(caps.facingCoordinates());
     }
 
-    void moveForward() {
+    public void moveForward() {
         moveTowards(orientation);
     }
 
-    void flip() {
+    public void flip() {
         orientation = orientation.flipped();
     }
 
-    boolean atLeastOneVerify(Predicate<CapsulePart> condition) {
+    public boolean atLeastOneVerify(Predicate<CapsulePart> condition) {
         return condition.test(this) || condition.test(linked);
     }
 
-    boolean verify(Predicate<CapsulePart> condition) {
+    public boolean verify(Predicate<CapsulePart> condition) {
         return condition.test(this) && condition.test(linked);
     }
 
@@ -76,7 +76,7 @@ public final class LinkedCapsulePart extends CapsulePart {
         return orientation().isVertical() ? atLeastOneVerify(condition) : verify(condition);
     }
 
-    void applyForEach(Consumer<CapsulePart> action, Consumer<CapsulePart> linkedAction) {
+    public void applyForEach(Consumer<CapsulePart> action, Consumer<CapsulePart> linkedAction) {
         action.accept(this);
         linkedAction.accept(linked);
     }

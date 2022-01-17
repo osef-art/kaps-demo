@@ -15,7 +15,7 @@ public class CapsulePart extends GridObject {
         this(caps.coordinates(), caps.color());
     }
 
-    CapsulePart(Coordinates coordinates, Color color) {
+    public CapsulePart(Coordinates coordinates, Color color) {
         super(coordinates, color);
     }
 
@@ -92,11 +92,11 @@ public class CapsulePart extends GridObject {
         coordinates().add(orientation.directionVector());
     }
 
-    void moveLeft() {
+    public void moveLeft() {
         moveTowards(Orientation.LEFT);
     }
 
-    void moveRight() {
+    public void moveRight() {
         moveTowards(Orientation.RIGHT);
     }
 
