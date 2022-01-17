@@ -6,6 +6,7 @@ import com.mygdx.kaps.level.Level;
 
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class Capsule {
     private final LinkedCapsulePart main;
@@ -69,6 +70,10 @@ public class Capsule {
 
     public boolean isDropping() {
         return main.verify(CapsulePart::isDropping);
+    }
+
+    public boolean atLeastOneVerify(Predicate<CapsulePart> condition) {
+        return main.atLeastOneVerify(condition);
     }
 
     public void applyForEach(Consumer<CapsulePart> mainAction, Consumer<CapsulePart> slaveAction) {

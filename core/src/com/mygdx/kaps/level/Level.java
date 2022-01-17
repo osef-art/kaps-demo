@@ -54,7 +54,7 @@ public class Level {
           .mapToObj(n -> Capsule.randomNewInstance(this))
           .collect(Collectors.toCollection(LinkedList::new));
 
-        gridRefresher = Timer.ofSeconds(1, this::dipOrAcceptCapsule);
+        gridRefresher = Timer.ofSeconds(1, this::dipOrFreezeCapsule);
         Timer droppingTimer = Timer.ofMilliseconds(10, this::dipOrFreezeDroppingCapsules);
         timers = Arrays.asList(gridRefresher, droppingTimer);
 
@@ -115,75 +115,74 @@ public class Level {
      * Executes on each level's capsules matching {@param selection} the code conveyed by {@param action}
      * if {@param condition} is true, else executes {@param alternative} instead
      *
-     * @param selection   the capsules on which act
      * @param condition   the predicate to match to execute {@param action}
      * @param action      the action to execute on each falling Capsule
      * @param alternative the action to execute on each falling Capsule if {@param condition} is not matched
      */
-    private void performIfPossible(Predicate<Capsule> selection, Predicate<Capsule> condition,
-                                   Consumer<Capsule> action, Consumer<Capsule> alternative) {
+    private void performIfPossible(Predicate<Capsule> condition, Consumer<Capsule> action, Consumer<Capsule> alternative) {
+        List<Capsule> accepted = new ArrayList<>();
         List<Capsule> rejected = new ArrayList<>();
+        //TODO: optimize
         controlledCapsules.stream()
-          .filter(selection)
+          .filter(Predicate.not(Capsule::isDropping))
           .forEach(c -> {
-              if (condition.test(c)) action.accept(c);
+              if (condition.test(c)) accepted.add(c);
               else rejected.add(c);
           });
+        accepted.forEach(action);
         rejected.forEach(alternative);
+    }
+
+    private void performIfPossible(Predicate<Capsule> condition, Consumer<Capsule> action) {
+        performIfPossible(condition, action, c -> observers.forEach(LevelObserver::onIllegalMove));
     }
 
     // capsule moves
     public void moveCapsuleLeft() {
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.movedLeft().canStandIn(grid), c -> {
+        performIfPossible(c -> c.movedLeft().canStandIn(grid), c -> {
             c.moveLeft();
             updatePreview(c);
-        }, c -> observers.forEach(LevelObserver::onIllegalMove));
+        });
     }
 
     public void moveCapsuleRight() {
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.movedRight().canStandIn(grid), c -> {
+        performIfPossible(c -> c.movedRight().canStandIn(grid), c -> {
             c.moveRight();
             updatePreview(c);
-        }, c -> observers.forEach(LevelObserver::onIllegalMove));
+        });
     }
 
-    public boolean dipOrAcceptCapsule() {
-        final boolean[] accepted = {false};
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.dipped().canStandIn(grid), capsule -> {
-            capsule.dip();
-            gridRefresher.reset();
-        }, c -> {
-            acceptAndSpawnNew(c);
-            accepted[0] = true;
-            observers.forEach(LevelObserver::onCapsuleFreeze);
-        });
-        return accepted[0];
+    public void dipOrFreezeCapsule() {
+        performIfPossible(c -> c.dipped().canStandIn(grid),
+          c -> {
+              c.dip();
+              gridRefresher.reset();
+          }, c -> {
+              acceptAndSpawnNew(c);
+              observers.forEach(LevelObserver::onCapsuleFreeze);
+          });
     }
 
     public void flipCapsule() {
-        performIfPossible(Predicate.not(Capsule::isDropping), c -> c.flipped().canStandIn(grid), c -> {
+        performIfPossible(c -> c.flipped().canStandIn(grid), c -> {
               observers.forEach(LevelObserver::onCapsuleFlipped);
               c.flip();
               updatePreview(c);
           },
-          c -> performIfPossible(f -> true, f -> f.flipped().movedBack().canStandIn(grid), f -> {
-                observers.forEach(LevelObserver::onCapsuleFlipped);
-                f.flip();
-                f.moveForward();
-                updatePreview(f);
-            },
-            f -> observers.forEach(LevelObserver::onIllegalMove)
-          )
+          c -> performIfPossible(f -> f.flipped().movedBack().canStandIn(grid), f -> {
+              observers.forEach(LevelObserver::onCapsuleFlipped);
+              f.flip();
+              f.moveForward();
+              updatePreview(f);
+          })
         );
     }
 
     public void dropCapsule() {
-        if (!dipOrAcceptCapsule())
-            // ^ instead of this, find a way to filter dropping
-            // capsules, so they don't immediately
-            // overlap with just spawned capsules
-            acceptAndSpawnNew(controlledCapsules.get(0));
-        observers.forEach(LevelObserver::onCapsuleDrop);
+        performIfPossible(c -> true, c -> {
+            acceptAndSpawnNew(c);
+            observers.forEach(LevelObserver::onCapsuleDrop);
+        });
     }
 
     public void holdCapsule() {}
@@ -225,8 +224,9 @@ public class Level {
 
     private void accept(Capsule capsule) {
         controlledCapsules.removeIf(c -> c.equals(capsule));
-        capsule.startDropping();
         capsule.applyToBoth(grid::put);
+        capsule.startDropping();
+        dipOrFreezeDroppingCapsules();
     }
 
     private void acceptAndSpawnNew(Capsule capsule) {

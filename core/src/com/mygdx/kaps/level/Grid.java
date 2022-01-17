@@ -176,7 +176,8 @@ public class Grid {
     Stream<CapsulePart> capsuleStack() {
         return stack().stream()
           .filter(GridObject::isCapsule)
-          .map(o -> (CapsulePart) o);
+          .map(o -> (CapsulePart) o)
+             .filter(Predicate.not(CapsulePart::isDropping));
     }
 
     Stream<Germ> germStack() {
@@ -256,7 +257,9 @@ public class Grid {
     }
 
     boolean dipOrFreezeDroppingCapsules() {
-        return capsuleStack()
+        return stack().stream()
+          .filter(GridObject::isCapsule)
+          .map(o -> (CapsulePart) o)
           .filter(CapsulePart::isDropping)
           .sorted(Comparator.comparingInt(p -> p.coordinates().y))
           .map(c -> {

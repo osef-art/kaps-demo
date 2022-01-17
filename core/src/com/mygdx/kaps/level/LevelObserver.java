@@ -222,7 +222,10 @@ class GameEndManager implements LevelObserver {
     private enum GameEndCase {
         GERMS_CLEARED(lvl -> lvl.getGrid().germsCount() <= 0, "LEVEL CLEARED !", SoundStream.SoundStore.CLEARED),
         SPAWN_OVERLAP(lvl -> lvl.controlledCapsules().stream()
-          .map(c -> !c.canStandIn(lvl.getGrid()))
+          .map(c -> c.atLeastOneVerify(p -> lvl.getGrid().get(p.coordinates())
+            .map(o -> !o.isDropping())
+            .orElse(false)
+          ))
           .reduce(Boolean::logicalOr)
           .orElse(false), "GAME OVER !", SoundStream.SoundStore.GAME_OVER);
 

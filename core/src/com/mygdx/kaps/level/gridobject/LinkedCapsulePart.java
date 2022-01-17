@@ -64,7 +64,7 @@ public final class LinkedCapsulePart extends CapsulePart {
         orientation = orientation.flipped();
     }
 
-    private boolean atLeastOneVerify(Predicate<CapsulePart> condition) {
+    boolean atLeastOneVerify(Predicate<CapsulePart> condition) {
         return condition.test(this) || condition.test(linked);
     }
 
