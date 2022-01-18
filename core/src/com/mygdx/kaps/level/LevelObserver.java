@@ -101,7 +101,7 @@ class SidekicksObserver implements LevelObserver {
     public void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
         LevelObserver.super.onMatchPerformed(destroyed);
         sidekickMap.forEach((color, sdk) -> sdk.ifPassive(s -> {
-            if (destroyed.get(color).size() >= 5) s.decreaseCooldown();
+            if (destroyed.containsKey(color) && destroyed.get(color).size() >= 5) s.decreaseCooldown();
         }));
     }
 

@@ -36,7 +36,7 @@ public class Timer {
     private final List<Chrono> offsets = new ArrayList<>();
     private final List<Runnable> jobs;
     private final Chrono chrono = new Chrono();
-    private final double limit;
+    private double limit;
 
     private Timer(double limit, Runnable... jobs) {
         this.limit = limit;
@@ -49,6 +49,10 @@ public class Timer {
 
     public static Timer ofMilliseconds(double limit, Runnable... jobs) {
         return new Timer(limit * 1_000_000, jobs);
+    }
+
+    public double getLimit() {
+        return limit;
     }
 
     private boolean isExceeded() {
@@ -82,5 +86,9 @@ public class Timer {
     public void resume() {
         if (offsets.isEmpty()) return;
         offsets.get(offsets.size() - 1).stop();
+    }
+
+    public void updateLimit(double newLimit) {
+        limit = newLimit;
     }
 }

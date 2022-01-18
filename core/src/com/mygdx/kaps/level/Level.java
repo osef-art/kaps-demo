@@ -131,6 +131,7 @@ public class Level extends ApplicationAdapter {
      * @param alternative the action to execute on each falling Capsule if {@param condition} is not matched
      */
     private void performIfPossible(Predicate<Capsule> condition, Consumer<Capsule> action, Consumer<Capsule> alternative) {
+        if (parameters.paused) return;
         controlledCapsules.stream()
           .filter(Predicate.not(Capsule::isDropping))
           .collect(Collectors.toUnmodifiableMap(condition::test, Arrays::asList,
@@ -225,6 +226,7 @@ public class Level extends ApplicationAdapter {
             var destroyed = grid.hitMatches();
             observers.forEach(obs -> obs.onMatchPerformed(destroyed));
             grid.initEveryCapsuleDropping();
+            fastenGridRefreshing();
         }
     }
 
@@ -256,6 +258,10 @@ public class Level extends ApplicationAdapter {
         if (upcomingCapsules.size() < 2)
             upcomingCapsules.add(Capsule.randomNewInstance(this));
         controlledCapsules.add(upcoming);
+    }
+
+    private void fastenGridRefreshing() {
+        gridRefresher.updateLimit(gridRefresher.getLimit() * 0.975);
     }
 
     void injectNext(Capsule capsule) {
