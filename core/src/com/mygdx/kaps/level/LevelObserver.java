@@ -18,8 +18,8 @@ interface LevelObserver {
 
     void onObjectHit(GridObject obj);
 
-    default void onMatchPerformed(Set<? extends GridObject> destroyed) {
-        destroyed.forEach(this::onObjectHit);
+    default void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
+        destroyed.values().forEach(s -> s.forEach(this::onObjectHit));
     }
 
     void onIllegalMove();
@@ -49,10 +49,13 @@ class SoundPlayerObserver implements LevelObserver {
     public void onObjectHit(GridObject obj) {}
 
     @Override
-    public void onMatchPerformed(Set<? extends GridObject> destroyed) {
-        var containsGerms = destroyed.stream().anyMatch(GridObject::isGerm);
+    public void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
+        var containsGerms = destroyed.values().stream()
+          .flatMap(Collection::stream)
+          .anyMatch(GridObject::isGerm);
         if (containsGerms) mainStream.play(SoundStream.SoundStore.PLOP, 0);
-        else if (destroyed.size() >= 5) mainStream.play(SoundStream.SoundStore.MATCH_FIVE);
+        else if (destroyed.values().stream().anyMatch(s -> s.size() >= 5))
+            mainStream.play(SoundStream.SoundStore.MATCH_FIVE);
         else mainStream.play(SoundStream.SoundStore.IMPACT);
     }
 
@@ -95,10 +98,10 @@ class SidekicksObserver implements LevelObserver {
     }
 
     @Override
-    public void onMatchPerformed(Set<? extends GridObject> destroyed) {
+    public void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
         LevelObserver.super.onMatchPerformed(destroyed);
         sidekickMap.forEach((color, sdk) -> sdk.ifPassive(s -> {
-            if (destroyed.stream().filter(o -> o.color() == color).count() >= 5) s.decreaseCooldown();
+            if (destroyed.get(color).size() >= 5) s.decreaseCooldown();
         }));
     }
 
@@ -242,7 +245,8 @@ class GameEndManager implements LevelObserver {
             System.out.println(message);
             try {
                 Thread.sleep(2500);
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
             System.exit(0);
         }
     }

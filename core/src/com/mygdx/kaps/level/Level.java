@@ -133,7 +133,7 @@ public class Level extends ApplicationAdapter {
     private void performIfPossible(Predicate<Capsule> condition, Consumer<Capsule> action, Consumer<Capsule> alternative) {
         controlledCapsules.stream()
           .filter(Predicate.not(Capsule::isDropping))
-          .collect(Collectors.toMap(condition::test, Arrays::asList,
+          .collect(Collectors.toUnmodifiableMap(condition::test, Arrays::asList,
             (l1, l2) -> Stream.of(l1,l2).flatMap(Collection::stream).collect(Collectors.toList()))
           )
           .forEach((accepted, capsules) -> capsules.forEach(accepted ? action : alternative));
