@@ -8,10 +8,7 @@ import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.renderer.SpriteData;
 import com.mygdx.kaps.sound.SoundStream;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 interface LevelObserver {
@@ -240,11 +237,13 @@ class GameEndManager implements LevelObserver {
         }
 
         void endGameIfChecked(Level level, SoundStream stream) {
-            if (condition.test(level)) {
-                stream.play(sound);
-                System.out.println(message);
-                System.exit(0);
-            }
+            if (!condition.test(level)) return;
+            stream.play(sound);
+            System.out.println(message);
+            try {
+                Thread.sleep(2500);
+            } catch (InterruptedException ignored) {}
+            System.exit(0);
         }
     }
 
@@ -271,12 +270,11 @@ class GameEndManager implements LevelObserver {
     public void onCapsuleDrop() {}
 
     @Override
-    public void onCapsuleSpawn() {
-        GameEndCase.SPAWN_OVERLAP.endGameIfChecked(level, stream);
-    }
+    public void onCapsuleSpawn() {}
 
     @Override
     public void onLevelUpdate() {
-        if (level.visualParticles().isEmpty()) GameEndCase.GERMS_CLEARED.endGameIfChecked(level, stream);
+        if (level.visualParticles().isEmpty())
+            Arrays.stream(GameEndCase.values()).forEach(c -> c.endGameIfChecked(level, stream));
     }
 }
