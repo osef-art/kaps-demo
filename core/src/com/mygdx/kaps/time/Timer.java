@@ -9,20 +9,31 @@ import java.util.List;
 public class Timer {
     private static class Chrono {
         private long startStamp;
+        private long stopStamp;
 
         private Chrono() {
             reset();
         }
 
-        private double elapsedTime() {
-            return TimeUtils.nanoTime() - startStamp;
+        private long endStamp() {
+            return stopStamp == 0 ? TimeUtils.nanoTime() : stopStamp;
+        }
+
+        private long elapsedTime() {
+            return endStamp() - startStamp;
         }
 
         private void reset() {
             startStamp = TimeUtils.nanoTime();
+            stopStamp = 0;
+        }
+
+        private void stop() {
+            stopStamp = endStamp();
         }
     }
 
+    private final List<Chrono> offsets = new ArrayList<>();
     private final List<Runnable> jobs = new ArrayList<>();
     private final Chrono chrono = new Chrono();
     private final double limit;
@@ -41,7 +52,15 @@ public class Timer {
     }
 
     private boolean isExceeded() {
-        return chrono.elapsedTime() > limit;
+        return ratio() >= 1;
+    }
+
+    private double totalOffset() {
+        return offsets.stream().mapToLong(Chrono::elapsedTime).sum();
+    }
+
+    public double ratio() {
+        return (chrono.elapsedTime() - totalOffset()) / limit;
     }
 
     public void resetIfExceeds() {
@@ -53,9 +72,15 @@ public class Timer {
 
     public void reset() {
         chrono.reset();
+        offsets.clear();
     }
 
-    public double ratio() {
-        return chrono.elapsedTime() / limit;
+    public void pause() {
+        offsets.add(new Chrono());
+    }
+
+    public void resume() {
+        if (offsets.isEmpty()) return;
+        offsets.get(offsets.size() - 1).stop();
     }
 }

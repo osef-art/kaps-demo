@@ -4,7 +4,6 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.kaps.controller.InputHandler;
-import com.mygdx.kaps.level.GameView;
 import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.level.LevelBuilder;
 import com.mygdx.kaps.level.Sidekick;
@@ -15,7 +14,6 @@ public class MainScreen extends ApplicationAdapter {
 
     private final String[] args;
     private Level game;
-    private GameView view;
 
     public MainScreen(String... args) {
         this.args = args;
@@ -49,7 +47,6 @@ public class MainScreen extends ApplicationAdapter {
         camera.translate(0, Gdx.graphics.getHeight());
 
         game = loadedLevel();
-        view = new GameView(game);
         inputs = new InputHandler(game);
 
         Gdx.input.setInputProcessor(inputs);
@@ -58,12 +55,11 @@ public class MainScreen extends ApplicationAdapter {
     @Override
     public void render() {
         inputs.update();
-        game.update();
-        view.render();
+        game.render();
     }
 
     @Override
     public void dispose() {
-        view.dispose();
+        game.dispose();
     }
 }

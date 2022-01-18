@@ -1,5 +1,6 @@
 package com.mygdx.kaps.level;
 
+import com.badlogic.gdx.ApplicationAdapter;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
@@ -11,10 +12,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Level {
+public class Level extends ApplicationAdapter {
     public static class LevelParameters {
         private final Level model;
         private boolean enablePreview;
+        private boolean paused;
 
         private LevelParameters(Level lvl) {
             model = lvl;
@@ -27,6 +29,12 @@ public class Level {
                 else c.clearPreview();
             });
         }
+
+        public void togglePause() {
+            paused = !paused;
+            if (paused) model.pause();
+            else model.resume();
+        }
     }
 
     private final LevelParameters parameters;
@@ -38,11 +46,14 @@ public class Level {
     private final Set<Color> colors;
     private final List<Timer> timers;
     private final Timer gridRefresher;
+    private final GameView view;
     private final Grid grid;
 
     Level(Grid grid, Set<Sidekick> sidekicks, Color blankColor) {
         this.grid = grid;
+        view = new GameView(this);
         parameters = new LevelParameters(this);
+
         this.sidekicks = new ArrayList<>(sidekicks);
         colors = Color.getSetFrom(sidekicks, blankColor);
         sidekicks.forEach(s -> {
@@ -238,6 +249,7 @@ public class Level {
         }
     }
 
+    // update
     private void updatePreview(Capsule capsule) {
         if (parameters.enablePreview) capsule.updatePreview(grid);
     }
@@ -254,9 +266,31 @@ public class Level {
         upcomingCapsules.add(0, capsule);
     }
 
-    public void update() {
-        sidekicks.forEach(Sidekick::updateSprite);
-        observers.forEach(LevelObserver::onLevelUpdate);
-        timers.forEach(Timer::resetIfExceeds);
+    @Override
+    public void pause() {
+        timers.forEach(t -> {
+            t.resetIfExceeds();
+            t.pause();
+        });
+    }
+
+    @Override
+    public void resume() {
+        timers.forEach(Timer::resume);
+    }
+
+    public void render() {
+        if (!parameters.paused) {
+            observers.forEach(LevelObserver::onLevelUpdate);
+            timers.forEach(Timer::resetIfExceeds);
+
+            sidekicks.forEach(Sidekick::updateSprite);
+            view.updateSprites();
+        }
+        view.render();
+    }
+
+    public void dispose() {
+        view.dispose();
     }
 }

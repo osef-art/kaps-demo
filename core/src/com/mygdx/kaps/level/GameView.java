@@ -1,5 +1,6 @@
 package com.mygdx.kaps.level;
 
+import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
-public class GameView {
+public class GameView extends ApplicationAdapter {
     private static class Dimensions {
         private static class SidekickZone {
             private final Rectangle zone;
@@ -64,6 +65,7 @@ public class GameView {
             gridZone = new Rectangle((screen.width - gridWidth) / 2, topSpaceMargin, gridWidth, gridHeight);
             gridTile = new Rectangle(0, 0, tileSize, tileSize);
             timeBar = new Rectangle((screen.width - gridWidth) / 2, gridHeight + 2 * topSpaceMargin, gridWidth, timeBarHeight);
+
             sidekickZones.add(new SidekickZone(
               new Rectangle(0, topSpaceHeight, screen.width / 2, infoZoneHeight),
               new Rectangle(padding, topSpaceHeight + padding, sidekickSize, sidekickSize),
@@ -109,14 +111,14 @@ public class GameView {
     private final SpriteRendererAdapter spra = new SpriteRendererAdapter();
     private final ShapeRendererAdapter sra = new ShapeRendererAdapter();
     private final HashMap<Font, TextRendererAdaptor> tra = new HashMap<>();
-    private final Dimensions dimensions;
     private final SpriteData spriteData = new SpriteData();
+    private final Dimensions dimensions;
     private final Level model;
 
     public GameView(Level lvl) {
-        Objects.requireNonNull(lvl);
-        dimensions = new Dimensions(lvl, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        model = lvl;
+        model = Objects.requireNonNull(lvl);
+        dimensions = new Dimensions(model, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
         tra.put(Font.LITTLE, new TextRendererAdaptor(spra, 16, Color.WHITE));
         tra.put(Font.MEDIUM, new TextRendererAdaptor(spra, 24, Color.WHITE));
         tra.put(Font.BIG, new TextRendererAdaptor(spra, 32, Color.WHITE));
@@ -131,6 +133,7 @@ public class GameView {
     }
 
     private void renderGrid() {
+        //TODO: Optimize
         IntStream.range(0, model.getGrid().getWidth()).forEach(
           x -> IntStream.range(0, model.getGrid().getHeight()).forEach(y -> {
               sra.drawRect(
@@ -177,7 +180,7 @@ public class GameView {
         sra.drawCircle(dimensions.nextBox.x + dimensions.nextBox.width / 2, dimensions.nextBox.y + dimensions.nextBox.height,
           dimensions.nextBox.width, new Color(.45f, .45f, .6f, 1f));
         renderCapsule(model.upcoming().get(0), nextBox);
-        tra.get(Font.LITTLE).drawText("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 / 8, nextBox.width, nextBox.height / 8);
+        tra.get(Font.MEDIUM).drawTextWithShadow("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 / 8, nextBox.width, nextBox.height / 8);
     }
 
     private void renderSidekicks() {
@@ -209,8 +212,11 @@ public class GameView {
         model.visualParticles().forEach(p -> spra.render(p.getSprite(), dimensions.tileAt(p.coordinates())));
     }
 
-    public void render() {
+    void updateSprites() {
         spriteData.updateSprites();
+    }
+
+    public void render() {
         renderLayout();
         renderGrid();
         renderFallingCapsules();
@@ -223,5 +229,6 @@ public class GameView {
     public void dispose() {
         spra.dispose();
         sra.dispose();
+        tra.values().forEach(TextRendererAdaptor::dispose);
     }
 }

@@ -18,6 +18,7 @@ public class InputHandler implements InputProcessor {
         HOLD_KEY(Level::holdCapsule, 31, 50, 30), // V, M
 
         PREVIEW_KEY(l -> l.parameters().togglePreview(), 52), // X
+        PAUSE_KEY(l -> l.parameters().togglePause(), 44), // P
 
         ESCAPE_KEY(l -> System.exit(0), 29, 131, 68), // A, ESC, !
         ;
@@ -35,11 +36,6 @@ public class InputHandler implements InputProcessor {
             this.codes = Arrays.stream(codes).boxed().collect(Collectors.toUnmodifiableSet());
             effect = consumer;
             refreshRate = hold;
-        }
-
-        @Override
-        public String toString() {
-            return "[" + super.toString().split("_")[0] + "]";
         }
 
         private static Optional<Key> ofCode(int code) {

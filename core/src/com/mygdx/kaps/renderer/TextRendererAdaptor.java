@@ -1,5 +1,6 @@
 package com.mygdx.kaps.renderer;
 
+import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -7,7 +8,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.math.Rectangle;
 
-public class TextRendererAdaptor implements RendererAdapter {
+public class TextRendererAdaptor extends ApplicationAdapter {
     private final SpriteRendererAdapter spra;
     private final BitmapFont shade;
     private final BitmapFont font;
@@ -36,7 +37,7 @@ public class TextRendererAdaptor implements RendererAdapter {
     }
 
     public void drawText(String txt, float x, float y, float width, float height) {
-        spra.renderText(txt, font, x, y + fontSize / 4, width, height - fontSize * 2f);
+        spra.renderText(txt, font, x, y + fontSize / 4, width, height - fontSize * 2);
     }
 
     public void drawText(String txt, Rectangle zone) {
@@ -44,17 +45,17 @@ public class TextRendererAdaptor implements RendererAdapter {
     }
 
     public void drawTextWithShadow(String txt, float x, float y) {
-        spra.renderText(txt, shade, x, y + fontSize * .2f);
+        spra.renderText(txt, shade, x, y + fontSize / 4);
         drawText(txt, x, y);
-    }
-
-    public void drawTextWithShadow(String txt, float x, float y, float width, float height) {
-        spra.renderText(txt, shade, x, y + fontSize * .2f, width, height - fontSize * 2f);
-        drawText(txt, x, y, width, height);
     }
 
     public void drawTextWithShadow(String txt, Rectangle rect) {
         drawTextWithShadow(txt, rect.x, rect.y, rect.width, rect.height);
+    }
+
+    public void drawTextWithShadow(String txt, float x, float y, float width, float height) {
+        spra.renderText(txt, shade, x, y + fontSize / 4, width, height - fontSize * 2);
+        drawText(txt, x, y, width, height);
     }
 
     @Override

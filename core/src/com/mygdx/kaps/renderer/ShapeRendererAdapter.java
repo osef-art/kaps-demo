@@ -1,6 +1,7 @@
 package com.mygdx.kaps.renderer;
 
 
+import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -12,7 +13,7 @@ import java.util.function.Consumer;
 
 import static com.mygdx.kaps.MainScreen.camera;
 
-public class ShapeRendererAdapter implements RendererAdapter {
+public class ShapeRendererAdapter extends ApplicationAdapter {
     private final ShapeRenderer rd = new ShapeRenderer();
 
     private void draw(Consumer<ShapeRenderer> action, Color color) {
