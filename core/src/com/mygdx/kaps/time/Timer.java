@@ -34,13 +34,13 @@ public class Timer {
     }
 
     private final List<Chrono> offsets = new ArrayList<>();
-    private final List<Runnable> jobs = new ArrayList<>();
+    private final List<Runnable> jobs;
     private final Chrono chrono = new Chrono();
     private final double limit;
 
     private Timer(double limit, Runnable... jobs) {
         this.limit = limit;
-        this.jobs.addAll(Arrays.asList(jobs));
+        this.jobs = Arrays.asList(jobs);
     }
 
     public static Timer ofSeconds(double limit, Runnable... jobs) {

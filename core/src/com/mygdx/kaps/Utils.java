@@ -32,6 +32,6 @@ public class Utils {
     public static <T> Set<T> getRandomSetOf(Collection<? extends T> collection, int size) {
         List<T> lst = new ArrayList<>(collection);
         Collections.shuffle(lst);
-        return new HashSet<>(size >= lst.size() ? lst : lst.subList(0, size));
+        return (size >= lst.size() ? lst : lst.subList(0, size)).stream().collect(Collectors.toUnmodifiableSet());
     }
 }

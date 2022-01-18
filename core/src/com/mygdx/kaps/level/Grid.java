@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@SuppressWarnings("NewApi")
 public class Grid {
     static class Row {
         private final List<Optional<? extends GridObject>> tiles;
@@ -244,8 +243,8 @@ public class Grid {
         return matchBrowser.allMatchesFoundIn(this).stream()
           .map(this::hit)
           .map(Optional::get)
-          .collect(Collectors.toUnmodifiableMap(GridObject::color, Set::of,
-            (l1, l2) -> Stream.of(l1,l2).flatMap(Collection::stream).collect(Collectors.toUnmodifiableSet()))
+          .collect(Collectors.toUnmodifiableMap(GridObject::color, o -> Stream.of(o).collect(Collectors.toSet()),
+            (s1, s2) -> Stream.of(s1, s2).flatMap(Collection::stream).collect(Collectors.toUnmodifiableSet()))
           );
     }
 
