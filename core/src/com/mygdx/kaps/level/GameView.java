@@ -133,16 +133,13 @@ public class GameView extends ApplicationAdapter {
     }
 
     private void renderGrid() {
-        //TODO: Optimize
-        IntStream.range(0, model.getGrid().getWidth()).forEach(
-          x -> IntStream.range(0, model.getGrid().getHeight()).forEach(y -> {
-              sra.drawRect(
-                dimensions.tileAt(x, y),
-                x % 2 == y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
-              );
-              model.getGrid().get(x, y).ifPresent(o -> spra.render(o.getSprite(spriteData), dimensions.tileAt(x, y)));
-          })
-        );
+        model.getGrid().forEachTile((x, y) -> {
+            sra.drawRect(
+              dimensions.tileAt(x, y),
+              x % 2 == y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
+            );
+            model.getGrid().get(x, y).ifPresent(o -> spra.render(o.getSprite(spriteData), dimensions.tileAt(x, y)));
+        });
         sra.drawRoundedGauge(
           dimensions.timeBar, model.refreshingProgression(), new Color(.2f, .2f, .3f, 1f), new Color(.3f, .3f, .4f, 1f)
         );
@@ -172,7 +169,7 @@ public class GameView extends ApplicationAdapter {
     }
 
     private void renderPoppingObjects() {
-//        model.poppingObjects().forEach(c -> spra.render(c.getPoppingSprite(), dimensions.tileAt(c.coordinates())));
+        //        model.poppingObjects().forEach(c -> spra.render(c.getPoppingSprite(), dimensions.tileAt(c.coordinates())));
     }
 
     private void renderUpcoming() {

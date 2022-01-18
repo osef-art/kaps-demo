@@ -3,6 +3,7 @@ package com.mygdx.kaps.level;
 import com.mygdx.kaps.level.gridobject.*;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -129,11 +130,7 @@ public class Grid {
 
         Collections.reverse(rows);
         this.rows = rows;
-        IntStream.range(0, getWidth()).forEach(
-          x -> IntStream.range(0, getHeight()).forEach(
-            y -> get(x, y).ifPresent(o -> o.coordinates().set(x, y))
-          )
-        );
+        forEachTile((x, y) -> get(x, y).ifPresent(o -> o.coordinates().set(x, y)));
     }
 
     // getters
@@ -177,7 +174,7 @@ public class Grid {
         return stack().stream()
           .filter(GridObject::isCapsule)
           .map(o -> (CapsulePart) o)
-             .filter(Predicate.not(CapsulePart::isDropping));
+          .filter(Predicate.not(CapsulePart::isDropping));
     }
 
     Stream<Germ> germStack() {
@@ -191,6 +188,10 @@ public class Grid {
     }
 
     // tiles operations
+    void forEachTile(BiConsumer<Integer, Integer> action) {
+        IntStream.range(0, getWidth()).forEach(x -> IntStream.range(0, getHeight()).forEach(y -> action.accept(x, y)));
+    }
+
     private void set(Coordinates coordinates, GridObject obj) {
         rows.get(coordinates.y).set(coordinates.x, obj);
     }

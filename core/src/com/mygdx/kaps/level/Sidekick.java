@@ -328,12 +328,11 @@ class SidekickAttack {
 
     public static SidekickAttack hitRandomDiagonals() {
         return new SidekickAttack((sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(
-          picked -> IntStream.range(0, lvl.getGrid().getHeight())
-            .forEach(y -> IntStream.range(0, lvl.getGrid().getWidth())
-              .mapToObj(x -> new Coordinates(x, y))
-              .filter(c -> Math.abs(c.x - picked.coordinates().x) == Math.abs(c.y - picked.coordinates().y))
-              .forEach(c -> lvl.attack(c, sdk))
-            )
+          picked -> lvl.getGrid().forEachTile((x, y) -> {
+              var coordinates = new Coordinates(x, y);
+              if (Math.abs(coordinates.x - picked.coordinates().x) == Math.abs(coordinates.y - picked.coordinates().y))
+                  lvl.attack(coordinates, sdk);
+          })
         ));
     }
 
