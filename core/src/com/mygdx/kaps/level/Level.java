@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Level extends ApplicationAdapter {
     public static class LevelParameters {
@@ -130,17 +131,12 @@ public class Level extends ApplicationAdapter {
      * @param alternative the action to execute on each falling Capsule if {@param condition} is not matched
      */
     private void performIfPossible(Predicate<Capsule> condition, Consumer<Capsule> action, Consumer<Capsule> alternative) {
-        List<Capsule> accepted = new ArrayList<>();
-        List<Capsule> rejected = new ArrayList<>();
-        //TODO: optimize
         controlledCapsules.stream()
           .filter(Predicate.not(Capsule::isDropping))
-          .forEach(c -> {
-              if (condition.test(c)) accepted.add(c);
-              else rejected.add(c);
-          });
-        accepted.forEach(action);
-        rejected.forEach(alternative);
+          .collect(Collectors.toMap(condition::test, Arrays::asList,
+            (l1, l2) -> Stream.of(l1,l2).flatMap(Collection::stream).collect(Collectors.toList()))
+          )
+          .forEach((accepted, capsules) -> capsules.forEach(accepted ? action : alternative));
     }
 
     private void performIfPossible(Predicate<Capsule> condition, Consumer<Capsule> action) {
