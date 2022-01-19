@@ -5,7 +5,7 @@ import java.util.function.Function;
 public class Coordinates {
     public int x, y;
 
-    Coordinates() {
+    public Coordinates() {
         this(0, 0);
     }
 

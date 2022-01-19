@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
+import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.sound.SoundStream;
 import com.mygdx.kaps.time.Timer;
@@ -11,6 +12,7 @@ import com.mygdx.kaps.time.Timer;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
@@ -66,7 +68,7 @@ public abstract class Sidekick implements ISidekick {
         BOMBER(Color.COLOR_7, AttackType.FIREARM, SidekickAttack.injectExplosiveCapsule(), 13, true),
         JIM(Color.COLOR_10, AttackType.SLICE, SidekickAttack.hitRandomLine(), 18, 1),
         UNI(Color.COLOR_11, AttackType.BRUSH, SidekickAttack.injectMonoColorCapsule(), 4, true, "Color"),
-        SNIPER(Color.COLOR_12, AttackType.FIREARM, SidekickAttack.hit1RandomGerm(), 20, 3),
+        SNIPER(Color.COLOR_12, AttackType.FIREARM, SidekickAttack.hitRandomGerm(), 20, 3),
         ;
 
         private final SidekickAttack attack;
@@ -263,36 +265,55 @@ class CooldownSidekick extends Sidekick {
 }
 
 class SidekickAttack {
-    private final List<BiConsumer<Sidekick, Level>> attacks = new LinkedList<>();
-    private final Timer attackScheduler = Timer.ofSeconds(0);
+    private static class SidekickMove {
+        private final BiConsumer<Sidekick, Level> move;
 
-    public SidekickAttack(int iterations, BiConsumer<Sidekick, Level> attack) {
-        IntStream.range(0, iterations)
-          .forEach(n -> attacks.add((sdk, lvl) -> {
-              attack.accept(sdk, lvl);
-              lvl.getGrid().initEveryCapsuleDropping();
-          }));
+        private SidekickMove(BiConsumer<Sidekick, Level> move) {
+            this.move = (sdk, lvl) -> {
+                move.accept(sdk, lvl);
+                lvl.getGrid().initEveryCapsuleDropping();
+            };
+        }
+
+        private void perform(Sidekick sidekick, Level level) {
+            move.accept(sidekick, level);
+        }
     }
 
-    public SidekickAttack(BiConsumer<Sidekick, Level> attack) {
-        this(1, attack);
+    private final List<SidekickMove> moves;
+    private final Timer attackScheduler = Timer.ofSeconds(0);
+
+    private SidekickAttack(BiConsumer<Sidekick, Level> move, int iterations) {
+        moves = IntStream.range(0, iterations)
+          .mapToObj(n -> new SidekickMove(move))
+          .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    private SidekickAttack(BiConsumer<Sidekick, Level> attack) {
+        this(attack, 1);
     }
 
     public void startPerforming(Sidekick sidekick, Level level) {
-        attacks.forEach(a -> a.accept(sidekick, level));
+        moves.forEach(m -> m.perform(sidekick, level));
+    }
+
+    private static Coordinates getRandomObjectCoordinates(Level level) {
+        return Utils.getOptionalRandomFrom(level.getGrid().stack())
+          .map(GridObject::coordinates)
+          .orElse(new Coordinates());
     }
 
     public static SidekickAttack paint5RandomObjects() {
-        return new SidekickAttack(5, (sdk, lvl) -> {
+        return new SidekickAttack((sdk, lvl) -> {
             var mate = Sidekick.randomMate(lvl.matesOf(sdk), sdk);
             Utils.getOptionalRandomFrom(lvl.getGrid().capsuleStack().filter(o -> o.color() != mate.color()))
               .ifPresent(o -> lvl.getGrid().repaint(o, mate.color()));
-        });
+        }, 5);
     }
 
     public static SidekickAttack hit3RandomObjects() {
-        return new SidekickAttack(3,
-          (sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(o -> lvl.attack(o, sdk))
+        return new SidekickAttack(
+          (sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(o -> lvl.attack(o, sdk)), 3
         );
     }
 
@@ -305,15 +326,15 @@ class SidekickAttack {
     }
 
     public static SidekickAttack hit2RandomGerms() {
-        return new SidekickAttack(2,
-          (sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().germStack()).ifPresent(g -> lvl.attack(g, sdk))
+        // TODO: optimize hitRandomGerm(2)
+        return new SidekickAttack(
+          (sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().germStack()).ifPresent(g -> lvl.attack(g, sdk)), 2
         );
     }
 
-    public static SidekickAttack hit1RandomGerm() {
+    public static SidekickAttack hitRandomGerm() {
         return new SidekickAttack(
-          (sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().germStack())
-            .ifPresent(g -> lvl.attack(g, sdk))
+          (sdk, lvl) -> Utils.getOptionalRandomFrom(lvl.getGrid().germStack()).ifPresent(g -> lvl.attack(g, sdk))
         );
     }
 
@@ -350,5 +371,4 @@ class SidekickAttack {
     public static SidekickAttack injectExplosiveCapsule() {
         return new SidekickAttack((sdk, lvl) -> {});
     }
-
 }
