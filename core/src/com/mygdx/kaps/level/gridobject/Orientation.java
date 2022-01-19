@@ -16,15 +16,11 @@ enum Orientation {
         return path;
     }
 
-     boolean isVertical() {
+    boolean isVertical() {
         return this == UP || this == DOWN;
-     }
+    }
 
-     boolean isHorizontal() {
-        return this == LEFT || this == RIGHT;
-     }
-
-     Orientation flipped() {
+    Orientation flipped() {
         switch (this) {
             case LEFT:
                 return UP;
@@ -39,7 +35,7 @@ enum Orientation {
         }
     }
 
-     Orientation opposite() {
+    Orientation opposite() {
         switch (this) {
             case LEFT:
                 return RIGHT;
@@ -54,7 +50,7 @@ enum Orientation {
         }
     }
 
-     Coordinates directionVector() {
+    Coordinates directionVector() {
         switch (this) {
             case LEFT:
                 return new Coordinates(-1, 0);
@@ -69,7 +65,7 @@ enum Orientation {
         }
     }
 
-     Coordinates oppositeVector() {
+    Coordinates oppositeVector() {
         return directionVector().mapped(x -> -x);
     }
 }

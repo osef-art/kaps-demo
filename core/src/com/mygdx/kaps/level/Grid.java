@@ -162,6 +162,15 @@ public class Grid {
         return isInGridBounds(x, y) ? rows.get(y).get(x) : Optional.empty();
     }
 
+    Set<Coordinates> everyTile() {
+        return IntStream.range(0, getWidth())
+          .mapToObj(x -> IntStream.range(0, getHeight())
+            .mapToObj(y -> new Coordinates(x, y))
+          )
+          .flatMap(Function.identity())
+          .collect(Collectors.toUnmodifiableSet());
+    }
+
     Set<? extends GridObject> stack() {
         return rows.stream()
           .flatMap(Row::stream)
@@ -189,7 +198,7 @@ public class Grid {
 
     // tiles operations
     void forEachTile(BiConsumer<Integer, Integer> action) {
-        IntStream.range(0, getWidth()).forEach(x -> IntStream.range(0, getHeight()).forEach(y -> action.accept(x, y)));
+        everyTile().forEach(c -> action.accept(c.x, c.y));
     }
 
     private void set(Coordinates coordinates, GridObject obj) {
