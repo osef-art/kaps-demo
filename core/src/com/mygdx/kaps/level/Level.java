@@ -287,6 +287,7 @@ public class Level extends ApplicationAdapter {
             timers.forEach(Timer::resetIfExceeds);
 
             sidekicks.forEach(Sidekick::updateSprite);
+            sidekicks.forEach(Sidekick::updateAttacks);
             view.updateSprites();
         }
         view.render();

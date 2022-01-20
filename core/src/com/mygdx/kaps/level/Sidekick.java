@@ -7,7 +7,9 @@ import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.sound.SoundStream;
+import com.mygdx.kaps.time.Timer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -120,6 +122,7 @@ public abstract class Sidekick implements ISidekick {
         }
     }
 
+    private final List<SidekickAttack> currentAttacks = new ArrayList<>();
     private final AnimatedSprite flippedAnim;
     private final AnimatedSprite anim;
     private final SidekickId id;
@@ -174,19 +177,24 @@ public abstract class Sidekick implements ISidekick {
         return flippedAnim.getCurrentSprite();
     }
 
+    SoundStream.SoundStore sound() {
+        return id.type.sound;
+    }
+
     void updateSprite() {
         anim.updateExistenceTime();
         flippedAnim.updateExistenceTime();
     }
 
-    void trigger(Level level) {
-        id.attack.apply(this, level).startPerforming();
-        level.getGrid().initEveryCapsuleDropping();
-        resetGauge();
+    void updateAttacks() {
+        currentAttacks.forEach(SidekickAttack::update);
+        currentAttacks.removeIf(SidekickAttack::isOver);
     }
 
-    SoundStream.SoundStore sound() {
-        return id.type.sound;
+    void trigger(Level level) {
+        currentAttacks.add(id.attack.apply(this, level));
+        level.getGrid().initEveryCapsuleDropping();
+        resetGauge();
     }
 }
 
@@ -261,23 +269,29 @@ class CooldownSidekick extends Sidekick {
 }
 
 class SidekickAttack {
-    private final List<Runnable> moves;
-    //    private final Timer attackScheduler = Timer.ofSeconds(0);
+    private final LinkedList<Runnable> moves;
+    private final Timer moveScheduler;
 
-    private SidekickAttack(Stream<Runnable> stream) {
+    private SidekickAttack(double speed, Stream<Runnable> stream) {
         moves = stream.collect(Collectors.toCollection(LinkedList::new));
+        moveScheduler = Timer.ofMilliseconds(speed, () -> {
+            if (!isOver()) moves.removeFirst().run();
+        });
     }
 
-    private SidekickAttack(Runnable move, int iterations) {
-        this(IntStream.range(0, iterations).mapToObj(n -> move));
+    private SidekickAttack(double speed, int iterations, Runnable move) {
+        this(speed, IntStream.range(0, iterations).mapToObj(n -> move));
+    }
+    private SidekickAttack(double speed, Runnable... moves) {
+        this(speed, Arrays.stream(moves));
     }
 
-    private SidekickAttack(Runnable... moves) {
-        this(Arrays.stream(moves));
+    private SidekickAttack(Runnable move) {
+        this(0, move);
     }
 
-    public void startPerforming() {
-        moves.forEach(Runnable::run);
+    boolean isOver() {
+        return moves.isEmpty();
     }
 
     private static Coordinates getRandomTileCoordinates(Level level) {
@@ -292,22 +306,21 @@ class SidekickAttack {
 
     public static SidekickAttack paint5RandomObjects(Sidekick sdk, Level lvl) {
         var mate = sdk.randomMate(lvl);
-        return new SidekickAttack(() -> Utils.getOptionalRandomFrom(lvl.getGrid()
+        return new SidekickAttack(150, 5, () -> Utils.getOptionalRandomFrom(lvl.getGrid()
           .capsuleStack()
           .filter(o -> o.color() != mate.color())
-        ).ifPresent(o -> lvl.getGrid().repaint(o, mate.color())), 5
-        );
+        ).ifPresent(o -> lvl.getGrid().repaint(o, mate.color())));
     }
 
     public static SidekickAttack hit3RandomObjects(Sidekick sdk, Level lvl) {
-        return new SidekickAttack(
-          () -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(o -> lvl.attack(o, sdk)), 3
+        return new SidekickAttack(250,3,
+          () -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(o -> lvl.attack(o, sdk))
         );
     }
 
     public static SidekickAttack hitRandomObjectAndAdjacents(Sidekick sdk, Level lvl) {
         var picked = getRandomObjectCoordinates(lvl);
-        return new SidekickAttack(
+        return new SidekickAttack(350,
           () -> lvl.attack(picked, sdk),
           () -> Arrays.asList(new Coordinates(0, 1), new Coordinates(0, -1), new Coordinates(1, 0), new Coordinates(-1, 0))
             .forEach(c -> lvl.attack(c.addedTo(picked), sdk.type()))
@@ -316,8 +329,8 @@ class SidekickAttack {
 
     public static SidekickAttack hit2RandomGerms(Sidekick sdk, Level lvl) {
         // TODO: optimize hitRandomGerm(2)
-        return new SidekickAttack(
-          () -> Utils.getOptionalRandomFrom(lvl.getGrid().germStack()).ifPresent(g -> lvl.attack(g, sdk)), 2
+        return new SidekickAttack(400, 2,
+          () -> Utils.getOptionalRandomFrom(lvl.getGrid().germStack()).ifPresent(g -> lvl.attack(g, sdk))
         );
     }
 
@@ -329,7 +342,7 @@ class SidekickAttack {
 
     public static SidekickAttack hitRandomLine(Sidekick sdk, Level lvl) {
         var picked = getRandomObjectCoordinates(lvl);
-        return new SidekickAttack(
+        return new SidekickAttack(100,
           IntStream.range(0, lvl.getGrid().getWidth())
             .mapToObj(n -> new Coordinates(n, picked.y))
             .map(c -> () -> lvl.attack(c, sdk))
@@ -338,7 +351,7 @@ class SidekickAttack {
 
     public static SidekickAttack hitRandomColumn(Sidekick sdk, Level lvl) {
         var picked = getRandomTileCoordinates(lvl);
-        return new SidekickAttack(
+        return new SidekickAttack(75,
           IntStream.range(0, lvl.getGrid().getHeight())
             .mapToObj(n -> new Coordinates(picked.x, n))
             .map(c -> () -> lvl.attack(c, sdk))
@@ -347,7 +360,7 @@ class SidekickAttack {
 
     public static SidekickAttack hitRandomDiagonals(Sidekick sdk, Level lvl) {
         var picked = getRandomObjectCoordinates(lvl);
-        return new SidekickAttack(
+        return new SidekickAttack(50,
           lvl.getGrid().everyTile().stream()
             .filter(c -> Math.abs(c.x - picked.x) == Math.abs(c.y - picked.y))
             .map(c -> () -> lvl.attack(c, sdk))
@@ -359,6 +372,10 @@ class SidekickAttack {
     }
 
     public static SidekickAttack injectExplosiveCapsule(Sidekick sdk, Level lvl) {
-        return new SidekickAttack();
+        return new SidekickAttack(()->{});
+    }
+
+    void update() {
+        moveScheduler.resetIfExceeds();
     }
 }

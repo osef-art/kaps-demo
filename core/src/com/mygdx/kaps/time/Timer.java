@@ -9,14 +9,14 @@ import java.util.List;
 public class Timer {
     private static class Chrono {
         private long startStamp;
-        private long stopStamp;
+        private long endStamp;
 
         private Chrono() {
             reset();
         }
 
         private long endStamp() {
-            return stopStamp == 0 ? TimeUtils.nanoTime() : stopStamp;
+            return endStamp == 0 ? TimeUtils.nanoTime() : endStamp;
         }
 
         private long elapsedTime() {
@@ -25,11 +25,11 @@ public class Timer {
 
         private void reset() {
             startStamp = TimeUtils.nanoTime();
-            stopStamp = 0;
+            endStamp = 0;
         }
 
         private void stop() {
-            stopStamp = endStamp();
+            endStamp = endStamp();
         }
     }
 
@@ -39,6 +39,7 @@ public class Timer {
     private double limit;
 
     private Timer(double limit, Runnable... jobs) {
+        if (limit < 0) throw new IllegalArgumentException("Invalid timer limit: " + limit);
         this.limit = limit;
         this.jobs = Arrays.asList(jobs);
     }
