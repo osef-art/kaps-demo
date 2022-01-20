@@ -70,7 +70,7 @@ public abstract class Germ extends GridObject {
     }
 
     public static Germ random(Coordinates coordinates, Color color) {
-        var randomGerm = Utils.getRandomFrom(Arrays.stream(GermSupplier.values())).associatedGerm.apply(color);
+        var randomGerm = Utils.getRandomFrom(GermSupplier.values()).associatedGerm.apply(color);
         randomGerm.coordinates().set(coordinates);
         return randomGerm;
     }

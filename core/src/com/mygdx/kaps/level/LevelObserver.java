@@ -18,7 +18,7 @@ interface LevelObserver {
 
     default void onObjectPaint(GridObject obj, Color color) {}
 
-    default void onObjectHit(GridObject obj, Sidekick.AttackType type) {
+    default void onObjectHit(GridObject obj, AttackType type) {
         onObjectHit(obj);
     }
 
@@ -54,7 +54,7 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
-    public void onObjectHit(GridObject obj, Sidekick.AttackType type) {
+    public void onObjectHit(GridObject obj, AttackType type) {
         mainStream.play(type.sound());
     }
 
@@ -155,7 +155,7 @@ class ParticleManager implements LevelObserver {
             this(obj.coordinates(), SpriteData.poppingAnimation(color), 1.5f);
         }
 
-        private GridParticleEffect(GridObject obj, Sidekick.AttackType type) {
+        private GridParticleEffect(GridObject obj, AttackType type) {
             this(obj.coordinates(), SpriteData.attackEffect(type), 1.25f);
         }
 
@@ -192,7 +192,7 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
-    public void onObjectHit(GridObject obj, Sidekick.AttackType type) {
+    public void onObjectHit(GridObject obj, AttackType type) {
         popping.add(new GridParticleEffect(obj, type));
     }
 

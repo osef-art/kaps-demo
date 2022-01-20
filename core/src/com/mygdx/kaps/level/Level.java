@@ -202,13 +202,13 @@ public class Level extends ApplicationAdapter {
     }
 
     // grid operations
-    private void attack(Coordinates coordinates, int damage, Sidekick.AttackType type) {
+    private void attack(Coordinates coordinates, int damage, AttackType type) {
         grid.hit(coordinates, damage).ifPresent(
           obj -> observers.forEach(obs -> obs.onObjectHit(obj, type))
         );
     }
 
-    void attack(Coordinates coordinates, Sidekick.AttackType type) {
+    void attack(Coordinates coordinates, AttackType type) {
         attack(coordinates, 1, type);
     }
 

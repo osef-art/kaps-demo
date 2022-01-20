@@ -5,6 +5,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Utils {
+    public static <T> T getRandomFrom(T... elems) {
+        return getRandomFrom(Arrays.stream(elems));
+    }
+
     public static <T> T getRandomFrom(Stream<? extends T> stream) {
         return getRandomFrom(stream.collect(Collectors.toUnmodifiableList()));
     }
@@ -20,18 +24,8 @@ public class Utils {
     }
 
     public static <T> Optional<T> getOptionalRandomFrom(Collection<? extends T> collection) {
-        if (collection.size() == 0)
+        if (collection.isEmpty())
             return Optional.empty();
         return Optional.of(getRandomFrom(collection));
-    }
-
-    public static <T> Set<T> getRandomSetOf(Stream<? extends T> stream, int size) {
-        return getRandomSetOf(stream.collect(Collectors.toUnmodifiableList()), size);
-    }
-
-    public static <T> Set<T> getRandomSetOf(Collection<? extends T> collection, int size) {
-        List<T> lst = new ArrayList<>(collection);
-        Collections.shuffle(lst);
-        return (size >= lst.size() ? lst : lst.subList(0, size)).stream().collect(Collectors.toUnmodifiableSet());
     }
 }

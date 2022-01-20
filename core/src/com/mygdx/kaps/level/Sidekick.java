@@ -6,15 +6,12 @@ import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.renderer.AnimatedSprite;
-import com.mygdx.kaps.sound.SoundStream;
 import com.mygdx.kaps.time.Timer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -40,34 +37,7 @@ interface ISidekick {
 }
 
 public abstract class Sidekick implements ISidekick {
-    public enum AttackType {
-        SLICE("slice", SoundStream.SoundStore.SLICE),
-        FIRE("fire", SoundStream.SoundStore.FIRE),
-        FIREARM("fire", SoundStream.SoundStore.SHOT),
-        MELEE("pain", SoundStream.SoundStore.SHOT),
-        // MAGIC("pain", SoundStream.SoundStore.SLICE),
-        BRUSH("paint", SoundStream.SoundStore.PAINT),
-        ;
-
-        private final SoundStream.SoundStore sound;
-        private final String path;
-
-        AttackType(String path, SoundStream.SoundStore sound) {
-            this.sound = sound;
-            this.path = path;
-        }
-
-        @Override
-        public String toString() {
-            return path;
-        }
-
-        public SoundStream.SoundStore sound() {
-            return sound;
-        }
-    }
-
-    enum SidekickId {
+    public enum SidekickId {
         SEAN(Color.COLOR_1, AttackType.MELEE, SidekickAttack::hitRandomObjectAndAdjacents, 20, 2),
         ZYRAME(Color.COLOR_2, AttackType.SLICE, SidekickAttack::hit2RandomGerms, 18, 2),
         R3D(Color.COLOR_3, AttackType.SLICE, SidekickAttack::hitRandomColumn, 25, 2, "Red"),
@@ -80,6 +50,11 @@ public abstract class Sidekick implements ISidekick {
         SNIPER(Color.COLOR_12, AttackType.FIREARM, SidekickAttack::hitRandomGerm, 20, 3),
         ;
 
+        private static final Map<SidekickId, Sidekick> sidekicks =
+          Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(
+            Function.identity(),
+            id->id.passive ? new CooldownSidekick(id) : new ManaSidekick(id)
+          ));
         private final BiFunction<Sidekick, Level, SidekickAttack> attack;
         private final AttackType type;
         private final boolean passive;
@@ -115,6 +90,10 @@ public abstract class Sidekick implements ISidekick {
             return str.charAt(0) + str.substring(1).toLowerCase();
         }
 
+        public Color color() {
+            return color;
+        }
+
         int gaugeMax() {
             return mana;
         }
@@ -139,7 +118,7 @@ public abstract class Sidekick implements ISidekick {
     }
 
     static Sidekick ofId(SidekickId id) {
-        return id.passive ? new CooldownSidekick(id) : new ManaSidekick(id);
+        return SidekickId.sidekicks.get(id);
     }
 
     public static Sidekick ofName(String name) {
@@ -147,19 +126,11 @@ public abstract class Sidekick implements ISidekick {
     }
 
     static Sidekick random() {
-        return ofId(Utils.getRandomFrom(Arrays.stream(SidekickId.values())));
+        return ofId(Utils.getRandomFrom(SidekickId.values()));
     }
 
     Sidekick randomMate(Level level) {
         return Utils.getOptionalRandomFrom(level.matesOf(this)).orElse(this);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Sidekick)) return false;
-        Sidekick sidekick = (Sidekick) o;
-        return id == sidekick.id;
     }
 
     public Color color() {

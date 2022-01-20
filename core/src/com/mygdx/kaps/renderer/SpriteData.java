@@ -2,7 +2,7 @@ package com.mygdx.kaps.renderer;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.mygdx.kaps.level.Sidekick;
+import com.mygdx.kaps.level.AttackType;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Germ;
 import com.mygdx.kaps.level.gridobject.Orientation;
@@ -58,7 +58,7 @@ public class SpriteData {
         return poppingSpeed + new Random().nextFloat() * 0.1f;
     }
 
-    public static AnimatedSprite attackEffect(Sidekick.AttackType type) {
+    public static AnimatedSprite attackEffect(AttackType type) {
         return new AnimatedSprite(SPRITES_PATH + "/fx/" + type + "_", 8, randomAnimSpeed());
     }
 

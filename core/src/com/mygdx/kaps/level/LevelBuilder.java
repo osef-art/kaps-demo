@@ -27,13 +27,17 @@ public class LevelBuilder {
         return !level.getGrid().containsMatches();
     }
 
+    private void fillParty() {
+        while (sidekicks.size() < maxSidekicks)
+            sidekicks.add(Sidekick.random());
+    }
+
     private Level generateRandomLevel(int width, int height, int germNumber) {
         if (germNumber > width * Math.min(height, 3))
             throw new IllegalArgumentException("Too many germs for a " + width + "x" + height + " grid: " + germNumber);
 
         var grid = new Grid(width, height);
-        while (sidekicks.size() < maxSidekicks)
-            sidekicks.add(Sidekick.random());
+        fillParty();
 
         do {
             var randomTile = new Coordinates(
@@ -52,8 +56,7 @@ public class LevelBuilder {
 
     private Level loadLevelFrom(String filePath) {
         List<String> gridData;
-        while (sidekicks.size() < maxSidekicks)
-            sidekicks.add(Sidekick.random());
+        fillParty();
 
         try {
             Stream<String> lines = Files.lines(Path.of(filePath));
