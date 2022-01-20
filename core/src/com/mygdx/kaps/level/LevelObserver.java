@@ -123,6 +123,8 @@ class ParticleManager implements LevelObserver {
 
         float getScale();
 
+        int layer();
+
         Sprite getSprite();
 
         Coordinates coordinates();
@@ -134,27 +136,33 @@ class ParticleManager implements LevelObserver {
         private final Coordinates coordinates;
         private final AnimatedSprite anim;
         private final float scale;
+        private final int layer;
 
-        private GridParticleEffect(Coordinates coordinates, AnimatedSprite anim, float scale) {
+        private GridParticleEffect(Coordinates coordinates, AnimatedSprite anim, float scale, int layer) {
             this.coordinates = coordinates;
+            this.layer = layer;
             this.scale = scale;
             this.anim = anim;
         }
 
         private GridParticleEffect(GridObject obj) {
-            this(obj.coordinates(), obj.poppingAnim(), 1);
+            this(obj.coordinates(), obj.poppingAnim(), 1, 1);
         }
 
         private GridParticleEffect(GridObject obj, Color color) {
-            this(obj.coordinates(), SpriteData.poppingAnimation(color), 1.5f);
+            this(obj.coordinates(), SpriteData.poppingAnimation(color), 1.5f, 2);
         }
 
         private GridParticleEffect(Coordinates coordinates, AttackType type) {
-            this(coordinates, SpriteData.attackEffect(type), 1.25f);
+            this(coordinates, SpriteData.attackEffect(type), 1.25f, 3);
         }
 
         public float getScale() {
             return scale;
+        }
+
+        public int layer() {
+            return layer;
         }
 
         public boolean hasVanished() {

@@ -220,9 +220,11 @@ public class GameView extends ApplicationAdapter {
     }
 
     private void renderParticles() {
-        model.visualParticles().forEach(
-          p -> spra.render(p.getSprite(), dimensions.tileAt(p.coordinates(), p.getScale()))
-        );
+        model.visualParticles().stream()
+          .sorted(Comparator.comparingInt(ParticleManager.Particle::layer))
+          .forEach(
+            p -> spra.render(p.getSprite(), dimensions.tileAt(p.coordinates(), p.getScale()))
+          );
     }
 
     void updateSprites() {
