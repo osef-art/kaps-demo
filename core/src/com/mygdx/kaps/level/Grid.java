@@ -103,11 +103,15 @@ public class Grid {
               .collect(Collectors.toUnmodifiableSet());
         }
 
-        private Set<? extends GridObject> allMatchesFoundIn(Grid grid) {
+        private Map<Color, Set<? extends GridObject>> allMatchesFoundIn(Grid grid) {
             return patterns.stream()
               .map(p -> matchesFoundIn(grid, p))
               .flatMap(Collection::stream)
-              .collect(Collectors.toSet());
+              .collect(Collectors.toUnmodifiableMap(
+                GridObject::color,
+                o -> Stream.of(o).collect(Collectors.toSet()),
+                (s1, s2) -> Stream.of(s1, s2).flatMap(Collection::stream).collect(Collectors.toUnmodifiableSet()))
+              );
         }
     }
 
@@ -197,21 +201,17 @@ public class Grid {
     }
 
     // tiles operations
-    void forEachTile(BiConsumer<Integer, Integer> action) {
-        everyTile().forEach(c -> action.accept(c.x, c.y));
-    }
-
     private void set(Coordinates coordinates, GridObject obj) {
         rows.get(coordinates.y).set(coordinates.x, obj);
-    }
-
-    void put(GridObject obj) {
-        set(obj.coordinates(), obj);
     }
 
     private void clear(Coordinates coordinates) {
         detach(coordinates);
         rows.get(coordinates.y).clear(coordinates.x);
+    }
+
+    void put(GridObject obj) {
+        set(obj.coordinates(), obj);
     }
 
     Optional<? extends GridObject> hit(Coordinates coordinates, int damage) {
@@ -223,12 +223,12 @@ public class Grid {
         return obj;
     }
 
-    Optional<? extends GridObject> hit(GridObject o, int damage) {
-        return hit(o.coordinates(), damage);
+    void hit(GridObject o, int damage) {
+        hit(o.coordinates(), damage);
     }
 
-    Optional<? extends GridObject> hit(GridObject o) {
-        return hit(o, 1);
+    void hit(GridObject o) {
+        hit(o, 1);
     }
 
     private void detach(Coordinates coordinates) {
@@ -243,18 +243,19 @@ public class Grid {
         get(obj.coordinates()).ifPresent(o -> o.repaint(color));
     }
 
+    void forEachTile(BiConsumer<Integer, Integer> action) {
+        everyTile().forEach(c -> action.accept(c.x, c.y));
+    }
+
     // stack operations
     boolean containsMatches() {
         return matchBrowser.allMatchesFoundIn(this).size() > 0;
     }
 
     Map<Color, Set<? extends GridObject>> hitMatches() {
-        return matchBrowser.allMatchesFoundIn(this).stream()
-          .map(this::hit)
-          .map(Optional::get)
-          .collect(Collectors.toUnmodifiableMap(GridObject::color, o -> Stream.of(o).collect(Collectors.toSet()),
-            (s1, s2) -> Stream.of(s1, s2).flatMap(Collection::stream).collect(Collectors.toUnmodifiableSet()))
-          );
+        var matches = matchBrowser.allMatchesFoundIn(this);
+        matches.values().forEach(s -> s.forEach(this::hit));
+        return matches;
     }
 
     void initEveryCapsuleDropping() {
