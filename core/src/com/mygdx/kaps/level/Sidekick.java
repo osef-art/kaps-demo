@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -59,6 +60,10 @@ public abstract class Sidekick implements ISidekick {
         @Override
         public String toString() {
             return path;
+        }
+
+        public SoundStream.SoundStore sound() {
+            return sound;
         }
     }
 
@@ -177,23 +182,21 @@ public abstract class Sidekick implements ISidekick {
         return flippedAnim.getCurrentSprite();
     }
 
-    SoundStream.SoundStore sound() {
-        return id.type.sound;
-    }
-
     void updateSprite() {
         anim.updateExistenceTime();
         flippedAnim.updateExistenceTime();
     }
 
-    void updateAttacks() {
-        currentAttacks.forEach(SidekickAttack::update);
+    void updateAttacks(Level level) {
+        currentAttacks.forEach(attack -> {
+            attack.update();
+            if (attack.isOver()) level.deleteMatches();
+        });
         currentAttacks.removeIf(SidekickAttack::isOver);
     }
 
     void trigger(Level level) {
         currentAttacks.add(id.attack.apply(this, level));
-        level.getGrid().initEveryCapsuleDropping();
         resetGauge();
     }
 }
@@ -282,6 +285,7 @@ class SidekickAttack {
     private SidekickAttack(double speed, int iterations, Runnable move) {
         this(speed, IntStream.range(0, iterations).mapToObj(n -> move));
     }
+
     private SidekickAttack(double speed, Runnable... moves) {
         this(speed, Arrays.stream(moves));
     }
@@ -300,20 +304,21 @@ class SidekickAttack {
 
     private static Coordinates getRandomObjectCoordinates(Level level) {
         return Utils.getOptionalRandomFrom(level.getGrid().stack())
+          .filter(Predicate.not(GridObject::isDropping))
           .map(GridObject::coordinates)
           .orElse(getRandomTileCoordinates(level));
     }
 
     public static SidekickAttack paint5RandomObjects(Sidekick sdk, Level lvl) {
         var mate = sdk.randomMate(lvl);
-        return new SidekickAttack(150, 5, () -> Utils.getOptionalRandomFrom(lvl.getGrid()
+        return new SidekickAttack(200, 5, () -> Utils.getOptionalRandomFrom(lvl.getGrid()
           .capsuleStack()
           .filter(o -> o.color() != mate.color())
-        ).ifPresent(o -> lvl.getGrid().repaint(o, mate.color())));
+        ).ifPresent(o -> lvl.repaint(o, mate.color())));
     }
 
     public static SidekickAttack hit3RandomObjects(Sidekick sdk, Level lvl) {
-        return new SidekickAttack(250,3,
+        return new SidekickAttack(250, 3,
           () -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(o -> lvl.attack(o, sdk))
         );
     }
@@ -328,7 +333,6 @@ class SidekickAttack {
     }
 
     public static SidekickAttack hit2RandomGerms(Sidekick sdk, Level lvl) {
-        // TODO: optimize hitRandomGerm(2)
         return new SidekickAttack(400, 2,
           () -> Utils.getOptionalRandomFrom(lvl.getGrid().germStack()).ifPresent(g -> lvl.attack(g, sdk))
         );
@@ -372,7 +376,7 @@ class SidekickAttack {
     }
 
     public static SidekickAttack injectExplosiveCapsule(Sidekick sdk, Level lvl) {
-        return new SidekickAttack(()->{});
+        return new SidekickAttack(() -> {});
     }
 
     void update() {

@@ -135,7 +135,7 @@ public class Level extends ApplicationAdapter {
         controlledCapsules.stream()
           .filter(Predicate.not(Capsule::isDropping))
           .collect(Collectors.toUnmodifiableMap(condition::test, Arrays::asList,
-            (l1, l2) -> Stream.of(l1,l2).flatMap(Collection::stream).collect(Collectors.toList()))
+            (l1, l2) -> Stream.of(l1, l2).flatMap(Collection::stream).collect(Collectors.toList()))
           )
           .forEach((accepted, capsules) -> capsules.forEach(accepted ? action : alternative));
     }
@@ -196,17 +196,16 @@ public class Level extends ApplicationAdapter {
 
     private void dipOrFreezeDroppingCapsules() {
         if (grid.dipOrFreezeDroppingCapsules()) {
-            observers.forEach(LevelObserver::onCapsuleFreeze);
-            deleteMatchesIfAny();
+//            observers.forEach(LevelObserver::onCapsuleFreeze);
+            deleteMatches();
         }
     }
 
     // grid operations
     private void attack(Coordinates coordinates, int damage, Sidekick.AttackType type) {
         grid.hit(coordinates, damage).ifPresent(
-          obj -> observers.forEach(obs -> obs.onObjectHit(obj))
+          obj -> observers.forEach(obs -> obs.onObjectHit(obj, type))
         );
-        particleManager.addEffect(type, coordinates);
     }
 
     void attack(Coordinates coordinates, Sidekick.AttackType type) {
@@ -221,13 +220,18 @@ public class Level extends ApplicationAdapter {
         attack(obj.coordinates(), sdk);
     }
 
-    private void deleteMatchesIfAny() {
-        if (grid.containsMatches()) {
-            var destroyed = grid.hitMatches();
+    void repaint(GridObject obj, Color color) {
+        grid.repaint(obj, color);
+        observers.forEach(o -> o.onObjectPaint(obj, color));
+    }
+
+    void deleteMatches() {
+        var destroyed = grid.hitMatches();
+        if (!destroyed.isEmpty()) {
             observers.forEach(obs -> obs.onMatchPerformed(destroyed));
-            grid.initEveryCapsuleDropping();
             fastenGridRefreshing();
         }
+        grid.initEveryCapsuleDropping();
     }
 
     private void accept(Capsule capsule) {
@@ -287,7 +291,7 @@ public class Level extends ApplicationAdapter {
             timers.forEach(Timer::resetIfExceeds);
 
             sidekicks.forEach(Sidekick::updateSprite);
-            sidekicks.forEach(Sidekick::updateAttacks);
+            sidekicks.forEach(s -> s.updateAttacks(this));
             view.updateSprites();
         }
         view.render();

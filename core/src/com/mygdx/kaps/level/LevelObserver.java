@@ -12,23 +12,29 @@ import java.util.*;
 import java.util.function.Predicate;
 
 interface LevelObserver {
-    void onCapsuleFlipped();
+    default void onCapsuleFlipped() {}
 
-    void onCapsuleFreeze();
+    default void onCapsuleFreeze() {}
 
-    void onObjectHit(GridObject obj);
+    default void onObjectPaint(GridObject obj, Color color) {}
+
+    default void onObjectHit(GridObject obj, Sidekick.AttackType type) {
+        onObjectHit(obj);
+    }
+
+    default void onObjectHit(GridObject obj) {}
 
     default void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
         destroyed.values().forEach(s -> s.forEach(this::onObjectHit));
     }
 
-    void onIllegalMove();
+    default void onIllegalMove() {}
 
-    void onCapsuleDrop();
+    default void onCapsuleDrop() {}
 
-    void onCapsuleSpawn();
+    default void onCapsuleSpawn() {}
 
-    void onLevelUpdate();
+    default void onLevelUpdate() {}
 }
 
 class SoundPlayerObserver implements LevelObserver {
@@ -46,7 +52,14 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
-    public void onObjectHit(GridObject obj) {}
+    public void onObjectHit(GridObject obj, Sidekick.AttackType type) {
+        mainStream.play(type.sound());
+    }
+
+    @Override
+    public void onObjectPaint(GridObject obj, Color color) {
+        mainStream.play(SoundStream.SoundStore.PAINT);
+    }
 
     @Override
     public void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
@@ -56,7 +69,7 @@ class SoundPlayerObserver implements LevelObserver {
         if (containsGerms) mainStream.play(SoundStream.SoundStore.PLOP, 0);
         else if (destroyed.values().stream().anyMatch(s -> s.size() >= 5))
             mainStream.play(SoundStream.SoundStore.MATCH_FIVE);
-        else mainStream.play(SoundStream.SoundStore.IMPACT);
+        else if (!destroyed.isEmpty()) mainStream.play(SoundStream.SoundStore.IMPACT);
     }
 
     @Override
@@ -68,29 +81,17 @@ class SoundPlayerObserver implements LevelObserver {
     public void onCapsuleDrop() {
         mainStream.play(SoundStream.SoundStore.DROP);
     }
-
-    @Override
-    public void onCapsuleSpawn() {}
-
-    @Override
-    public void onLevelUpdate() {}
 }
 
 class SidekicksObserver implements LevelObserver {
     private final Level level;
-    private final HashMap<Color, Sidekick> sidekickMap = new HashMap<>();
+    private final Map<Color, Sidekick> sidekickMap = new HashMap<>();
     private final SoundStream stream = new SoundStream(.45f);
 
     SidekicksObserver(Level level, List<Sidekick> sidekicks) {
         this.level = level;
         sidekicks.forEach(s -> sidekickMap.put(s.color(), s));
     }
-
-    @Override
-    public void onCapsuleFlipped() {}
-
-    @Override
-    public void onCapsuleFreeze() {}
 
     @Override
     public void onObjectHit(GridObject obj) {
@@ -106,32 +107,25 @@ class SidekicksObserver implements LevelObserver {
     }
 
     @Override
-    public void onIllegalMove() {}
-
-    @Override
-    public void onCapsuleDrop() {}
-
-    @Override
     public void onCapsuleSpawn() {
         sidekickMap.values().forEach(sidekick -> {
             sidekick.ifPassive(CooldownSidekick::decreaseCooldown);
             if (sidekick.isReady()) {
                 sidekick.ifActiveElse(
-                  s -> stream.play(sidekick.sound()),
-                  s -> stream.play(SoundStream.SoundStore.TRIGGER)
+                  s -> stream.play(SoundStream.SoundStore.TRIGGER),
+                  s -> stream.play(SoundStream.SoundStore.GENERATED)
                 );
                 sidekick.trigger(level);
             }
         });
     }
-
-    @Override
-    public void onLevelUpdate() {}
 }
 
 class ParticleManager implements LevelObserver {
     interface Particle {
         boolean hasVanished();
+
+        float getScale();
 
         Sprite getSprite();
 
@@ -143,18 +137,30 @@ class ParticleManager implements LevelObserver {
     private static class GridParticleEffect implements Particle {
         private final Coordinates coordinates;
         private final AnimatedSprite anim;
+        private final float scale;
+
+        private GridParticleEffect(Coordinates coordinates, AnimatedSprite anim, float scale) {
+            this.coordinates = coordinates;
+            this.scale = scale;
+            this.anim = anim;
+        }
 
         private GridParticleEffect(GridObject obj) {
-            coordinates = obj.coordinates();
-            anim = obj.poppingAnim();
+            this(obj.coordinates(), obj.poppingAnim(), 1);
         }
 
-        public GridParticleEffect(Sidekick.AttackType type, Coordinates coordinates) {
-            this.coordinates = coordinates;
-            anim = SpriteData.attackEffect(type);
+        private GridParticleEffect(GridObject obj, Color color) {
+            this(obj.coordinates(), SpriteData.poppingAnimation(color), 1.5f);
         }
 
-        @Override
+        private GridParticleEffect(GridObject obj, Sidekick.AttackType type) {
+            this(obj.coordinates(), SpriteData.attackEffect(type), 1.25f);
+        }
+
+        public float getScale() {
+            return scale;
+        }
+
         public boolean hasVanished() {
             return anim.isFinished();
         }
@@ -167,7 +173,6 @@ class ParticleManager implements LevelObserver {
             return coordinates;
         }
 
-        @Override
         public void updateAnim() {
             anim.updateExistenceTime();
         }
@@ -179,41 +184,24 @@ class ParticleManager implements LevelObserver {
         return popping;
     }
 
-    public void addEffect(Sidekick.AttackType type, Coordinates coordinates) {
-        popping.add(new GridParticleEffect(type, coordinates));
-    }
-
-    @Override
-    public void onCapsuleFlipped() {}
-
-    @Override
-    public void onCapsuleFreeze() {}
-
     @Override
     public void onObjectHit(GridObject obj) {
         popping.add(new GridParticleEffect(obj));
     }
 
     @Override
-    public void onIllegalMove() {}
+    public void onObjectHit(GridObject obj, Sidekick.AttackType type) {
+        popping.add(new GridParticleEffect(obj, type));
+    }
 
     @Override
-    public void onCapsuleDrop() {}
-
-    @Override
-    public void onCapsuleSpawn() {}
+    public void onObjectPaint(GridObject obj, Color color) {
+        popping.add(new GridParticleEffect(obj, color));
+    }
 
     @Override
     public void onLevelUpdate() {
-        updateAnimations();
-        filterVanished();
-    }
-
-    private void updateAnimations() {
         popping.forEach(Particle::updateAnim);
-    }
-
-    private void filterVanished() {
         popping.removeIf(Particle::hasVanished);
     }
 }
@@ -257,24 +245,6 @@ class GameEndManager implements LevelObserver {
     GameEndManager(Level level) {
         this.level = level;
     }
-
-    @Override
-    public void onCapsuleFlipped() {}
-
-    @Override
-    public void onCapsuleFreeze() {}
-
-    @Override
-    public void onObjectHit(GridObject obj) {}
-
-    @Override
-    public void onIllegalMove() {}
-
-    @Override
-    public void onCapsuleDrop() {}
-
-    @Override
-    public void onCapsuleSpawn() {}
 
     @Override
     public void onLevelUpdate() {

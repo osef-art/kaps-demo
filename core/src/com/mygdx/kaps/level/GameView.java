@@ -12,10 +12,8 @@ import com.mygdx.kaps.renderer.SpriteData;
 import com.mygdx.kaps.renderer.SpriteRendererAdapter;
 import com.mygdx.kaps.renderer.TextRendererAdaptor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GameView extends ApplicationAdapter {
@@ -40,7 +38,7 @@ public class GameView extends ApplicationAdapter {
 
         private final Rectangle screen;
         private final Rectangle gridZone;
-        private final Rectangle gridTile;
+        private final List<List<Rectangle>> gridTiles;
         private final Rectangle timeBar;
         private final List<SidekickZone> sidekickZones = new ArrayList<>();
         private final Rectangle infoZone;
@@ -63,7 +61,14 @@ public class GameView extends ApplicationAdapter {
 
             level = lvl;
             gridZone = new Rectangle((screen.width - gridWidth) / 2, topSpaceMargin, gridWidth, gridHeight);
-            gridTile = new Rectangle(0, 0, tileSize, tileSize);
+            gridTiles = IntStream.range(0, lvl.getGrid().getHeight()).mapToObj(
+                y -> IntStream.range(0, lvl.getGrid().getWidth()).mapToObj(x -> new Rectangle(
+                  gridZone.x + x * tileSize,
+                  gridZone.y + ((level.getGrid().getHeight() - 1) - y) * tileSize,
+                  tileSize,
+                  tileSize
+                )).collect(Collectors.toUnmodifiableList()))
+              .collect(Collectors.toUnmodifiableList());
             timeBar = new Rectangle((screen.width - gridWidth) / 2, gridHeight + 2 * topSpaceMargin, gridWidth, timeBarHeight);
 
             sidekickZones.add(new SidekickZone(
@@ -95,11 +100,16 @@ public class GameView extends ApplicationAdapter {
         }
 
         private Rectangle tileAt(int x, int y) {
+            return gridTiles.get(y).get(x);
+        }
+
+        private Rectangle tileAt(Coordinates coordinates, float scale) {
+            var rect = tileAt(coordinates);
             return new Rectangle(
-              gridZone.x + x * gridTile.width,
-              gridZone.y + ((level.getGrid().getHeight() - 1) - y) * gridTile.height,
-              gridTile.width,
-              gridTile.height
+              rect.x - rect.width * (scale-1) / 2,
+              rect.y - rect.height * (scale-1) / 2,
+              rect.width * scale,
+              rect.height * scale
             );
         }
     }
@@ -110,7 +120,7 @@ public class GameView extends ApplicationAdapter {
 
     private final SpriteRendererAdapter spra = new SpriteRendererAdapter();
     private final ShapeRendererAdapter sra = new ShapeRendererAdapter();
-    private final HashMap<Font, TextRendererAdaptor> tra = new HashMap<>();
+    private final Map<Font, TextRendererAdaptor> tra = new HashMap<>();
     private final SpriteData spriteData = new SpriteData();
     private final Dimensions dimensions;
     private final Level model;
@@ -206,7 +216,9 @@ public class GameView extends ApplicationAdapter {
     }
 
     private void renderParticles() {
-        model.visualParticles().forEach(p -> spra.render(p.getSprite(), dimensions.tileAt(p.coordinates())));
+        model.visualParticles().forEach(
+          p -> spra.render(p.getSprite(), dimensions.tileAt(p.coordinates(), p.getScale()))
+        );
     }
 
     void updateSprites() {

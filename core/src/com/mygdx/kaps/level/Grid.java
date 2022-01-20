@@ -260,7 +260,6 @@ public class Grid {
 
     void initEveryCapsuleDropping() {
         var couldDrop = capsuleStack()
-          .filter(Predicate.not(CapsulePart::isDropping))
           .filter(c -> c.verticalVerify(
             p -> p.dipped().canStandIn(this) || get(p.dipped().coordinates()).map(GridObject::isDropping).orElse(true))
           )
@@ -271,12 +270,13 @@ public class Grid {
 
     boolean dipOrFreezeDroppingCapsules() {
         return stack().stream()
+          .filter(GridObject::isDropping)
           .filter(GridObject::isCapsule)
           .map(o -> (CapsulePart) o)
-          .filter(CapsulePart::isDropping)
           .sorted(Comparator.comparingInt(p -> p.coordinates().y))
           .map(c -> {
-              if (c.isDropping()) if (c.verticalVerify(p -> p.dipped().canStandIn(this))) {
+              if (!c.isDropping()) return false;
+              if (c.verticalVerify(p -> p.dipped().canStandIn(this))) {
                   c.applyToBoth(p -> clear(p.coordinates()));
                   c.applyToBoth(p -> {
                       p.dip();

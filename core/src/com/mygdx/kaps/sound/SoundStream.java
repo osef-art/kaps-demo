@@ -13,6 +13,7 @@ public class SoundStream {
         LIGHT_IMPACT,
         MATCH_FIVE,
         GAME_OVER,
+        GENERATED,
         SLICE(2),
         TRIGGER,
         CLEARED,

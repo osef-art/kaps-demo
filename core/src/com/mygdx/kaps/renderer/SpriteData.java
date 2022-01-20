@@ -13,9 +13,9 @@ import java.util.stream.IntStream;
 public class SpriteData {
     private static final float poppingSpeed = 0.075f;
     private static final String SPRITES_PATH = "android/assets/sprites";
-    private static final HashMap<Color, HashMap<Orientation, Sprite>> capsules = new HashMap<>();
-    private static final HashMap<Color, HashMap<Germ.GermKind, AnimatedSprite>> germs = new HashMap<>();
-    private static final HashMap<Color, List<AnimatedSprite>> wallGerms = new HashMap<>();
+    private static final Map<Color, Map<Orientation, Sprite>> capsules = new HashMap<>();
+    private static final Map<Color, Map<Germ.GermKind, AnimatedSprite>> germs = new HashMap<>();
+    private static final Map<Color, List<AnimatedSprite>> wallGerms = new HashMap<>();
 
     public SpriteData() {
         Arrays.stream(Color.values()).forEach(color -> {

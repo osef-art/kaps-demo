@@ -47,7 +47,7 @@ public class InputHandler implements InputProcessor {
         }
     }
 
-    private final HashMap<Key, Timer> pressedKeys = new HashMap<>();
+    private final Map<Key, Timer> pressedKeys = new HashMap<>();
     private final Level model;
 
     public InputHandler(Level lvl) {
