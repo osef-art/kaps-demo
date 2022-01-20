@@ -261,36 +261,23 @@ class CooldownSidekick extends Sidekick {
 }
 
 class SidekickAttack {
-    private static class SidekickMove {
-        // TODO: remove
-        private final Runnable move;
-
-        private SidekickMove(Runnable move) {
-            this.move = move;
-        }
-
-        private void perform() {
-            move.run();
-        }
-    }
-
-    private final List<SidekickMove> moves;
+    private final List<Runnable> moves;
     //    private final Timer attackScheduler = Timer.ofSeconds(0);
 
-    private SidekickAttack(Stream<SidekickMove> stream) {
+    private SidekickAttack(Stream<Runnable> stream) {
         moves = stream.collect(Collectors.toCollection(LinkedList::new));
     }
 
     private SidekickAttack(Runnable move, int iterations) {
-        this(IntStream.range(0, iterations).mapToObj(n -> new SidekickMove(move)));
+        this(IntStream.range(0, iterations).mapToObj(n -> move));
     }
 
     private SidekickAttack(Runnable... moves) {
-        this(Arrays.stream(moves).map(SidekickMove::new));
+        this(Arrays.stream(moves));
     }
 
     public void startPerforming() {
-        moves.forEach(SidekickMove::perform);
+        moves.forEach(Runnable::run);
     }
 
     private static Coordinates getRandomTileCoordinates(Level level) {
@@ -345,7 +332,7 @@ class SidekickAttack {
         return new SidekickAttack(
           IntStream.range(0, lvl.getGrid().getWidth())
             .mapToObj(n -> new Coordinates(n, picked.y))
-            .map(c -> new SidekickMove(() -> lvl.attack(c, sdk)))
+            .map(c -> () -> lvl.attack(c, sdk))
         );
     }
 
@@ -354,7 +341,7 @@ class SidekickAttack {
         return new SidekickAttack(
           IntStream.range(0, lvl.getGrid().getHeight())
             .mapToObj(n -> new Coordinates(picked.x, n))
-            .map(c -> new SidekickMove(() -> lvl.attack(c, sdk)))
+            .map(c -> () -> lvl.attack(c, sdk))
         );
     }
 
@@ -363,7 +350,7 @@ class SidekickAttack {
         return new SidekickAttack(
           lvl.getGrid().everyTile().stream()
             .filter(c -> Math.abs(c.x - picked.x) == Math.abs(c.y - picked.y))
-            .map(c -> new SidekickMove(() -> lvl.attack(c, sdk)))
+            .map(c -> () -> lvl.attack(c, sdk))
         );
     }
 
