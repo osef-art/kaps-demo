@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.kaps.controller.InputHandler;
 import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.level.LevelBuilder;
-import com.mygdx.kaps.level.Sidekick;
 
 public class MainScreen extends ApplicationAdapter {
     public static OrthographicCamera camera;
@@ -27,7 +26,7 @@ public class MainScreen extends ApplicationAdapter {
             switch (args[flags]) {
                 case "-s":
                     if (args.length > flags + 1)
-                        lvlBuilder.addSidekick(Sidekick.ofName(args[flags + 1]));
+                        lvlBuilder.addSidekick(args[flags + 1]);
                     break;
                 case "-l":
                     lvlBuilder.setRandomLevel();

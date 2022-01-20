@@ -52,8 +52,7 @@ public abstract class Sidekick implements ISidekick {
 
         private static final Map<SidekickId, Sidekick> sidekicks =
           Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(
-            Function.identity(),
-            id->id.passive ? new CooldownSidekick(id) : new ManaSidekick(id)
+            Function.identity(), id -> id.passive ? new CooldownSidekick(id) : new ManaSidekick(id)
           ));
         private final BiFunction<Sidekick, Level, SidekickAttack> attack;
         private final AttackType type;
@@ -64,8 +63,7 @@ public abstract class Sidekick implements ISidekick {
         private final int mana;
 
         SidekickId(Color color, AttackType type, BiFunction<Sidekick, Level, SidekickAttack> attack, int mana,
-                   boolean passive,
-                   int damage, String... names) {
+                   boolean passive, int damage, String... names) {
             var name = names.length > 0 ? names[0] : toString();
             animPath = "android/assets/sprites/sidekicks/" + name + "_";
             this.passive = passive;
@@ -98,7 +96,7 @@ public abstract class Sidekick implements ISidekick {
             return mana;
         }
 
-        private static SidekickId ofName(String name) {
+        static SidekickId ofName(String name) {
             return Arrays.stream(values())
               .filter(s -> s.toString().equalsIgnoreCase(name))
               .findFirst()
@@ -119,14 +117,6 @@ public abstract class Sidekick implements ISidekick {
 
     static Sidekick ofId(SidekickId id) {
         return SidekickId.sidekicks.get(id);
-    }
-
-    public static Sidekick ofName(String name) {
-        return ofId(SidekickId.ofName(name));
-    }
-
-    static Sidekick random() {
-        return ofId(Utils.getRandomFrom(SidekickId.values()));
     }
 
     Sidekick randomMate(Level level) {

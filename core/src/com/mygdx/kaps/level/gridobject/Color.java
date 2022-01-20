@@ -45,8 +45,8 @@ public enum Color {
         return Utils.getRandomFrom(Arrays.stream(values()).filter(c -> c.blank));
     }
 
-    public static Set<Color> getSetFrom(Set<Sidekick> sidekicks, Color... colors) {
-        return Stream.of(sidekicks.stream().map(Sidekick::color), Arrays.stream(colors))
+    public static Set<Color> getSetFrom(Set<Sidekick.SidekickId> sidekicks, Color... colors) {
+        return Stream.of(sidekicks.stream().map(Sidekick.SidekickId::color), Arrays.stream(colors))
           .flatMap(Function.identity())
           .collect(Collectors.toUnmodifiableSet());
     }

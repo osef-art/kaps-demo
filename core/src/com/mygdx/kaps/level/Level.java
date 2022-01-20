@@ -50,12 +50,14 @@ public class Level extends ApplicationAdapter {
     private final GameView view;
     private final Grid grid;
 
-    Level(Grid grid, Set<Sidekick> sidekicks, Color blankColor) {
+    Level(Grid grid, Set<Sidekick.SidekickId> sidekicks, Color blankColor) {
         this.grid = grid;
         view = new GameView(this);
         parameters = new LevelParameters(this);
 
-        this.sidekicks = new ArrayList<>(sidekicks);
+        this.sidekicks = sidekicks.stream()
+          .map(Sidekick::ofId)
+          .collect(Collectors.toUnmodifiableList());
         colors = Color.getSetFrom(sidekicks, blankColor);
         sidekicks.forEach(s -> {
             if (!colors.contains(s.color())) throw new IllegalArgumentException("Insufficient color set.");
@@ -247,9 +249,9 @@ public class Level extends ApplicationAdapter {
         if (controlledCapsules.isEmpty()) {
             gridRefresher.reset();
             spawnCapsule();
-            triggerSidekicksIfReady();
-
             observers.forEach(LevelObserver::onCapsuleSpawn);
+
+            triggerSidekicksIfReady();
         }
     }
 

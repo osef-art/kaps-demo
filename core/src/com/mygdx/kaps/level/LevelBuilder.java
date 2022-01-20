@@ -17,7 +17,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class LevelBuilder {
-    private final Set<Sidekick> sidekicks = new HashSet<>();
+    private final Set<Sidekick.SidekickId> sidekicks = new HashSet<>();
     private final Color blank = Color.randomBlank();
     private final static int maxSidekicks = 2;
     private final static int maxLevels = 20;
@@ -29,7 +29,7 @@ public class LevelBuilder {
 
     private void fillParty() {
         while (sidekicks.size() < maxSidekicks)
-            sidekicks.add(Sidekick.random());
+            sidekicks.add(Utils.getRandomFrom(Sidekick.SidekickId.values()));
     }
 
     private Level generateRandomLevel(int width, int height, int germNumber) {
@@ -79,8 +79,9 @@ public class LevelBuilder {
         return isValid(lvl) ? lvl : loadLevelFrom(filePath);
     }
 
-    public void addSidekick(Sidekick sdk) {
-        if (sidekicks.size() < maxSidekicks) sidekicks.add(sdk);
+    public void addSidekick(String name) {
+        if (sidekicks.size() < maxSidekicks)
+            sidekicks.add(Sidekick.SidekickId.ofName(name));
     }
 
     public void setRandomLevel() {
