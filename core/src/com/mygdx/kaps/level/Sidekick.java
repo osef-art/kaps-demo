@@ -45,7 +45,7 @@ public abstract class Sidekick implements ISidekick {
         FIRE("fire", SoundStream.SoundStore.FIRE),
         FIREARM("fire", SoundStream.SoundStore.SHOT),
         MELEE("pain", SoundStream.SoundStore.SHOT),
-        //        MAGIC("pain", SoundStream.SoundStore.SLICE),
+        // MAGIC("pain", SoundStream.SoundStore.SLICE),
         BRUSH("paint", SoundStream.SoundStore.PAINT),
         ;
 
@@ -311,7 +311,7 @@ class SidekickAttack {
 
     public static SidekickAttack paint5RandomObjects(Sidekick sdk, Level lvl) {
         var mate = sdk.randomMate(lvl);
-        return new SidekickAttack(200, 5, () -> Utils.getOptionalRandomFrom(lvl.getGrid()
+        return new SidekickAttack(150, 5, () -> Utils.getOptionalRandomFrom(lvl.getGrid()
           .capsuleStack()
           .filter(o -> o.color() != mate.color())
         ).ifPresent(o -> lvl.repaint(o, mate.color())));

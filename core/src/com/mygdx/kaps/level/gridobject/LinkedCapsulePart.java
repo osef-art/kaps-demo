@@ -36,15 +36,15 @@ public final class LinkedCapsulePart extends CapsulePart {
         return orientation;
     }
 
-    void linkTo(LinkedCapsulePart linked, Orientation side) {
+    public void updateLinked() {
+        linked.face(this);
+    }
+
+    private void linkTo(LinkedCapsulePart linked, Orientation side) {
         orientation = side.opposite();
         this.linked = linked;
         linked.linked = this;
         updateLinked();
-    }
-
-    public void updateLinked() {
-        linked.face(this);
     }
 
     private Coordinates facingCoordinates() {

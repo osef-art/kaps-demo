@@ -259,13 +259,14 @@ public class Grid {
     }
 
     void initEveryCapsuleDropping() {
-        var couldDrop = capsuleStack()
-          .filter(c -> c.verticalVerify(
-            p -> p.dipped().canStandIn(this) || get(p.dipped().coordinates()).map(GridObject::isDropping).orElse(true))
+        capsuleStack()
+          .filter(c -> c.verticalVerify(p -> get(p.dipped().coordinates())
+            .map(GridObject::isDropping)
+            .orElse(isInGridBounds(p.dipped().coordinates())))
           )
           .peek(CapsulePart::initDropping)
-          .count() > 0;
-        if (couldDrop) initEveryCapsuleDropping();
+          .findFirst()
+          .ifPresent(p -> initEveryCapsuleDropping());
     }
 
     boolean dipOrFreezeDroppingCapsules() {
@@ -276,7 +277,7 @@ public class Grid {
           .sorted(Comparator.comparingInt(p -> p.coordinates().y))
           .map(c -> {
               if (!c.isDropping()) return false;
-              if (c.verticalVerify(p -> p.dipped().canStandIn(this))) {
+              if (c.verticalVerify(p -> canBePut(p.dipped()))) {
                   c.applyToBoth(p -> clear(p.coordinates()));
                   c.applyToBoth(p -> {
                       p.dip();
@@ -291,5 +292,9 @@ public class Grid {
           })
           .reduce(Boolean::logicalOr)
           .orElse(false);
+    }
+
+    boolean canBePut(CapsulePart caps) {
+        return isInGridBounds(caps.coordinates()) && get(caps.coordinates()).isEmpty();
     }
 }

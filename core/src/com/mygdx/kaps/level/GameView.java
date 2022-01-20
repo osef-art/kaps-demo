@@ -103,14 +103,18 @@ public class GameView extends ApplicationAdapter {
             return gridTiles.get(y).get(x);
         }
 
-        private Rectangle tileAt(Coordinates coordinates, float scale) {
-            var rect = tileAt(coordinates);
+        private Rectangle tileAt(int x, int y, float scale) {
+            var rect = tileAt(x, y);
             return new Rectangle(
-              rect.x - rect.width * (scale-1) / 2,
-              rect.y - rect.height * (scale-1) / 2,
+              rect.x - rect.width * (scale - 1) / 2,
+              rect.y - rect.height * (scale - 1) / 2,
               rect.width * scale,
               rect.height * scale
             );
+        }
+
+        private Rectangle tileAt(Coordinates coordinates, float scale) {
+            return tileAt(coordinates.x, coordinates.y, scale);
         }
     }
 

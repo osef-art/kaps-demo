@@ -72,7 +72,7 @@ public class Level extends ApplicationAdapter {
         particleManager = new ParticleManager();
         observers = Arrays.asList(
           new SoundPlayerObserver(),
-          new SidekicksObserver(this, this.sidekicks),
+          new SidekicksObserver(this.sidekicks),
           new GameEndManager(this),
           particleManager
         );
@@ -196,7 +196,7 @@ public class Level extends ApplicationAdapter {
 
     private void dipOrFreezeDroppingCapsules() {
         if (grid.dipOrFreezeDroppingCapsules()) {
-//            observers.forEach(LevelObserver::onCapsuleFreeze);
+            observers.forEach(LevelObserver::onCapsuleFreeze);
             deleteMatches();
         }
     }
@@ -247,6 +247,8 @@ public class Level extends ApplicationAdapter {
         if (controlledCapsules.isEmpty()) {
             gridRefresher.reset();
             spawnCapsule();
+            triggerSidekicksIfReady();
+
             observers.forEach(LevelObserver::onCapsuleSpawn);
         }
     }
@@ -262,6 +264,15 @@ public class Level extends ApplicationAdapter {
         if (upcomingCapsules.size() < 2)
             upcomingCapsules.add(Capsule.randomNewInstance(this));
         controlledCapsules.add(upcoming);
+    }
+
+    private void triggerSidekicksIfReady() {
+        sidekicks.stream()
+          .filter(Sidekick::isReady)
+          .forEach(sdk -> {
+              sdk.trigger(this);
+              observers.forEach(o -> o.onSidekickTriggered(sdk));
+          });
     }
 
     private void fastenGridRefreshing() {

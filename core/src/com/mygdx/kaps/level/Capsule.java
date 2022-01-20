@@ -55,6 +55,7 @@ import java.util.function.Predicate;
 
     void updatePreview(Grid grid) {
         preview = copy();
+        // TODO: replace by timer dipping preview really fast
         while (preview.dipped().canStandIn(grid)) preview.dip();
     }
 
@@ -63,7 +64,7 @@ import java.util.function.Predicate;
     }
 
     boolean canStandIn(Grid grid) {
-        return main.verify(p -> p.canStandIn(grid));
+        return main.verify(grid::canBePut);
     }
 
     boolean isDropping() {

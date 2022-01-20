@@ -34,6 +34,8 @@ interface LevelObserver {
 
     default void onCapsuleSpawn() {}
 
+    default void onSidekickTriggered(Sidekick triggered) {}
+
     default void onLevelUpdate() {}
 }
 
@@ -81,15 +83,20 @@ class SoundPlayerObserver implements LevelObserver {
     public void onCapsuleDrop() {
         mainStream.play(SoundStream.SoundStore.DROP);
     }
+
+    @Override
+    public void onSidekickTriggered(Sidekick triggered) {
+        triggered.ifActiveElse(
+          s -> mainStream.play(SoundStream.SoundStore.TRIGGER),
+          s -> mainStream.play(SoundStream.SoundStore.GENERATED)
+        );
+    }
 }
 
 class SidekicksObserver implements LevelObserver {
-    private final Level level;
     private final Map<Color, Sidekick> sidekickMap = new HashMap<>();
-    private final SoundStream stream = new SoundStream(.45f);
 
-    SidekicksObserver(Level level, List<Sidekick> sidekicks) {
-        this.level = level;
+    SidekicksObserver(List<Sidekick> sidekicks) {
         sidekicks.forEach(s -> sidekickMap.put(s.color(), s));
     }
 
@@ -108,16 +115,11 @@ class SidekicksObserver implements LevelObserver {
 
     @Override
     public void onCapsuleSpawn() {
-        sidekickMap.values().forEach(sidekick -> {
-            sidekick.ifPassive(CooldownSidekick::decreaseCooldown);
-            if (sidekick.isReady()) {
-                sidekick.ifActiveElse(
-                  s -> stream.play(SoundStream.SoundStore.TRIGGER),
-                  s -> stream.play(SoundStream.SoundStore.GENERATED)
-                );
-                sidekick.trigger(level);
-            }
-        });
+        sidekickMap.values().forEach(sdk -> sdk.ifPassive(CooldownSidekick::decreaseCooldown));
+    }
+
+    @Override
+    public void onSidekickTriggered(Sidekick triggered) {
     }
 }
 

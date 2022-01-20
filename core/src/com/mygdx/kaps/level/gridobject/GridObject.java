@@ -7,11 +7,17 @@ import com.mygdx.kaps.renderer.SpriteData;
 import java.util.Objects;
 
 interface IGridObject {
-    boolean isGerm();
+    default boolean isGerm() {
+        return false;
+    }
 
-    boolean isCapsule();
+    default boolean isCapsule() {
+        return false;
+    }
 
-    boolean isDropping();
+    default boolean isDropping() {
+        return false;
+    }
 
     boolean isDestroyed();
 
@@ -45,20 +51,8 @@ public abstract class GridObject implements IGridObject {
         return color;
     }
 
-    public boolean isCapsule() {
-        return false;
-    }
-
-    public boolean isGerm() {
-        return false;
-    }
-
     public boolean isDestroyed() {
         return destroyed;
-    }
-
-    public boolean isDropping() {
-        return false;
     }
 
     public void takeHit() {

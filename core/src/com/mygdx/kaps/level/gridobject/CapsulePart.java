@@ -1,13 +1,11 @@
 package com.mygdx.kaps.level.gridobject;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.mygdx.kaps.level.Grid;
 import com.mygdx.kaps.renderer.SpriteData;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-
 public class CapsulePart extends GridObject {
     private boolean dropping;
 
@@ -19,8 +17,10 @@ public class CapsulePart extends GridObject {
         super(coordinates, color);
     }
 
-    CapsulePart copy() {
-        return new CapsulePart(coordinates(), color());
+    public CapsulePart dipped() {
+        var test = new CapsulePart(coordinates(), color());
+        test.dip();
+        return test;
     }
 
     @Override
@@ -59,22 +59,6 @@ public class CapsulePart extends GridObject {
         dropping = false;
     }
 
-    private boolean isInGridBounds(Grid grid) {
-        return grid.isInGridBounds(coordinates());
-    }
-
-    private boolean overlapsStack(Grid grid) {
-        return grid.get(coordinates()).isPresent();
-    }
-
-    public boolean canStandIn(Grid grid) {
-        return isInGridBounds(grid) && !overlapsStack(grid);
-    }
-
-    boolean verify(Predicate<CapsulePart> condition) {
-        return condition.test(this);
-    }
-
     public boolean verticalVerify(Predicate<CapsulePart> condition) {
         return condition.test(this);
     }
@@ -102,12 +86,6 @@ public class CapsulePart extends GridObject {
 
     public void dip() {
         moveTowards(Orientation.DOWN);
-    }
-
-    public CapsulePart dipped() {
-        var test = copy();
-        test.dip();
-        return test;
     }
 }
 
