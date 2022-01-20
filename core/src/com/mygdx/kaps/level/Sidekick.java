@@ -167,7 +167,7 @@ class ManaSidekick extends Sidekick {
 
     ManaSidekick(SidekickId id) {
         super(id);
-        this.mana = new Gauge(5); //id.gaugeMax());
+        this.mana = new Gauge(4); //id.gaugeMax());
     }
 
     public double gaugeRatio() {
@@ -316,8 +316,9 @@ class SidekickAttack {
 
     public static SidekickAttack hitRandomColumn(Sidekick sdk, Level lvl) {
         var picked = getRandomTileCoordinates(lvl);
-        return new SidekickAttack(75,
+        return new SidekickAttack(25,
           IntStream.range(0, lvl.getGrid().getHeight())
+            .map(i -> -i).sorted().map(i -> -i)
             .mapToObj(n -> new Coordinates(picked.x, n))
             .map(c -> () -> lvl.attack(c, sdk))
         );
@@ -325,7 +326,7 @@ class SidekickAttack {
 
     public static SidekickAttack hitRandomDiagonals(Sidekick sdk, Level lvl) {
         var picked = getRandomObjectCoordinates(lvl);
-        return new SidekickAttack(50,
+        return new SidekickAttack(25,
           lvl.getGrid().everyTile().stream()
             .filter(c -> Math.abs(c.x - picked.x) == Math.abs(c.y - picked.y))
             .map(c -> () -> lvl.attack(c, sdk))

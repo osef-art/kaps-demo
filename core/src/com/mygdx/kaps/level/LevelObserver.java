@@ -18,9 +18,7 @@ interface LevelObserver {
 
     default void onObjectPaint(GridObject obj, Color color) {}
 
-    default void onObjectHit(GridObject obj, AttackType type) {
-        onObjectHit(obj);
-    }
+    default void onTileAttack(Coordinates coordinates, AttackType type) {}
 
     default void onObjectHit(GridObject obj) {}
 
@@ -54,13 +52,13 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
-    public void onObjectHit(GridObject obj, AttackType type) {
-        mainStream.play(type.sound());
+    public void onTileAttack(Coordinates coordinates, AttackType type) {
+        subStream.play(type.sound());
     }
 
     @Override
     public void onObjectPaint(GridObject obj, Color color) {
-        mainStream.play(SoundStream.SoundStore.PAINT);
+        subStream.play(SoundStream.SoundStore.PAINT);
     }
 
     @Override
@@ -76,7 +74,7 @@ class SoundPlayerObserver implements LevelObserver {
 
     @Override
     public void onIllegalMove() {
-        mainStream.play(SoundStream.SoundStore.CANT);
+        subStream.play(SoundStream.SoundStore.CANT);
     }
 
     @Override
@@ -117,10 +115,6 @@ class SidekicksObserver implements LevelObserver {
     public void onCapsuleSpawn() {
         sidekickMap.values().forEach(sdk -> sdk.ifPassive(CooldownSidekick::decreaseCooldown));
     }
-
-    @Override
-    public void onSidekickTriggered(Sidekick triggered) {
-    }
 }
 
 class ParticleManager implements LevelObserver {
@@ -155,8 +149,8 @@ class ParticleManager implements LevelObserver {
             this(obj.coordinates(), SpriteData.poppingAnimation(color), 1.5f);
         }
 
-        private GridParticleEffect(GridObject obj, AttackType type) {
-            this(obj.coordinates(), SpriteData.attackEffect(type), 1.25f);
+        private GridParticleEffect(Coordinates coordinates, AttackType type) {
+            this(coordinates, SpriteData.attackEffect(type), 1.25f);
         }
 
         public float getScale() {
@@ -192,8 +186,8 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
-    public void onObjectHit(GridObject obj, AttackType type) {
-        popping.add(new GridParticleEffect(obj, type));
+    public void onTileAttack(Coordinates coordinates, AttackType type) {
+        popping.add(new GridParticleEffect(coordinates, type));
     }
 
     @Override
@@ -229,9 +223,9 @@ class GameEndManager implements LevelObserver {
             this.sound = sound;
         }
 
-        void endGameIfChecked(Level level, SoundStream stream) {
+        void endGameIfChecked(Level level) {
             if (!condition.test(level)) return;
-            stream.play(sound);
+            SoundStream.play(sound, .75f);
             System.out.println(message);
             try {
                 Thread.sleep(2500);
@@ -241,7 +235,6 @@ class GameEndManager implements LevelObserver {
         }
     }
 
-    private final SoundStream stream = new SoundStream(.75f);
     private final Level level;
 
     GameEndManager(Level level) {
@@ -251,6 +244,6 @@ class GameEndManager implements LevelObserver {
     @Override
     public void onLevelUpdate() {
         if (level.visualParticles().isEmpty())
-            Arrays.stream(GameEndCase.values()).forEach(c -> c.endGameIfChecked(level, stream));
+            Arrays.stream(GameEndCase.values()).forEach(c -> c.endGameIfChecked(level));
     }
 }

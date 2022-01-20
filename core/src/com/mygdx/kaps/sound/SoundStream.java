@@ -4,7 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.mygdx.kaps.Utils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -50,11 +52,15 @@ public class SoundStream {
         }
     }
 
+    private final Map<String, Sound> sounds = new HashMap<>();
     private final float volume;
-    private Sound sound;
 
     public SoundStream(float volume) {
         this.volume = volume / 5;
+    }
+
+    public static void play(SoundStore sound, float volume) {
+        new SoundStream(volume).play(sound);
     }
 
     public void play(SoundStore sound) {
@@ -66,8 +72,8 @@ public class SoundStream {
     }
 
     private void play(String path) {
-        if (sound != null) sound.dispose();
-        sound = Gdx.audio.newSound(Gdx.files.internal(path));
-        sound.setVolume(sound.play(), volume);
+        if (sounds.containsKey(path)) sounds.get(path).dispose();
+        sounds.put(path, Gdx.audio.newSound(Gdx.files.internal(path)));
+        sounds.get(path).setVolume(sounds.get(path).play(), volume);
     }
 }

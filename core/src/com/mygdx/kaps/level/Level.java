@@ -205,8 +205,10 @@ public class Level extends ApplicationAdapter {
 
     // grid operations
     private void attack(Coordinates coordinates, int damage, AttackType type) {
+        if (grid.isInGridBounds(coordinates))
+            observers.forEach(obs -> obs.onTileAttack(coordinates, type));
         grid.hit(coordinates, damage).ifPresent(
-          obj -> observers.forEach(obs -> obs.onObjectHit(obj, type))
+          obj -> observers.forEach(obs -> obs.onObjectHit(obj))
         );
     }
 
@@ -247,11 +249,10 @@ public class Level extends ApplicationAdapter {
         accept(capsule);
 
         if (controlledCapsules.isEmpty()) {
-            gridRefresher.reset();
-            spawnCapsule();
             observers.forEach(LevelObserver::onCapsuleSpawn);
-
             triggerSidekicksIfReady();
+            spawnCapsule();
+            gridRefresher.reset();
         }
     }
 
