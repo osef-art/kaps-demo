@@ -74,6 +74,10 @@ public abstract class Sidekick implements ISidekick {
         return id.damage;
     }
 
+    boolean isAttacking() {
+        return !tasks.isEmpty();
+    }
+
     void updateTasks() {
         tasks.update();
     }

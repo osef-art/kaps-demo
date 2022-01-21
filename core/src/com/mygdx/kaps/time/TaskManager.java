@@ -19,6 +19,10 @@ public class TaskManager {
         this(new ArrayList<>());
     }
 
+    public boolean isEmpty() {
+        return tasks.isEmpty();
+    }
+
     public void add(PeriodicTask task) {
         tasks.add(task);
     }

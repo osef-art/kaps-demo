@@ -1,6 +1,7 @@
 package com.mygdx.kaps.level;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
@@ -89,18 +90,14 @@ public class Level extends ApplicationAdapter {
         return sidekicks;
     }
 
-    Sidekick getSidekick(int index) {
-        return sidekicks.get(index);
-    }
-
     Set<Sidekick> matesOf(Sidekick sidekick) {
         return sidekicks.stream()
           .filter(s -> !s.equals(sidekick))
           .collect(Collectors.toUnmodifiableSet());
     }
 
-    public Set<Color> getColorSet() {
-        return colors;
+    public Color randomLevelColor() {
+        return Utils.getRandomFrom(colors);
     }
 
     Grid getGrid() {
@@ -206,6 +203,7 @@ public class Level extends ApplicationAdapter {
         if (grid.dipOrFreezeDroppingCapsules()) {
             observers.forEach(LevelObserver::onCapsuleFreeze);
             deleteMatches();
+            controlledCapsules.forEach(this::updatePreview);
         }
     }
 
@@ -264,7 +262,7 @@ public class Level extends ApplicationAdapter {
 
     // update
     private void updatePreview(Capsule capsule) {
-        if (parameters.enablePreview) capsule.updatePreview(grid);
+        if (parameters.enablePreview) capsule.computePreview(grid);
     }
 
     private void spawnCapsule() {
@@ -285,7 +283,7 @@ public class Level extends ApplicationAdapter {
     }
 
     private void fastenGridRefreshing() {
-        gridRefresher.updateLimit(gridRefresher.getLimit() * 0.975);
+        gridRefresher.updateLimit(gridRefresher.getLimit() * .975);
     }
 
     void injectNext(Capsule capsule) {

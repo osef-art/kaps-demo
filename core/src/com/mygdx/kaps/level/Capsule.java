@@ -1,12 +1,11 @@
 package com.mygdx.kaps.level;
 
-import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.*;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
- class Capsule {
+class Capsule {
     private final LinkedCapsulePart main;
     private Capsule preview;
 
@@ -30,13 +29,13 @@ import java.util.function.Predicate;
     static Capsule randomNewInstance(Level level) {
         return new Capsule(
           level.spawningCoordinates(),
-          Utils.getRandomFrom(level.getColorSet()),
-          Utils.getRandomFrom(level.getColorSet())
+          level.randomLevelColor(),
+          level.randomLevelColor()
         );
     }
 
     static Capsule randomMonoColorInstance(Level level) {
-        var color = Utils.getRandomFrom(level.getColorSet());
+        var color = level.randomLevelColor();
         return new Capsule(level.spawningCoordinates(), color, color);
     }
 
@@ -53,9 +52,8 @@ import java.util.function.Predicate;
         return Optional.ofNullable(preview);
     }
 
-    void updatePreview(Grid grid) {
+    void computePreview(Grid grid) {
         preview = copy();
-        // TODO: replace by timer dipping preview really fast
         while (preview.dipped().canStandIn(grid)) preview.dip();
     }
 

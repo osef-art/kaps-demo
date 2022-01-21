@@ -84,7 +84,7 @@ public class GameView extends ApplicationAdapter {
               .collect(Collectors.toUnmodifiableList());
             timeBar = new Rectangle((screen.width - gridWidth) / 2, gridHeight + 2 * topSpaceMargin, gridWidth, timeBarHeight);
 
-            sidekickZones.put(lvl.getSidekick(0).id(), new SidekickZone(
+            sidekickZones.put(lvl.getSidekicks().get(0).id(), new SidekickZone(
               new Rectangle(0, topSpaceHeight, screen.width / 2, infoZoneHeight),
               new Rectangle(padding, topSpaceHeight + padding, sidekickSize, sidekickSize),
               new Rectangle(screen.width * 3 / 16, topSpaceHeight + infoZoneHeight / 2, screen.width / 4, 15),
@@ -92,7 +92,9 @@ public class GameView extends ApplicationAdapter {
               new Rectangle(screen.width * 5 / 16, topSpaceHeight + padding, sidekickSize, sidekickSize),
               new Rectangle(screen.width * 5 / 16, topSpaceHeight + infoZoneHeight / 2, sidekickSize, sidekickSize / 2)
             ));
-            sidekickZones.put(lvl.getSidekick(1).id(), new SidekickZone(sidekickZones.get(lvl.getSidekick(0).id()), this));
+            sidekickZones.put(lvl.getSidekicks().get(1).id(),
+              new SidekickZone(sidekickZones.get(lvl.getSidekicks().get(0).id()), this)
+            );
             infoZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
             nextBox = new Rectangle((screen.width - nextBoxSize) / 2, screen.height - nextBoxSize, nextBoxSize, nextBoxSize);
         }
@@ -163,16 +165,27 @@ public class GameView extends ApplicationAdapter {
         Gdx.gl.glClearColor(.1f, .1f, .15f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         sr.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
+        dimensions.sidekickZones.forEach(
+          (sdk, zone) -> sr.drawRect(zone.get(Dimensions.SidekickZone.Zone.ZONE), sdk.color().value(.5f))
+        );
+        model.getGrid().forEachTile((x, y) -> sr.drawRect(
+          dimensions.tileAt(x, y),
+          x % 2 == y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
+        ));
+    }
+
+    private void renderSidekickFocus() {
+        model.getSidekicks().stream()
+          .filter(Sidekick::isAttacking)
+          .findFirst().ifPresent(sidekick -> sidekick.ifActive(sdk -> {
+              sr.drawRect(dimensions.screen, new Color(0, 0, 0, .5f));
+              sr.drawRect(dimensions.screen, sdk.color().value(.2f));
+              renderSidekick(sdk);
+          }));
     }
 
     private void renderGrid() {
-        model.getGrid().forEachTile((x, y) -> {
-            sr.drawRect(
-              dimensions.tileAt(x, y),
-              x % 2 == y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
-            );
-            model.getGrid().get(x, y).ifPresent(o -> spr.render(o.getSprite(spriteData), dimensions.tileAt(x, y)));
-        });
+        model.getGrid().stack().forEach(o -> spr.render(o.getSprite(spriteData), dimensions.tileAt(o.coordinates())));
         sr.drawRoundedGauge(
           dimensions.timeBar, model.refreshingProgression(), new Color(.2f, .2f, .3f, 1f), new Color(.3f, .3f, .4f, 1f)
         );
@@ -209,28 +222,25 @@ public class GameView extends ApplicationAdapter {
         tr.get(Font.MEDIUM).drawTextWithShadow("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 / 8, nextBox.width, nextBox.height / 8);
     }
 
-    private void renderSidekicks() {
-        model.getSidekicks().forEach(sdk -> {
-            var sdkZone = dimensions.sidekickZones.get(sdk.id());
-            sr.drawRect(sdkZone.get(Dimensions.SidekickZone.Zone.ZONE), sdk.color().value(.5f));
-            sdk.ifActiveElse(s -> {
-                sr.drawRoundedRect(sdkZone.get(Dimensions.SidekickZone.Zone.BUBBLE), Color.WHITE);
-                tr.get(Font.BIG_GREY).drawText(s.currentMana() + "    ", sdkZone.get(Dimensions.SidekickZone.Zone.BUBBLE));
-                tr.get(Font.MEDIUM_GREY).drawText("      /" + s.maxMana(), sdkZone.get(Dimensions.SidekickZone.Zone.BUBBLE));
-                sr.drawRoundedGauge(
-                  sdkZone.get(Dimensions.SidekickZone.Zone.GAUGE),
-                  Math.min(1, sdk.gaugeRatio()),
-                  new Color(.2f, .2f, .25f, 1),
-                  sdk.color().value(),
-                  !sdkZone.flipped
-                );
-            }, s -> {
-                sr.drawArc(sdkZone.get(Dimensions.SidekickZone.Zone.COOLDOWN), 270, 360 * (float) s.gaugeRatio(), new Color(1, 1, 1, .3f));
-                tr.get(Font.BIG).drawText(s.turnsLeft() + "", sdkZone.get(Dimensions.SidekickZone.Zone.COOLDOWN));
-                tr.get(Font.LITTLE).drawText("turns", sdkZone.get(Dimensions.SidekickZone.Zone.COOLDOWN_TXT));
-            });
-            spr.render(spriteData.getSidekick(sdk.id(), sdkZone.flipped).getCurrentSprite(), sdkZone.get(Dimensions.SidekickZone.Zone.HEAD));
+    private void renderSidekick(Sidekick sdk) {
+        var sdkZone = dimensions.sidekickZones.get(sdk.id());
+        sdk.ifActiveElse(s -> {
+            sr.drawRoundedRect(sdkZone.get(Dimensions.SidekickZone.Zone.BUBBLE), Color.WHITE);
+            tr.get(Font.BIG_GREY).drawText(s.currentMana() + "    ", sdkZone.get(Dimensions.SidekickZone.Zone.BUBBLE));
+            tr.get(Font.MEDIUM_GREY).drawText("      /" + s.maxMana(), sdkZone.get(Dimensions.SidekickZone.Zone.BUBBLE));
+            sr.drawRoundedGauge(
+              sdkZone.get(Dimensions.SidekickZone.Zone.GAUGE),
+              Math.min(1, sdk.gaugeRatio()),
+              new Color(.2f, .2f, .25f, 1),
+              sdk.color().value(),
+              !sdkZone.flipped
+            );
+        }, s -> {
+            sr.drawArc(sdkZone.get(Dimensions.SidekickZone.Zone.COOLDOWN), 270, 360 * (float) s.gaugeRatio(), new Color(1, 1, 1, .3f));
+            tr.get(Font.BIG).drawText(s.turnsLeft() + "", sdkZone.get(Dimensions.SidekickZone.Zone.COOLDOWN));
+            tr.get(Font.LITTLE).drawText("turns", sdkZone.get(Dimensions.SidekickZone.Zone.COOLDOWN_TXT));
         });
+        spr.render(spriteData.getSidekick(sdk.id(), sdkZone.flipped).getCurrentSprite(), sdkZone.get(Dimensions.SidekickZone.Zone.HEAD));
     }
 
     private void renderParticles() {
@@ -242,7 +252,7 @@ public class GameView extends ApplicationAdapter {
               dimensions.tileAt(p.coordinates()),
               dimensions.sidekickZones.get(p.getTarget()).get(Dimensions.SidekickZone.Zone.HEAD), p.ratio()
             ));
-            sr.drawCircle(center.x, center.y, 15, p.getTarget().color.value(0.4f));
+            sr.drawCircle(center.x, center.y, 15, p.getTarget().color.value(.4f));
             sr.drawCircle(center.x, center.y, 5, p.getTarget().color.value());
         });
     }
@@ -253,10 +263,11 @@ public class GameView extends ApplicationAdapter {
 
     public void render() {
         renderLayout();
+        renderUpcoming();
+        model.getSidekicks().forEach(this::renderSidekick);
+        renderSidekickFocus();
         renderGrid();
         renderFallingCapsules();
-        renderSidekicks();
-        renderUpcoming();
         renderParticles();
     }
 

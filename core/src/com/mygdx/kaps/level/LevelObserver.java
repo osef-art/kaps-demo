@@ -195,7 +195,7 @@ class ParticleManager implements LevelObserver {
     private final List<GridParticleEffect> attacks = new ArrayList<>();
     private final List<ManaParticle> mana = new ArrayList<>();
     private final Map<Color, Sidekick> sidekicks;
-    private final SoundStream stream = new SoundStream(0.2f);
+    private final SoundStream stream = new SoundStream(.2f);
 
     ParticleManager(List<Sidekick> sidekicks) {
         this.sidekicks = sidekicks.stream().collect(
