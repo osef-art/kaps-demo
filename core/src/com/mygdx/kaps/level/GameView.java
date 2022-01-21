@@ -182,10 +182,6 @@ public class GameView extends ApplicationAdapter {
         });
     }
 
-    private void renderPoppingObjects() {
-        //        model.poppingObjects().forEach(c -> spra.render(c.getPoppingSprite(), dimensions.tileAt(c.coordinates())));
-    }
-
     private void renderUpcoming() {
         Rectangle nextBox = dimensions.nextBox;
         sra.drawCircle(dimensions.nextBox.x + dimensions.nextBox.width / 2, dimensions.nextBox.y + dimensions.nextBox.height,
@@ -213,10 +209,8 @@ public class GameView extends ApplicationAdapter {
                 tra.get(Font.BIG).drawText(s.turnsLeft() + "", dimensions.sidekickZones.get(n).cooldown);
                 tra.get(Font.LITTLE).drawText("turns", dimensions.sidekickZones.get(n).cooldownText);
             });
+            spra.render(spriteData.getSidekick(model.getSidekick(n), n==0).getCurrentSprite(), dimensions.sidekickZones.get(n).head);
         });
-
-        spra.render(model.getSidekick(0).getFlippedSprite(), dimensions.sidekickZones.get(0).head);
-        spra.render(model.getSidekick(1).getSprite(), dimensions.sidekickZones.get(1).head);
     }
 
     private void renderParticles() {
@@ -235,7 +229,6 @@ public class GameView extends ApplicationAdapter {
         renderLayout();
         renderGrid();
         renderFallingCapsules();
-        renderPoppingObjects();
         renderSidekicks();
         renderUpcoming();
         renderParticles();

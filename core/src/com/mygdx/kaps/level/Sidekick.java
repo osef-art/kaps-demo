@@ -1,11 +1,9 @@
 package com.mygdx.kaps.level;
 
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
-import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
@@ -62,8 +60,8 @@ public abstract class Sidekick implements ISidekick {
         private final int damage;
         private final int mana;
 
-        SidekickId(Color color, AttackType type, BiFunction<Sidekick, Level, SidekickAttack> attack, int mana,
-                   boolean passive, int damage, String... names) {
+        SidekickId(Color color, AttackType type, BiFunction<Sidekick, Level, SidekickAttack> attack,
+                   int mana, boolean passive, int damage, String... names) {
             var name = names.length > 0 ? names[0] : toString();
             animPath = "android/assets/sprites/sidekicks/" + name + "_";
             this.passive = passive;
@@ -92,6 +90,10 @@ public abstract class Sidekick implements ISidekick {
             return color;
         }
 
+        public String getAnimPath() {
+            return animPath;
+        }
+
         int gaugeMax() {
             return mana;
         }
@@ -105,13 +107,9 @@ public abstract class Sidekick implements ISidekick {
     }
 
     private final List<SidekickAttack> currentAttacks = new ArrayList<>();
-    private final AnimatedSprite flippedAnim;
-    private final AnimatedSprite anim;
     private final SidekickId id;
 
     Sidekick(SidekickId id) {
-        flippedAnim = new AnimatedSprite(id.animPath, 4, 0.2f, true, true);
-        anim = new AnimatedSprite(id.animPath, 4, 0.2f);
         this.id = id;
     }
 
@@ -123,7 +121,11 @@ public abstract class Sidekick implements ISidekick {
         return Utils.getOptionalRandomFrom(level.matesOf(this)).orElse(this);
     }
 
-    public Color color() {
+    public SidekickId id() {
+        return id;
+    }
+
+    Color color() {
         return id.color;
     }
 
@@ -133,19 +135,6 @@ public abstract class Sidekick implements ISidekick {
 
     int damage() {
         return id.damage;
-    }
-
-    Sprite getSprite() {
-        return anim.getCurrentSprite();
-    }
-
-    Sprite getFlippedSprite() {
-        return flippedAnim.getCurrentSprite();
-    }
-
-    void updateSprite() {
-        anim.updateExistenceTime();
-        flippedAnim.updateExistenceTime();
     }
 
     void updateAttacks(Level level) {

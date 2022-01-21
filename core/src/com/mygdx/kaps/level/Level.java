@@ -304,7 +304,6 @@ public class Level extends ApplicationAdapter {
             observers.forEach(LevelObserver::onLevelUpdate);
             timers.forEach(Timer::resetIfExceeds);
 
-            sidekicks.forEach(Sidekick::updateSprite);
             sidekicks.forEach(s -> s.updateAttacks(this));
             view.updateSprites();
         }
