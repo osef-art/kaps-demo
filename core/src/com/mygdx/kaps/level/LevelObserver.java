@@ -7,9 +7,12 @@ import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.renderer.SpriteData;
 import com.mygdx.kaps.sound.SoundStream;
+import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 interface LevelObserver {
     default void onCapsuleFlipped() {}
@@ -118,95 +121,124 @@ class SidekicksObserver implements LevelObserver {
 }
 
 class ParticleManager implements LevelObserver {
-    interface Particle {
-        boolean hasVanished();
-
-        float getScale();
-
-        int layer();
-
-        Sprite getSprite();
-
-        Coordinates coordinates();
-
-        void updateAnim();
-    }
-
-    private static class GridParticleEffect implements Particle {
+    static class GridParticleEffect {
         private final Coordinates coordinates;
         private final AnimatedSprite anim;
         private final float scale;
-        private final int layer;
 
-        private GridParticleEffect(Coordinates coordinates, AnimatedSprite anim, float scale, int layer) {
+        private GridParticleEffect(Coordinates coordinates, AnimatedSprite anim, float scale) {
             this.coordinates = coordinates;
-            this.layer = layer;
             this.scale = scale;
             this.anim = anim;
         }
 
         private GridParticleEffect(GridObject obj) {
-            this(obj.coordinates(), obj.poppingAnim(), 1, 1);
+            this(obj.coordinates(), obj.poppingAnim(), 1);
         }
 
         private GridParticleEffect(GridObject obj, Color color) {
-            this(obj.coordinates(), SpriteData.poppingAnimation(color), 1.5f, 2);
+            this(obj.coordinates(), SpriteData.poppingAnimation(color), 1.5f);
         }
 
         private GridParticleEffect(Coordinates coordinates, AttackType type) {
-            this(coordinates, SpriteData.attackEffect(type), 1.25f, 3);
+            this(coordinates, SpriteData.attackEffect(type), 1.25f);
         }
 
-        public float getScale() {
+        float getScale() {
             return scale;
         }
 
-        public int layer() {
-            return layer;
-        }
-
-        public boolean hasVanished() {
+        boolean hasVanished() {
             return anim.isFinished();
         }
 
-        public Sprite getSprite() {
+        Sprite getSprite() {
             return anim.getCurrentSprite();
         }
 
-        public Coordinates coordinates() {
+        Coordinates coordinates() {
             return coordinates;
         }
 
-        public void updateAnim() {
+        void updateAnim() {
             anim.updateExistenceTime();
         }
     }
 
-    private final List<Particle> popping = new ArrayList<>();
+    static class ManaParticle {
+        private final Timer progression;
+        private final Coordinates coordinates;
+        private final Color color;
+        private final int targetIndex;
 
-    List<Particle> getPoppingObjects() {
-        return popping;
+        private ManaParticle(GridObject obj, int target) {
+            progression = Timer.ofMilliseconds(750 + new Random().nextInt(500));
+            this.coordinates = obj.coordinates();
+            this.color = obj.color();
+            targetIndex = target;
+        }
+
+        int getTarget() {
+            return targetIndex;
+        }
+
+        Coordinates coordinates() {
+            return coordinates;
+        }
+
+        Color color() {
+            return color;
+        }
+
+        double ratio() {
+            return progression.ratio();
+        }
+
+        boolean hasArrived() {
+            return ratio() >= 1;
+        }
+    }
+
+    private final List<GridParticleEffect> popping = new ArrayList<>();
+    private final List<GridParticleEffect> attacks = new ArrayList<>();
+    private final List<ManaParticle> mana = new ArrayList<>();
+    private final List<Sidekick> sidekicks;
+
+    ParticleManager(List<Sidekick> sidekicks) {this.sidekicks = sidekicks;}
+
+    Stream<GridParticleEffect> getParticleEffects() {
+        return Stream.of(popping, attacks).flatMap(Collection::stream);
+    }
+
+    List<ManaParticle> getManaParticles() {
+        return mana;
     }
 
     @Override
     public void onObjectHit(GridObject obj) {
         popping.add(new GridParticleEffect(obj));
+        IntStream.range(0, sidekicks.size()).forEach(n -> {
+            if (sidekicks.get(n).color() == obj.color())
+                mana.add(new ManaParticle(obj, n));
+        });
     }
 
     @Override
     public void onTileAttack(Coordinates coordinates, AttackType type) {
-        popping.add(new GridParticleEffect(coordinates, type));
+        attacks.add(new GridParticleEffect(coordinates, type));
     }
 
     @Override
     public void onObjectPaint(GridObject obj, Color color) {
-        popping.add(new GridParticleEffect(obj, color));
+        attacks.add(new GridParticleEffect(obj, color));
     }
 
     @Override
     public void onLevelUpdate() {
-        popping.forEach(Particle::updateAnim);
-        popping.removeIf(Particle::hasVanished);
+        getParticleEffects().forEach(GridParticleEffect::updateAnim);
+        popping.removeIf(GridParticleEffect::hasVanished);
+        attacks.removeIf(GridParticleEffect::hasVanished);
+        mana.removeIf(ManaParticle::hasArrived);
     }
 }
 
@@ -251,7 +283,7 @@ class GameEndManager implements LevelObserver {
 
     @Override
     public void onLevelUpdate() {
-        if (level.visualParticles().isEmpty())
+        if (level.visualParticles().getParticleEffects().findAny().isEmpty())
             Arrays.stream(GameEndCase.values()).forEach(c -> c.endGameIfChecked(level));
     }
 }

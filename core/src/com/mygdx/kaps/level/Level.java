@@ -72,7 +72,7 @@ public class Level extends ApplicationAdapter {
         Timer droppingTimer = Timer.ofMilliseconds(10, this::dipOrFreezeDroppingCapsules);
         timers = Arrays.asList(gridRefresher, droppingTimer);
 
-        particleManager = new ParticleManager();
+        particleManager = new ParticleManager(this.sidekicks);
         observers = Arrays.asList(
           new SoundPlayerObserver(),
           new SidekicksObserver(this.sidekicks),
@@ -117,8 +117,8 @@ public class Level extends ApplicationAdapter {
         return new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1);
     }
 
-    List<ParticleManager.Particle> visualParticles() {
-        return particleManager.getPoppingObjects();
+    ParticleManager visualParticles() {
+        return particleManager;
     }
 
     double refreshingProgression() {

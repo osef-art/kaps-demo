@@ -17,11 +17,11 @@ import java.util.stream.Stream;
 
 
 interface ISidekick {
+    boolean isReady();
+
     double gaugeRatio();
 
     void resetGauge();
-
-    boolean isReady();
 
     void ifActiveElse(Consumer<ManaSidekick> activeAction, Consumer<CooldownSidekick> passiveAction);
 
@@ -315,10 +315,12 @@ class SidekickAttack {
 
     public static SidekickAttack hitRandomDiagonals(Sidekick sdk, Level lvl) {
         var picked = getRandomObjectCoordinates(lvl);
-        return new SidekickAttack(25,
-          lvl.getGrid().everyTile().stream()
-            .filter(c -> Math.abs(c.x - picked.x) == Math.abs(c.y - picked.y))
-            .map(c -> () -> lvl.attack(c, sdk))
+        return new SidekickAttack(25, Stream.of(
+            lvl.getGrid().everyTile().stream().filter(c -> c.x - picked.x == c.y - picked.y),
+            lvl.getGrid().everyTile().stream().filter(c -> c.x - picked.x == picked.y - c.y)
+          )
+          .flatMap(Function.identity())
+          .map(c -> () -> lvl.attack(c, sdk))
         );
     }
 

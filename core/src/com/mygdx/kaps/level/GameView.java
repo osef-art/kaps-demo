@@ -91,6 +91,10 @@ public class GameView extends ApplicationAdapter {
             nextBox = new Rectangle((screen.width - nextBoxSize) / 2, screen.height - nextBoxSize, nextBoxSize, nextBoxSize);
         }
 
+        private static Rectangle center(Rectangle rectangle) {
+            return new Rectangle(rectangle.x + rectangle.width/2, rectangle.y+ rectangle.height/2, 0,0);
+        }
+
         private Rectangle symmetrical(Rectangle rectangle) {
             return new Rectangle(screen.width - rectangle.x - rectangle.width, rectangle.y, rectangle.width, rectangle.height);
         }
@@ -122,9 +126,9 @@ public class GameView extends ApplicationAdapter {
         LITTLE, MEDIUM, MEDIUM_GREY, BIG, BIG_GREY
     }
 
-    private final SpriteRendererAdapter spra = new SpriteRendererAdapter();
-    private final ShapeRendererAdapter sra = new ShapeRendererAdapter();
-    private final Map<Font, TextRendererAdaptor> tra = new HashMap<>();
+    private final SpriteRendererAdapter spr = new SpriteRendererAdapter();
+    private final ShapeRendererAdapter sr = new ShapeRendererAdapter();
+    private final Map<Font, TextRendererAdaptor> tr = new HashMap<>();
     private final SpriteData spriteData = new SpriteData();
     private final Dimensions dimensions;
     private final Level model;
@@ -133,44 +137,44 @@ public class GameView extends ApplicationAdapter {
         model = Objects.requireNonNull(lvl);
         dimensions = new Dimensions(model, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        tra.put(Font.LITTLE, new TextRendererAdaptor(spra, 16, Color.WHITE));
-        tra.put(Font.MEDIUM, new TextRendererAdaptor(spra, 24, Color.WHITE));
-        tra.put(Font.BIG, new TextRendererAdaptor(spra, 32, Color.WHITE));
-        tra.put(Font.MEDIUM_GREY, new TextRendererAdaptor(spra, 20, new Color(.8f, .8f, .9f, 1)));
-        tra.put(Font.BIG_GREY, new TextRendererAdaptor(spra, 32, new Color(.7f, .7f, .8f, 1)));
+        tr.put(Font.LITTLE, new TextRendererAdaptor(spr, 16, Color.WHITE));
+        tr.put(Font.MEDIUM, new TextRendererAdaptor(spr, 24, Color.WHITE));
+        tr.put(Font.BIG, new TextRendererAdaptor(spr, 32, Color.WHITE));
+        tr.put(Font.MEDIUM_GREY, new TextRendererAdaptor(spr, 20, new Color(.8f, .8f, .9f, 1)));
+        tr.put(Font.BIG_GREY, new TextRendererAdaptor(spr, 32, new Color(.7f, .7f, .8f, 1)));
     }
 
     private void renderLayout() {
         Gdx.gl.glClearColor(.1f, .1f, .15f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        sra.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
+        sr.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
     }
 
     private void renderGrid() {
         model.getGrid().forEachTile((x, y) -> {
-            sra.drawRect(
+            sr.drawRect(
               dimensions.tileAt(x, y),
               x % 2 == y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
             );
-            model.getGrid().get(x, y).ifPresent(o -> spra.render(o.getSprite(spriteData), dimensions.tileAt(x, y)));
+            model.getGrid().get(x, y).ifPresent(o -> spr.render(o.getSprite(spriteData), dimensions.tileAt(x, y)));
         });
-        sra.drawRoundedGauge(
+        sr.drawRoundedGauge(
           dimensions.timeBar, model.refreshingProgression(), new Color(.2f, .2f, .3f, 1f), new Color(.3f, .3f, .4f, 1f)
         );
     }
 
     private void renderCapsulePart(CapsulePart part, float alpha) {
-        spra.render(part.getSprite(spriteData), dimensions.tileAt(part.coordinates()), alpha);
+        spr.render(part.getSprite(spriteData), dimensions.tileAt(part.coordinates()), alpha);
     }
 
     private void renderCapsulePart(CapsulePart part) {
-        spra.render(part.getSprite(spriteData), dimensions.tileAt(part.coordinates()));
+        spr.render(part.getSprite(spriteData), dimensions.tileAt(part.coordinates()));
     }
 
     private void renderCapsule(Capsule caps, Rectangle zone) {
         caps.applyForEach(
-          p -> spra.render(p.getSprite(spriteData), zone.x, zone.y + zone.height / 4, zone.width / 2, zone.height / 2),
-          p -> spra.render(p.getSprite(spriteData), zone.x + zone.width / 2, zone.y + zone.height / 4, zone.width / 2,
+          p -> spr.render(p.getSprite(spriteData), zone.x, zone.y + zone.height / 4, zone.width / 2, zone.height / 2),
+          p -> spr.render(p.getSprite(spriteData), zone.x + zone.width / 2, zone.y + zone.height / 4, zone.width / 2,
             zone.height / 2)
         );
     }
@@ -184,20 +188,20 @@ public class GameView extends ApplicationAdapter {
 
     private void renderUpcoming() {
         Rectangle nextBox = dimensions.nextBox;
-        sra.drawCircle(dimensions.nextBox.x + dimensions.nextBox.width / 2, dimensions.nextBox.y + dimensions.nextBox.height,
+        sr.drawCircle(dimensions.nextBox.x + dimensions.nextBox.width / 2, dimensions.nextBox.y + dimensions.nextBox.height,
           dimensions.nextBox.width, new Color(.45f, .45f, .6f, 1f));
         renderCapsule(model.upcoming().get(0), nextBox);
-        tra.get(Font.MEDIUM).drawTextWithShadow("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 / 8, nextBox.width, nextBox.height / 8);
+        tr.get(Font.MEDIUM).drawTextWithShadow("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 / 8, nextBox.width, nextBox.height / 8);
     }
 
     private void renderSidekicks() {
         IntStream.range(0, 2).forEach(n -> {
-            sra.drawRect(dimensions.sidekickZones.get(n).zone, model.getSidekick(n).color().value(.5f));
+            sr.drawRect(dimensions.sidekickZones.get(n).zone, model.getSidekick(n).color().value(.5f));
             model.getSidekick(n).ifActiveElse(s -> {
-                sra.drawRoundedRect(dimensions.sidekickZones.get(n).bubble, Color.WHITE);
-                tra.get(Font.BIG_GREY).drawText(s.currentMana() + "    ", dimensions.sidekickZones.get(n).bubble);
-                tra.get(Font.MEDIUM_GREY).drawText("      /" + s.maxMana(), dimensions.sidekickZones.get(n).bubble);
-                sra.drawRoundedGauge(
+                sr.drawRoundedRect(dimensions.sidekickZones.get(n).bubble, Color.WHITE);
+                tr.get(Font.BIG_GREY).drawText(s.currentMana() + "    ", dimensions.sidekickZones.get(n).bubble);
+                tr.get(Font.MEDIUM_GREY).drawText("      /" + s.maxMana(), dimensions.sidekickZones.get(n).bubble);
+                sr.drawRoundedGauge(
                   dimensions.sidekickZones.get(n).gauge,
                   Math.min(1, model.getSidekick(n).gaugeRatio()),
                   new Color(.2f, .2f, .25f, 1),
@@ -205,20 +209,35 @@ public class GameView extends ApplicationAdapter {
                   n > 0
                 );
             }, s -> {
-                sra.drawArc(dimensions.sidekickZones.get(n).cooldown, 270, 360 * (float) s.gaugeRatio(), new Color(1, 1, 1, .3f));
-                tra.get(Font.BIG).drawText(s.turnsLeft() + "", dimensions.sidekickZones.get(n).cooldown);
-                tra.get(Font.LITTLE).drawText("turns", dimensions.sidekickZones.get(n).cooldownText);
+                sr.drawArc(dimensions.sidekickZones.get(n).cooldown, 270, 360 * (float) s.gaugeRatio(), new Color(1, 1, 1, .3f));
+                tr.get(Font.BIG).drawText(s.turnsLeft() + "", dimensions.sidekickZones.get(n).cooldown);
+                tr.get(Font.LITTLE).drawText("turns", dimensions.sidekickZones.get(n).cooldownText);
             });
-            spra.render(spriteData.getSidekick(model.getSidekick(n), n==0).getCurrentSprite(), dimensions.sidekickZones.get(n).head);
+            spr.render(spriteData.getSidekick(model.getSidekick(n), n == 0).getCurrentSprite(), dimensions.sidekickZones.get(n).head);
         });
     }
 
     private void renderParticles() {
-        model.visualParticles().stream()
-          .sorted(Comparator.comparingInt(ParticleManager.Particle::layer))
-          .forEach(
-            p -> spra.render(p.getSprite(), dimensions.tileAt(p.coordinates(), p.getScale()))
-          );
+        model.visualParticles().getParticleEffects().forEach(
+          p -> spr.render(p.getSprite(), dimensions.tileAt(p.coordinates(), p.getScale()))
+        );
+        model.visualParticles().getManaParticles().forEach(p -> {
+            float x = lerp(
+              Dimensions.center(dimensions.tileAt(p.coordinates())).x,
+              Dimensions.center(dimensions.sidekickZones.get(p.getTarget()).head).x, p.ratio()
+            );
+            float y = lerp(
+              Dimensions.center(dimensions.tileAt(p.coordinates())).y,
+              Dimensions.center(dimensions.sidekickZones.get(p.getTarget()).head).y, p.ratio()
+            );
+            sr.drawCircle(x, y, 15, p.color().value(0.4f));
+            sr.drawCircle(x, y, 5, p.color().value());
+        });
+    }
+
+    private float lerp(float from, float to, double ratio) {
+        float easeRatio = (float) (ratio * ratio * (3f - 2f * ratio));
+        return from + (to - from) * easeRatio;
     }
 
     void updateSprites() {
@@ -235,8 +254,8 @@ public class GameView extends ApplicationAdapter {
     }
 
     public void dispose() {
-        spra.dispose();
-        sra.dispose();
-        tra.values().forEach(TextRendererAdaptor::dispose);
+        spr.dispose();
+        sr.dispose();
+        tr.values().forEach(TextRendererAdaptor::dispose);
     }
 }
