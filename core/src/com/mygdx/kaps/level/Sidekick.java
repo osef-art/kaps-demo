@@ -156,7 +156,7 @@ class ManaSidekick extends Sidekick {
 
     ManaSidekick(SidekickId id) {
         super(id);
-        this.mana = new Gauge(4); //id.gaugeMax());
+        this.mana = new Gauge(id.gaugeMax());
     }
 
     public double gaugeRatio() {

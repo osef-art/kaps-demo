@@ -1,6 +1,7 @@
 package com.mygdx.kaps.level;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
@@ -10,13 +11,22 @@ import com.mygdx.kaps.sound.SoundStream;
 import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 interface LevelObserver {
     default void onCapsuleFlipped() {}
 
     default void onCapsuleFreeze() {}
+
+    default void onCapsuleDrop() {}
+
+    default void onCapsuleSpawn() {}
+
+    default void onIllegalMove() {}
 
     default void onObjectPaint(GridObject obj, Color color) {}
 
@@ -27,12 +37,6 @@ interface LevelObserver {
     default void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
         destroyed.values().forEach(s -> s.forEach(this::onObjectHit));
     }
-
-    default void onIllegalMove() {}
-
-    default void onCapsuleDrop() {}
-
-    default void onCapsuleSpawn() {}
 
     default void onSidekickTriggered(Sidekick triggered) {}
 
@@ -98,11 +102,6 @@ class SidekicksObserver implements LevelObserver {
 
     SidekicksObserver(List<Sidekick> sidekicks) {
         sidekicks.forEach(s -> sidekickMap.put(s.color(), s));
-    }
-
-    @Override
-    public void onObjectHit(GridObject obj) {
-        if (sidekickMap.containsKey(obj.color())) sidekickMap.get(obj.color()).ifActive(ManaSidekick::increaseMana);
     }
 
     @Override
@@ -183,10 +182,6 @@ class ParticleManager implements LevelObserver {
             return coordinates;
         }
 
-        Color color() {
-            return target.color();
-        }
-
         double ratio() {
             return progression.ratio();
         }
@@ -199,9 +194,14 @@ class ParticleManager implements LevelObserver {
     private final List<GridParticleEffect> popping = new ArrayList<>();
     private final List<GridParticleEffect> attacks = new ArrayList<>();
     private final List<ManaParticle> mana = new ArrayList<>();
-    private final List<Sidekick> sidekicks;
+    private final Map<Color, Sidekick> sidekicks;
+    private final SoundStream stream = new SoundStream(0.2f);
 
-    ParticleManager(List<Sidekick> sidekicks) {this.sidekicks = sidekicks;}
+    ParticleManager(List<Sidekick> sidekicks) {
+        this.sidekicks = sidekicks.stream().collect(
+          Collectors.toUnmodifiableMap(Sidekick::color, Function.identity())
+        );
+    }
 
     Stream<GridParticleEffect> getParticleEffects() {
         return Stream.of(popping, attacks).flatMap(Collection::stream);
@@ -211,13 +211,26 @@ class ParticleManager implements LevelObserver {
         return mana;
     }
 
+    private void addManaParticle(GridObject obj) {
+        if (sidekicks.containsKey(obj.color()))
+            sidekicks.get(obj.color()).ifActive(sdk -> mana.add(new ManaParticle(obj, sdk)));
+    }
+
     @Override
     public void onObjectHit(GridObject obj) {
         popping.add(new GridParticleEffect(obj));
-        sidekicks.stream()
-          .filter(sdk -> sdk.color() == obj.color())
-          .findFirst()
-          .ifPresent(sdk -> sdk.ifActive(s -> mana.add(new ManaParticle(obj, s))));
+        addManaParticle(obj);
+    }
+
+    @Override
+    public void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
+        LevelObserver.super.onMatchPerformed(destroyed);
+        destroyed.values().forEach(match -> {
+            int bonus = match.size() >= 9 ? 3 : match.size() >= 5 ? 1 : 0;
+            IntStream.range(0, bonus).forEach(
+              n -> addManaParticle(Utils.getRandomFrom(match))
+            );
+        });
     }
 
     @Override
@@ -233,6 +246,10 @@ class ParticleManager implements LevelObserver {
     @Override
     public void onLevelUpdate() {
         getParticleEffects().forEach(GridParticleEffect::updateAnim);
+        mana.stream().filter(ManaParticle::hasArrived).forEach(m -> {
+            sidekicks.get(m.target.color()).ifActive(ManaSidekick::increaseMana);
+            stream.play(SoundStream.SoundStore.MANA);
+        });
         popping.removeIf(GridParticleEffect::hasVanished);
         attacks.removeIf(GridParticleEffect::hasVanished);
         mana.removeIf(ManaParticle::hasArrived);

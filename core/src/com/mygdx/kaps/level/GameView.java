@@ -242,8 +242,8 @@ public class GameView extends ApplicationAdapter {
               dimensions.tileAt(p.coordinates()),
               dimensions.sidekickZones.get(p.getTarget()).get(Dimensions.SidekickZone.Zone.HEAD), p.ratio()
             ));
-            sr.drawCircle(center.x, center.y, 15, p.color().value(0.4f));
-            sr.drawCircle(center.x, center.y, 5, p.color().value());
+            sr.drawCircle(center.x, center.y, 15, p.getTarget().color().value(0.4f));
+            sr.drawCircle(center.x, center.y, 5, p.getTarget().color().value());
         });
     }
 

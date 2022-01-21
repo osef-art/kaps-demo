@@ -28,7 +28,7 @@ public class SoundStream {
         PAUSE,
         DROP,
         CANT,
-        ;
+        MANA;
 
         private final List<String> paths;
 
