@@ -5,6 +5,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Utils {
+    public static float lerp(float from, float to, double ratio) {
+        float easeRatio = (float) (ratio * ratio * (3f - 2f * ratio));
+        return from + (to - from) * easeRatio;
+    }
+
     public static <T> T getRandomFrom(T... elems) {
         return getRandomFrom(Arrays.stream(elems));
     }

@@ -53,7 +53,6 @@ public class Level extends ApplicationAdapter {
 
     Level(Grid grid, Set<Sidekick.SidekickId> sidekicks, Color blankColor) {
         this.grid = grid;
-        view = new GameView(this);
         parameters = new LevelParameters(this);
 
         this.sidekicks = sidekicks.stream()
@@ -79,8 +78,13 @@ public class Level extends ApplicationAdapter {
           new GameEndManager(this),
           particleManager
         );
+        view = new GameView(this);
 
         spawnCapsule();
+    }
+
+    List<Sidekick> getSidekicks() {
+        return sidekicks;
     }
 
     Sidekick getSidekick(int index) {

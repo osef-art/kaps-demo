@@ -11,7 +11,6 @@ import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 interface LevelObserver {
@@ -168,18 +167,16 @@ class ParticleManager implements LevelObserver {
     static class ManaParticle {
         private final Timer progression;
         private final Coordinates coordinates;
-        private final Color color;
-        private final int targetIndex;
+        private final Sidekick.SidekickId target;
 
-        private ManaParticle(GridObject obj, int target) {
+        private ManaParticle(GridObject obj, Sidekick target) {
             progression = Timer.ofMilliseconds(750 + new Random().nextInt(500));
             this.coordinates = obj.coordinates();
-            this.color = obj.color();
-            targetIndex = target;
+            this.target = target.id();
         }
 
-        int getTarget() {
-            return targetIndex;
+        Sidekick.SidekickId getTarget() {
+            return target;
         }
 
         Coordinates coordinates() {
@@ -187,7 +184,7 @@ class ParticleManager implements LevelObserver {
         }
 
         Color color() {
-            return color;
+            return target.color();
         }
 
         double ratio() {
@@ -217,10 +214,10 @@ class ParticleManager implements LevelObserver {
     @Override
     public void onObjectHit(GridObject obj) {
         popping.add(new GridParticleEffect(obj));
-        IntStream.range(0, sidekicks.size()).forEach(n -> {
-            if (sidekicks.get(n).color() == obj.color())
-                mana.add(new ManaParticle(obj, n));
-        });
+        sidekicks.stream()
+          .filter(sdk -> sdk.color() == obj.color())
+          .findFirst()
+          .ifPresent(sdk -> sdk.ifActive(s -> mana.add(new ManaParticle(obj, s))));
     }
 
     @Override
