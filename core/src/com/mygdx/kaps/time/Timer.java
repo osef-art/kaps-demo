@@ -56,7 +56,7 @@ public class Timer {
         return limit;
     }
 
-    private boolean isExceeded() {
+    boolean isExceeded() {
         return ratio() >= 1;
     }
 

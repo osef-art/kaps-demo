@@ -259,7 +259,7 @@ class SidekickAttack {
           .orElse(getRandomTileCoordinates(level));
     }
 
-    public static SidekickAttack paint5RandomObjects(Sidekick sdk, Level lvl) {
+    static SidekickAttack paint5RandomObjects(Sidekick sdk, Level lvl) {
         var mate = sdk.randomMate(lvl);
         return new SidekickAttack(150, 5, () -> Utils.getOptionalRandomFrom(lvl.getGrid()
           .capsuleStack()
@@ -267,13 +267,13 @@ class SidekickAttack {
         ).ifPresent(o -> lvl.repaint(o, mate.color())));
     }
 
-    public static SidekickAttack hit3RandomObjects(Sidekick sdk, Level lvl) {
+    static SidekickAttack hit3RandomObjects(Sidekick sdk, Level lvl) {
         return new SidekickAttack(250, 3,
           () -> Utils.getOptionalRandomFrom(lvl.getGrid().stack()).ifPresent(o -> lvl.attack(o, sdk))
         );
     }
 
-    public static SidekickAttack hitRandomObjectAndAdjacents(Sidekick sdk, Level lvl) {
+    static SidekickAttack hitRandomObjectAndAdjacents(Sidekick sdk, Level lvl) {
         var picked = getRandomObjectCoordinates(lvl);
         return new SidekickAttack(350,
           () -> lvl.attack(picked, sdk),
@@ -282,19 +282,19 @@ class SidekickAttack {
         );
     }
 
-    public static SidekickAttack hit2RandomGerms(Sidekick sdk, Level lvl) {
+    static SidekickAttack hit2RandomGerms(Sidekick sdk, Level lvl) {
         return new SidekickAttack(400, 2,
           () -> Utils.getOptionalRandomFrom(lvl.getGrid().germStack()).ifPresent(g -> lvl.attack(g, sdk))
         );
     }
 
-    public static SidekickAttack hitRandomGerm(Sidekick sdk, Level lvl) {
+    static SidekickAttack hitRandomGerm(Sidekick sdk, Level lvl) {
         return new SidekickAttack(
           () -> Utils.getOptionalRandomFrom(lvl.getGrid().germStack()).ifPresent(g -> lvl.attack(g, sdk))
         );
     }
 
-    public static SidekickAttack hitRandomLine(Sidekick sdk, Level lvl) {
+    static SidekickAttack hitRandomLine(Sidekick sdk, Level lvl) {
         var picked = getRandomObjectCoordinates(lvl);
         return new SidekickAttack(100,
           IntStream.range(0, lvl.getGrid().getWidth())
@@ -303,7 +303,7 @@ class SidekickAttack {
         );
     }
 
-    public static SidekickAttack hitRandomColumn(Sidekick sdk, Level lvl) {
+    static SidekickAttack hitRandomColumn(Sidekick sdk, Level lvl) {
         var picked = getRandomTileCoordinates(lvl);
         return new SidekickAttack(25,
           IntStream.range(0, lvl.getGrid().getHeight())
@@ -313,7 +313,7 @@ class SidekickAttack {
         );
     }
 
-    public static SidekickAttack hitRandomDiagonals(Sidekick sdk, Level lvl) {
+    static SidekickAttack hitRandomDiagonals(Sidekick sdk, Level lvl) {
         var picked = getRandomObjectCoordinates(lvl);
         return new SidekickAttack(25, Stream.of(
             lvl.getGrid().everyTile().stream().filter(c -> c.x - picked.x == c.y - picked.y),
@@ -324,11 +324,11 @@ class SidekickAttack {
         );
     }
 
-    public static SidekickAttack injectMonoColorCapsule(Sidekick sdk, Level lvl) {
+    static SidekickAttack injectMonoColorCapsule(Sidekick sdk, Level lvl) {
         return new SidekickAttack(() -> lvl.injectNext(Capsule.randomMonoColorInstance(lvl)));
     }
 
-    public static SidekickAttack injectExplosiveCapsule(Sidekick sdk, Level lvl) {
+    static SidekickAttack injectExplosiveCapsule(Sidekick sdk, Level lvl) {
         return new SidekickAttack(() -> {});
     }
 
