@@ -5,7 +5,8 @@ import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.sound.SoundStream;
-import com.mygdx.kaps.time.Timer;
+import com.mygdx.kaps.time.RegularTask;
+import com.mygdx.kaps.time.RegularTaskManager;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -46,8 +47,8 @@ public class Level extends ApplicationAdapter {
     private final List<Capsule> controlledCapsules = new ArrayList<>();
     private final List<Sidekick> sidekicks;
     private final Set<Color> colors;
-    private final List<Timer> timers;
-    private final Timer gridRefresher;
+    private final RegularTaskManager taskManager;
+    private final RegularTask gridRefresher;
     private final GameView view;
     private final Grid grid;
 
@@ -67,9 +68,10 @@ public class Level extends ApplicationAdapter {
           .mapToObj(n -> Capsule.randomNewInstance(this))
           .collect(Collectors.toCollection(LinkedList::new));
 
-        gridRefresher = Timer.ofSeconds(1, this::dipOrFreezeCapsule);
-        Timer droppingTimer = Timer.ofMilliseconds(10, this::dipOrFreezeDroppingCapsules);
-        timers = Arrays.asList(gridRefresher, droppingTimer);
+        gridRefresher = RegularTask.everySeconds(1, this::dipOrFreezeCapsule);
+        taskManager = new RegularTaskManager(
+          gridRefresher, RegularTask.everyMilliseconds(10, this::dipOrFreezeDroppingCapsules)
+        );
 
         particleManager = new ParticleManager(this.sidekicks);
         observers = Arrays.asList(
@@ -293,21 +295,19 @@ public class Level extends ApplicationAdapter {
     @Override
     public void pause() {
         SoundStream.play(SoundStream.SoundStore.PAUSE, 1f);
-        timers.forEach(t -> {
-            t.resetIfExceeds();
-            t.pause();
-        });
+        taskManager.pauseTasks();
+
     }
 
     @Override
     public void resume() {
-        timers.forEach(Timer::resume);
+        taskManager.resumeTasks();
     }
 
     public void render() {
         if (!parameters.paused) {
             observers.forEach(LevelObserver::onLevelUpdate);
-            timers.forEach(Timer::resetIfExceeds);
+            taskManager.update();
 
             sidekicks.forEach(s -> s.updateAttacks(this));
             view.updateSprites();

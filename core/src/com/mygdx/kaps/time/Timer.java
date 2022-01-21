@@ -3,7 +3,6 @@ package com.mygdx.kaps.time;
 import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Timer {
@@ -34,22 +33,20 @@ public class Timer {
     }
 
     private final List<Chrono> offsets = new ArrayList<>();
-    private final List<Runnable> jobs;
     private final Chrono chrono = new Chrono();
     private double limit;
 
-    private Timer(double limit, Runnable... jobs) {
+     Timer(double limit) {
         if (limit < 0) throw new IllegalArgumentException("Invalid timer limit: " + limit);
         this.limit = limit;
-        this.jobs = Arrays.asList(jobs);
     }
 
-    public static Timer ofSeconds(double limit, Runnable... jobs) {
-        return new Timer(limit * 1_000_000_000, jobs);
+    public static Timer ofSeconds(double limit) {
+        return new Timer(limit * 1_000_000_000);
     }
 
-    public static Timer ofMilliseconds(double limit, Runnable... jobs) {
-        return new Timer(limit * 1_000_000, jobs);
+    public static Timer ofMilliseconds(double limit) {
+        return new Timer(limit * 1_000_000);
     }
 
     public double getLimit() {
@@ -69,10 +66,7 @@ public class Timer {
     }
 
     public void resetIfExceeds() {
-        if (isExceeded()) {
-            reset();
-            jobs.forEach(Runnable::run);
-        }
+        if (isExceeded()) reset();
     }
 
     public void reset() {
@@ -93,3 +87,4 @@ public class Timer {
         limit = newLimit;
     }
 }
+

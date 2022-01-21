@@ -2,7 +2,7 @@ package com.mygdx.kaps.controller;
 
 import com.badlogic.gdx.InputProcessor;
 import com.mygdx.kaps.level.Level;
-import com.mygdx.kaps.time.Timer;
+import com.mygdx.kaps.time.RegularTask;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -47,7 +47,7 @@ public class InputHandler implements InputProcessor {
         }
     }
 
-    private final Map<Key, Timer> pressedKeys = new HashMap<>();
+    private final Map<Key, RegularTask> pressedKeys = new HashMap<>();
     private final Level model;
 
     public InputHandler(Level lvl) {
@@ -56,7 +56,7 @@ public class InputHandler implements InputProcessor {
     }
 
     public void update() {
-        pressedKeys.values().forEach(Timer::resetIfExceeds);
+        pressedKeys.values().forEach(RegularTask::resetIfExceeds);
     }
 
     // input detection
@@ -67,7 +67,7 @@ public class InputHandler implements InputProcessor {
         Key.ofCode(keycode).ifPresent(key -> {
             key.effect.accept(model);
             if (key.canBeHold())
-                pressedKeys.put(key, Timer.ofMilliseconds(key.refreshRate, () -> key.effect.accept(model)));
+                pressedKeys.put(key, RegularTask.everyMilliseconds(key.refreshRate, () -> key.effect.accept(model)));
         });
         return true;
     }

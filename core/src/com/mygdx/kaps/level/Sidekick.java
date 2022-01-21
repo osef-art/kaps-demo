@@ -4,7 +4,7 @@ import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
-import com.mygdx.kaps.time.Timer;
+import com.mygdx.kaps.time.RegularTask;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -223,11 +223,11 @@ class CooldownSidekick extends Sidekick {
 
 class SidekickAttack {
     private final LinkedList<Runnable> moves;
-    private final Timer moveScheduler;
+    private final RegularTask moveScheduler;
 
     private SidekickAttack(double speed, Stream<Runnable> stream) {
         moves = stream.collect(Collectors.toCollection(LinkedList::new));
-        moveScheduler = Timer.ofMilliseconds(speed, () -> {
+        moveScheduler = RegularTask.everyMilliseconds(speed, () -> {
             if (!isOver()) moves.removeFirst().run();
         });
     }
