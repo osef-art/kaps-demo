@@ -229,7 +229,7 @@ public class GameView extends ApplicationAdapter {
                 tr.get(Font.BIG).drawText(s.turnsLeft() + "", sdkZone.get(Dimensions.SidekickZone.Zone.COOLDOWN));
                 tr.get(Font.LITTLE).drawText("turns", sdkZone.get(Dimensions.SidekickZone.Zone.COOLDOWN_TXT));
             });
-            spr.render(spriteData.getSidekick(sdk, sdkZone.flipped).getCurrentSprite(), sdkZone.get(Dimensions.SidekickZone.Zone.HEAD));
+            spr.render(spriteData.getSidekick(sdk.id(), sdkZone.flipped).getCurrentSprite(), sdkZone.get(Dimensions.SidekickZone.Zone.HEAD));
         });
     }
 

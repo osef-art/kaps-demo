@@ -5,8 +5,11 @@ import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.time.RegularTask;
+import com.mygdx.kaps.time.RegularTaskManager;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -38,7 +41,7 @@ public abstract class Sidekick implements ISidekick {
       Arrays.stream(SidekickId.values()).collect(Collectors.toUnmodifiableMap(
         Function.identity(), id -> id.passive ? new CooldownSidekick(id) : new ManaSidekick(id)
       ));
-    private final List<SidekickAttack> currentAttacks = new ArrayList<>();
+    private final RegularTaskManager tasks = new RegularTaskManager();
     private final SidekickId id;
 
     Sidekick(SidekickId id) {
@@ -53,7 +56,7 @@ public abstract class Sidekick implements ISidekick {
         return Utils.getOptionalRandomFrom(level.matesOf(this)).orElse(this);
     }
 
-    public SidekickId id() {
+    SidekickId id() {
         return id;
     }
 
@@ -69,16 +72,12 @@ public abstract class Sidekick implements ISidekick {
         return id.damage;
     }
 
-    void updateAttacks(Level level) {
-        currentAttacks.forEach(attack -> {
-            attack.update();
-            if (attack.isOver()) level.deleteMatches();
-        });
-        currentAttacks.removeIf(SidekickAttack::isOver);
+    void updateAttacks() {
+        tasks.update();
     }
 
     void trigger(Level level) {
-        currentAttacks.add(id.attack.apply(this, level));
+        tasks.add(id.attack.apply(this, level).moveProgression(), level::deleteMatches);
         resetGauge();
     }
 }
@@ -159,9 +158,7 @@ class SidekickAttack {
 
     private SidekickAttack(double speed, Stream<Runnable> stream) {
         moves = stream.collect(Collectors.toCollection(LinkedList::new));
-        moveScheduler = RegularTask.everyMilliseconds(speed, () -> {
-            if (!isOver()) moves.removeFirst().run();
-        });
+        moveScheduler = RegularTask.everyMilliseconds(speed, () -> moves.removeFirst().run(), this::isOver);
     }
 
     private SidekickAttack(double speed, int iterations, Runnable move) {
@@ -178,6 +175,10 @@ class SidekickAttack {
 
     boolean isOver() {
         return moves.isEmpty();
+    }
+
+    RegularTask moveProgression() {
+        return moveScheduler;
     }
 
     private static Coordinates getRandomTileCoordinates(Level level) {
@@ -256,15 +257,11 @@ class SidekickAttack {
         );
     }
 
-    static SidekickAttack injectMonoColorCapsule(Sidekick sdk, Level lvl) {
+    static SidekickAttack injectMonoColorCapsule(Level lvl) {
         return new SidekickAttack(() -> lvl.injectNext(Capsule.randomMonoColorInstance(lvl)));
     }
 
-    static SidekickAttack injectExplosiveCapsule(Sidekick sdk, Level lvl) {
-        return new SidekickAttack(() -> {});
-    }
-
-    void update() {
-        moveScheduler.resetIfExceeds();
+    static SidekickAttack injectExplosiveCapsule(Level lvl) {
+        return injectMonoColorCapsule(lvl);
     }
 }

@@ -3,7 +3,6 @@ package com.mygdx.kaps.renderer;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.level.AttackType;
-import com.mygdx.kaps.level.Sidekick;
 import com.mygdx.kaps.level.SidekickId;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Germ;
@@ -100,7 +99,7 @@ public class SpriteData {
         return wallGerms.get(color).get(health - 1);
     }
 
-    public AnimatedSprite getSidekick(Sidekick sidekick, boolean left) {
-        return sidekicks.get(sidekick.id()).get(left);
+    public AnimatedSprite getSidekick(SidekickId id, boolean left) {
+        return sidekicks.get(id).get(left);
     }
 }

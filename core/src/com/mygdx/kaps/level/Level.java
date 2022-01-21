@@ -309,7 +309,7 @@ public class Level extends ApplicationAdapter {
             observers.forEach(LevelObserver::onLevelUpdate);
             taskManager.update();
 
-            sidekicks.forEach(s -> s.updateAttacks(this));
+            sidekicks.forEach(Sidekick::updateAttacks);
             view.updateSprites();
         }
         view.render();
