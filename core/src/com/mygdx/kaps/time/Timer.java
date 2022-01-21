@@ -36,13 +36,9 @@ public class Timer {
     private final Chrono chrono = new Chrono();
     private double limit;
 
-     Timer(double limit) {
+    Timer(double limit) {
         if (limit < 0) throw new IllegalArgumentException("Invalid timer limit: " + limit);
         this.limit = limit;
-    }
-
-    public static Timer ofSeconds(double limit) {
-        return new Timer(limit * 1_000_000_000);
     }
 
     public static Timer ofMilliseconds(double limit) {
@@ -65,7 +61,7 @@ public class Timer {
         return (chrono.elapsedTime() - totalOffset()) / limit;
     }
 
-    public void resetIfExceeds() {
+    void resetIfExceeds() {
         if (isExceeded()) reset();
     }
 
@@ -74,11 +70,11 @@ public class Timer {
         offsets.clear();
     }
 
-    public void pause() {
+    void pause() {
         offsets.add(new Chrono());
     }
 
-    public void resume() {
+    void resume() {
         if (offsets.isEmpty()) return;
         offsets.get(offsets.size() - 1).stop();
     }

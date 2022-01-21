@@ -4,23 +4,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class RegularTaskManager {
-    private final List<RegularTask> tasks;
+public class TaskManager {
+    private final List<PeriodicTask> tasks;
 
-    private RegularTaskManager(List<RegularTask> tasks) {
+    private TaskManager(List<PeriodicTask> tasks) {
         this.tasks = tasks;
     }
 
-    public RegularTaskManager(RegularTask... tasks) {
+    public TaskManager(PeriodicTask... tasks) {
         this(Arrays.asList(tasks));
     }
 
-    public RegularTaskManager() {
+    public TaskManager() {
         this(new ArrayList<>());
     }
 
-    public void add(RegularTask task, Runnable finalJob) {
-        tasks.add(new RegularTask(task, finalJob));
+    public void add(PeriodicTask task) {
+        tasks.add(task);
+    }
+
+    public void add(PeriodicTask task, Runnable finalJob) {
+        add(new PeriodicTask(task, finalJob));
     }
 
     public void pauseTasks() {
@@ -31,7 +35,7 @@ public class RegularTaskManager {
     }
 
     public void resumeTasks() {
-        tasks.forEach(RegularTask::resume);
+        tasks.forEach(PeriodicTask::resume);
     }
 
     public void update() {
@@ -39,6 +43,6 @@ public class RegularTaskManager {
             task.resetIfExceeds();
             if (task.canStop()) task.runFinalJob();
         });
-        tasks.removeIf(RegularTask::canStop);
+        tasks.removeIf(PeriodicTask::canStop);
     }
 }

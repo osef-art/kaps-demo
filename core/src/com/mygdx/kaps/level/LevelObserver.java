@@ -247,7 +247,7 @@ class ParticleManager implements LevelObserver {
     public void onLevelUpdate() {
         getParticleEffects().forEach(GridParticleEffect::updateAnim);
         mana.stream().filter(ManaParticle::hasArrived).forEach(m -> {
-            sidekicks.get(m.target.color()).ifActive(ManaSidekick::increaseMana);
+            sidekicks.get(m.target.color).ifActive(ManaSidekick::increaseMana);
             stream.play(SoundStream.SoundStore.MANA);
         });
         popping.removeIf(GridParticleEffect::hasVanished);

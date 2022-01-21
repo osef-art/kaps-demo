@@ -4,8 +4,8 @@ import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
-import com.mygdx.kaps.time.RegularTask;
-import com.mygdx.kaps.time.RegularTaskManager;
+import com.mygdx.kaps.time.PeriodicTask;
+import com.mygdx.kaps.time.TaskManager;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -19,11 +19,13 @@ import java.util.stream.Stream;
 
 
 interface ISidekick {
-    boolean isReady();
-
     double gaugeRatio();
 
-    void resetGauge();
+    boolean isReady();
+
+    boolean gaugeIsReset();
+
+    void emptyGauge();
 
     void ifActiveElse(Consumer<ManaSidekick> activeAction, Consumer<CooldownSidekick> passiveAction);
 
@@ -41,7 +43,7 @@ public abstract class Sidekick implements ISidekick {
       Arrays.stream(SidekickId.values()).collect(Collectors.toUnmodifiableMap(
         Function.identity(), id -> id.passive ? new CooldownSidekick(id) : new ManaSidekick(id)
       ));
-    private final RegularTaskManager tasks = new RegularTaskManager();
+    private final TaskManager tasks = new TaskManager();
     private final SidekickId id;
 
     Sidekick(SidekickId id) {
@@ -72,13 +74,13 @@ public abstract class Sidekick implements ISidekick {
         return id.damage;
     }
 
-    void updateAttacks() {
+    void updateTasks() {
         tasks.update();
     }
 
     void trigger(Level level) {
         tasks.add(id.attack.apply(this, level).moveProgression(), level::deleteMatches);
-        resetGauge();
+        tasks.add(PeriodicTask.everyMilliseconds(10, this::emptyGauge, this::gaugeIsReset));
     }
 }
 
@@ -102,16 +104,20 @@ class ManaSidekick extends Sidekick {
         return mana.getMax();
     }
 
+    public boolean isReady() {
+        return mana.isFull();
+    }
+
+    public boolean gaugeIsReset() {
+        return mana.isEmpty();
+    }
+
     void increaseMana() {
         mana.increase();
     }
 
-    public void resetGauge() {
-        mana.empty();
-    }
-
-    public boolean isReady() {
-        return mana.isFull();
+    public void emptyGauge() {
+        mana.decreaseIfPossible();
     }
 
     public void ifActiveElse(Consumer<ManaSidekick> activeAction, Consumer<CooldownSidekick> passiveAction) {
@@ -135,16 +141,20 @@ class CooldownSidekick extends Sidekick {
         return cooldown.getValue();
     }
 
+    public boolean isReady() {
+        return cooldown.isEmpty();
+    }
+
+    public boolean gaugeIsReset() {
+        return cooldown.isFull();
+    }
+
     void decreaseCooldown() {
         cooldown.decreaseIfPossible();
     }
 
-    public void resetGauge() {
-        cooldown.fill();
-    }
-
-    public boolean isReady() {
-        return cooldown.isEmpty();
+    public void emptyGauge() {
+        cooldown.increaseIfPossible();
     }
 
     public void ifActiveElse(Consumer<ManaSidekick> activeAction, Consumer<CooldownSidekick> passiveAction) {
@@ -154,11 +164,11 @@ class CooldownSidekick extends Sidekick {
 
 class SidekickAttack {
     private final LinkedList<Runnable> moves;
-    private final RegularTask moveScheduler;
+    private final PeriodicTask moveScheduler;
 
     private SidekickAttack(double speed, Stream<Runnable> stream) {
         moves = stream.collect(Collectors.toCollection(LinkedList::new));
-        moveScheduler = RegularTask.everyMilliseconds(speed, () -> moves.removeFirst().run(), this::isOver);
+        moveScheduler = PeriodicTask.everyMilliseconds(speed, () -> moves.removeFirst().run(), this::isOver);
     }
 
     private SidekickAttack(double speed, int iterations, Runnable move) {
@@ -177,7 +187,7 @@ class SidekickAttack {
         return moves.isEmpty();
     }
 
-    RegularTask moveProgression() {
+    PeriodicTask moveProgression() {
         return moveScheduler;
     }
 

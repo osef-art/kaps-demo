@@ -5,8 +5,8 @@ import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.sound.SoundStream;
-import com.mygdx.kaps.time.RegularTask;
-import com.mygdx.kaps.time.RegularTaskManager;
+import com.mygdx.kaps.time.PeriodicTask;
+import com.mygdx.kaps.time.TaskManager;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -47,8 +47,8 @@ public class Level extends ApplicationAdapter {
     private final List<Capsule> controlledCapsules = new ArrayList<>();
     private final List<Sidekick> sidekicks;
     private final Set<Color> colors;
-    private final RegularTaskManager taskManager;
-    private final RegularTask gridRefresher;
+    private final TaskManager taskManager;
+    private final PeriodicTask gridRefresher;
     private final GameView view;
     private final Grid grid;
 
@@ -61,16 +61,16 @@ public class Level extends ApplicationAdapter {
           .collect(Collectors.toUnmodifiableList());
         colors = Color.getSetFrom(sidekicks, blankColor);
         sidekicks.forEach(s -> {
-            if (!colors.contains(s.color())) throw new IllegalArgumentException("Insufficient color set.");
+            if (!colors.contains(s.color)) throw new IllegalArgumentException("Insufficient color set.");
         });
 
         upcomingCapsules = IntStream.range(0, 2)
           .mapToObj(n -> Capsule.randomNewInstance(this))
           .collect(Collectors.toCollection(LinkedList::new));
 
-        gridRefresher = RegularTask.everySeconds(1, this::dipOrFreezeCapsule);
-        taskManager = new RegularTaskManager(
-          gridRefresher, RegularTask.everyMilliseconds(10, this::dipOrFreezeDroppingCapsules)
+        gridRefresher = PeriodicTask.everySeconds(1, this::dipOrFreezeCapsule);
+        taskManager = new TaskManager(
+          gridRefresher, PeriodicTask.everyMilliseconds(10, this::dipOrFreezeDroppingCapsules)
         );
 
         particleManager = new ParticleManager(this.sidekicks);
@@ -292,14 +292,12 @@ public class Level extends ApplicationAdapter {
         upcomingCapsules.add(0, capsule);
     }
 
-    @Override
     public void pause() {
         SoundStream.play(SoundStream.SoundStore.PAUSE, 1f);
         taskManager.pauseTasks();
 
     }
 
-    @Override
     public void resume() {
         taskManager.resumeTasks();
     }
@@ -309,7 +307,7 @@ public class Level extends ApplicationAdapter {
             observers.forEach(LevelObserver::onLevelUpdate);
             taskManager.update();
 
-            sidekicks.forEach(Sidekick::updateAttacks);
+            sidekicks.forEach(Sidekick::updateTasks);
             view.updateSprites();
         }
         view.render();

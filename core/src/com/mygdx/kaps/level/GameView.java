@@ -222,7 +222,7 @@ public class GameView extends ApplicationAdapter {
                   Math.min(1, sdk.gaugeRatio()),
                   new Color(.2f, .2f, .25f, 1),
                   sdk.color().value(),
-                  sdkZone.flipped
+                  !sdkZone.flipped
                 );
             }, s -> {
                 sr.drawArc(sdkZone.get(Dimensions.SidekickZone.Zone.COOLDOWN), 270, 360 * (float) s.gaugeRatio(), new Color(1, 1, 1, .3f));
@@ -242,8 +242,8 @@ public class GameView extends ApplicationAdapter {
               dimensions.tileAt(p.coordinates()),
               dimensions.sidekickZones.get(p.getTarget()).get(Dimensions.SidekickZone.Zone.HEAD), p.ratio()
             ));
-            sr.drawCircle(center.x, center.y, 15, p.getTarget().color().value(0.4f));
-            sr.drawCircle(center.x, center.y, 5, p.getTarget().color().value());
+            sr.drawCircle(center.x, center.y, 15, p.getTarget().color.value(0.4f));
+            sr.drawCircle(center.x, center.y, 5, p.getTarget().color.value());
         });
     }
 
