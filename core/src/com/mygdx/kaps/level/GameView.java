@@ -53,7 +53,7 @@ public class GameView extends ApplicationAdapter {
         private final Rectangle gridZone;
         private final List<List<Rectangle>> gridTiles;
         private final Rectangle timeBar;
-        private final Map<Sidekick.SidekickId, SidekickZone> sidekickZones = new HashMap<>();
+        private final Map<SidekickId, SidekickZone> sidekickZones = new HashMap<>();
         private final Rectangle infoZone;
         private final Rectangle nextBox;
         private final Level level;

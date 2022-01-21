@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.level.AttackType;
 import com.mygdx.kaps.level.Sidekick;
+import com.mygdx.kaps.level.SidekickId;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Germ;
 import com.mygdx.kaps.level.gridobject.Orientation;
@@ -17,7 +18,7 @@ public class SpriteData {
     private static final Map<Color, Map<Orientation, Sprite>> capsules = new HashMap<>();
     private static final Map<Color, Map<Germ.GermKind, AnimatedSprite>> germs = new HashMap<>();
     private static final Map<Color, List<AnimatedSprite>> wallGerms = new HashMap<>();
-    private static final Map<Sidekick.SidekickId, Map<Boolean, AnimatedSprite>> sidekicks = new HashMap<>();
+    private static final Map<SidekickId, Map<Boolean, AnimatedSprite>> sidekicks = new HashMap<>();
 
     public SpriteData() {
         Arrays.stream(Color.values()).forEach(color -> {
@@ -49,7 +50,7 @@ public class SpriteData {
                 ));
             });
         });
-        Arrays.stream(Sidekick.SidekickId.values()).forEach(id -> {
+        Arrays.stream(SidekickId.values()).forEach(id -> {
             sidekicks.put(id, new HashMap<>());
             Arrays.asList(true, false).forEach(
               left -> sidekicks.get(id).put(left, new AnimatedSprite(id.getAnimPath(), 4, 0.2f, true, left))

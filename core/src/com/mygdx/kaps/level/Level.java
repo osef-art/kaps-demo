@@ -52,7 +52,7 @@ public class Level extends ApplicationAdapter {
     private final GameView view;
     private final Grid grid;
 
-    Level(Grid grid, Set<Sidekick.SidekickId> sidekicks, Color blankColor) {
+    Level(Grid grid, Set<SidekickId> sidekicks, Color blankColor) {
         this.grid = grid;
         parameters = new LevelParameters(this);
 

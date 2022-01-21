@@ -1,7 +1,7 @@
 package com.mygdx.kaps.level.gridobject;
 
 import com.mygdx.kaps.Utils;
-import com.mygdx.kaps.level.Sidekick;
+import com.mygdx.kaps.level.SidekickId;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -45,8 +45,8 @@ public enum Color {
         return Utils.getRandomFrom(Arrays.stream(values()).filter(c -> c.blank));
     }
 
-    public static Set<Color> getSetFrom(Set<Sidekick.SidekickId> sidekicks, Color... colors) {
-        return Stream.of(sidekicks.stream().map(Sidekick.SidekickId::color), Arrays.stream(colors))
+    public static Set<Color> getSetFrom(Set<SidekickId> sidekicks, Color... colors) {
+        return Stream.of(sidekicks.stream().map(SidekickId::color), Arrays.stream(colors))
           .flatMap(Function.identity())
           .collect(Collectors.toUnmodifiableSet());
     }

@@ -166,7 +166,7 @@ class ParticleManager implements LevelObserver {
     static class ManaParticle {
         private final Timer progression;
         private final Coordinates coordinates;
-        private final Sidekick.SidekickId target;
+        private final SidekickId target;
 
         private ManaParticle(GridObject obj, Sidekick target) {
             progression = Timer.ofMilliseconds(750 + new Random().nextInt(500));
@@ -174,7 +174,7 @@ class ParticleManager implements LevelObserver {
             this.target = target.id();
         }
 
-        Sidekick.SidekickId getTarget() {
+        SidekickId getTarget() {
             return target;
         }
 
