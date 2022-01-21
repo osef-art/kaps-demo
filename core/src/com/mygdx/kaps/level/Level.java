@@ -163,8 +163,7 @@ public class Level extends ApplicationAdapter {
     }
 
     public void dipOrFreezeCapsule() {
-        performIfPossible(c -> c.dipped().canStandIn(grid),
-          c -> {
+        performIfPossible(c -> c.dipped().canStandIn(grid), c -> {
               c.dip();
               gridRefresher.reset();
           }, c -> {

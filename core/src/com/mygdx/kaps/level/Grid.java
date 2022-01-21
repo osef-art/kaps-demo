@@ -215,20 +215,16 @@ public class Grid {
     }
 
     Optional<? extends GridObject> hit(Coordinates coordinates, int damage) {
-        var obj = get(coordinates);
-        IntStream.range(0, damage).forEach(n -> obj.ifPresent(o -> {
-            o.takeHit();
-            if (o.isDestroyed()) clear(coordinates);
-        }));
-        return obj;
+        return get(coordinates).stream()
+          .peek(o -> IntStream.range(0, damage).forEach(n -> {
+              o.takeHit();
+              if (o.isDestroyed()) clear(coordinates);
+          }))
+          .findFirst();
     }
 
     void hit(GridObject o, int damage) {
         hit(o.coordinates(), damage);
-    }
-
-    void hit(GridObject o) {
-        hit(o, 1);
     }
 
     private void detach(Coordinates coordinates) {
@@ -254,7 +250,10 @@ public class Grid {
 
     Map<Color, Set<? extends GridObject>> hitMatches() {
         var matches = matchBrowser.allMatchesFoundIn(this);
-        matches.values().forEach(s -> s.forEach(this::hit));
+        matches.values().forEach(s -> {
+            int damage = s.size() >= 9 ? 3 : (s.size() >= 5 ? 2 : 1);
+            s.forEach(o -> hit(o, damage));
+        });
         return matches;
     }
 
