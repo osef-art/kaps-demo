@@ -25,6 +25,7 @@ public class SoundStream {
         PLOP(4),
         IMPACT,
         PAINT,
+        PAUSE,
         DROP,
         CANT,
         ;

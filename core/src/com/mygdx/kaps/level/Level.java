@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
+import com.mygdx.kaps.sound.SoundStream;
 import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
@@ -288,6 +289,7 @@ public class Level extends ApplicationAdapter {
 
     @Override
     public void pause() {
+        SoundStream.play(SoundStream.SoundStore.PAUSE, 1f);
         timers.forEach(t -> {
             t.resetIfExceeds();
             t.pause();
