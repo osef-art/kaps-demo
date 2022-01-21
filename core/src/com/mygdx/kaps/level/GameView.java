@@ -92,7 +92,7 @@ public class GameView extends ApplicationAdapter {
         }
 
         private static Rectangle center(Rectangle rectangle) {
-            return new Rectangle(rectangle.x + rectangle.width/2, rectangle.y+ rectangle.height/2, 0,0);
+            return new Rectangle(rectangle.x + rectangle.width / 2, rectangle.y + rectangle.height / 2, 0, 0);
         }
 
         private Rectangle symmetrical(Rectangle rectangle) {
@@ -222,22 +222,27 @@ public class GameView extends ApplicationAdapter {
           p -> spr.render(p.getSprite(), dimensions.tileAt(p.coordinates(), p.getScale()))
         );
         model.visualParticles().getManaParticles().forEach(p -> {
-            float x = lerp(
-              Dimensions.center(dimensions.tileAt(p.coordinates())).x,
-              Dimensions.center(dimensions.sidekickZones.get(p.getTarget()).head).x, p.ratio()
-            );
-            float y = lerp(
-              Dimensions.center(dimensions.tileAt(p.coordinates())).y,
-              Dimensions.center(dimensions.sidekickZones.get(p.getTarget()).head).y, p.ratio()
-            );
-            sr.drawCircle(x, y, 15, p.color().value(0.4f));
-            sr.drawCircle(x, y, 5, p.color().value());
+            Rectangle center = Dimensions.center(lerp(
+              dimensions.tileAt(p.coordinates()),
+              dimensions.sidekickZones.get(p.getTarget()).head, p.ratio()
+            ));
+            sr.drawCircle(center.x, center.y, 15, p.color().value(0.4f));
+            sr.drawCircle(center.x, center.y, 5, p.color().value());
         });
     }
 
     private float lerp(float from, float to, double ratio) {
         float easeRatio = (float) (ratio * ratio * (3f - 2f * ratio));
         return from + (to - from) * easeRatio;
+    }
+
+    private Rectangle lerp(Rectangle from, Rectangle to, double ratio) {
+        return new Rectangle(
+          lerp(from.x, to.x, ratio),
+          lerp(from.y, to.y, ratio),
+          lerp(from.width, to.width, ratio),
+          lerp(from.height, to.height, ratio)
+        );
     }
 
     void updateSprites() {
