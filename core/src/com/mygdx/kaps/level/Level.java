@@ -251,18 +251,22 @@ public class Level extends ApplicationAdapter {
 
     private void acceptAndSpawnNew(Capsule capsule) {
         accept(capsule);
-
-        if (controlledCapsules.isEmpty()) {
-            observers.forEach(LevelObserver::onCapsuleSpawn);
-            triggerSidekicksIfReady();
-            spawnCapsule();
-            gridRefresher.reset();
-        }
+        triggerSidekicksIfReady();
+        if (sidekicks.stream().noneMatch(Sidekick::isAttacking))
+            spawnCapsuleIfAbsent();
     }
 
     // update
     private void updatePreview(Capsule capsule) {
         if (parameters.enablePreview) capsule.computePreview(grid);
+    }
+
+    void spawnCapsuleIfAbsent() {
+        if (controlledCapsules.isEmpty()) {
+            observers.forEach(LevelObserver::onCapsuleSpawn);
+            spawnCapsule();
+            gridRefresher.reset();
+        }
     }
 
     private void spawnCapsule() {

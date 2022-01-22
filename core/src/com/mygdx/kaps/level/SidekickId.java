@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public enum SidekickId {
     SEAN(Color.COLOR_1, AttackType.MELEE, SidekickAttack::hitRandomObjectAndAdjacents, 20, 2),
     ZYRAME(Color.COLOR_2, AttackType.SLICE, SidekickAttack::hit2RandomGerms, 18, 2),
-    R3D(Color.COLOR_3, AttackType.SLICE, SidekickAttack::hitRandomColumn, 25, 2, "Red"),
+    R3D(Color.COLOR_3, AttackType.SLICE, SidekickAttack::hitRandomColumn, 25, 1, "Red"),
     MIMAPS(Color.COLOR_4, AttackType.FIRE, SidekickAttack::hit3RandomObjects, 15, 2),
     PAINTER(Color.COLOR_5, AttackType.BRUSH, SidekickAttack::paint5RandomObjects, 10, 1, "Paint"),
     XERETH(Color.COLOR_6, AttackType.SLICE, SidekickAttack::hitRandomDiagonals, 25, 1),
@@ -44,7 +44,7 @@ public enum SidekickId {
         this.attack = attack;
         this.damage = damage;
         this.color = color;
-        this.mana = 4;//mana;
+        this.mana = mana;
         this.type = type;
     }
 
@@ -83,13 +83,15 @@ public enum SidekickId {
 }
 
 class SidekickAttack {
+    private static final double delay = 750;
     private final PeriodicTask moveTasks;
 
     private SidekickAttack(Level level, double speed, Stream<Runnable> stream) {
         LinkedList<Runnable> moves = stream.collect(Collectors.toCollection(LinkedList::new));
         moves.add(level::deleteMatches);
+        moves.add(level::spawnCapsuleIfAbsent);
         moveTasks = PeriodicTask.TaskBuilder.everyMilliseconds(speed, () -> moves.removeFirst().run())
-          .delayedByMilliseconds(750)
+          .delayedByMilliseconds(delay)
           .endWhen(moves::isEmpty)
           .build();
     }
@@ -103,7 +105,7 @@ class SidekickAttack {
     }
 
     private SidekickAttack(Level level, Runnable move) {
-        this(level, 0, move);
+        this(level, delay, move);
     }
 
     PeriodicTask periodicMoves() {

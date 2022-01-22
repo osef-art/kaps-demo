@@ -59,12 +59,12 @@ class SoundPlayerObserver implements LevelObserver {
 
     @Override
     public void onTileAttack(Coordinates coordinates, AttackType type) {
-        subStream.play(type.sound());
+        mainStream.play(type.sound());
     }
 
     @Override
     public void onObjectPaint(GridObject obj, Color color) {
-        subStream.play(SoundStream.SoundStore.PAINT);
+        mainStream.play(SoundStream.SoundStore.PAINT);
     }
 
     @Override
