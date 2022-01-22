@@ -23,6 +23,8 @@ interface ISidekick {
 
     void ifActiveElse(Consumer<ManaSidekick> activeAction, Consumer<CooldownSidekick> passiveAction);
 
+    <T> T ifActiveElse(T activeValue, T passiveValue);
+
     default void ifActive(Consumer<ManaSidekick> action) {
         ifActiveElse(action, s -> {});
     }
@@ -92,6 +94,7 @@ class ManaSidekick extends Sidekick {
         this.mana = new Gauge(id.gaugeMax());
     }
 
+    @Override
     public double gaugeRatio() {
         return mana.ratio();
     }
@@ -104,10 +107,12 @@ class ManaSidekick extends Sidekick {
         return mana.getMax();
     }
 
+    @Override
     public boolean isReady() {
         return mana.isFull();
     }
 
+    @Override
     public boolean gaugeIsReset() {
         return mana.isEmpty();
     }
@@ -116,12 +121,19 @@ class ManaSidekick extends Sidekick {
         mana.increase();
     }
 
+    @Override
     public void emptyGauge() {
         mana.decreaseIfPossible();
     }
 
+    @Override
     public void ifActiveElse(Consumer<ManaSidekick> activeAction, Consumer<CooldownSidekick> passiveAction) {
         activeAction.accept(this);
+    }
+
+    @Override
+    public <T> T ifActiveElse(T activeValue, T passiveValue) {
+        return activeValue;
     }
 }
 
@@ -141,10 +153,12 @@ class CooldownSidekick extends Sidekick {
         return cooldown.getValue();
     }
 
+    @Override
     public boolean isReady() {
         return cooldown.isEmpty();
     }
 
+    @Override
     public boolean gaugeIsReset() {
         return cooldown.isFull();
     }
@@ -153,11 +167,18 @@ class CooldownSidekick extends Sidekick {
         cooldown.decreaseIfPossible();
     }
 
+    @Override
     public void emptyGauge() {
         cooldown.increaseIfPossible();
     }
 
+    @Override
     public void ifActiveElse(Consumer<ManaSidekick> activeAction, Consumer<CooldownSidekick> passiveAction) {
         passiveAction.accept(this);
+    }
+
+    @Override
+    public <T> T ifActiveElse(T activeValue, T passiveValue) {
+        return passiveValue;
     }
 }

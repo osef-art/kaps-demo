@@ -24,7 +24,7 @@ interface LevelObserver {
 
     default void onCapsuleDrop() {}
 
-    default void onCapsuleSpawn() {}
+    default void onCapsuleAccepted() {}
 
     default void onIllegalMove() {}
 
@@ -90,9 +90,8 @@ class SoundPlayerObserver implements LevelObserver {
 
     @Override
     public void onSidekickTriggered(Sidekick triggered) {
-        triggered.ifActiveElse(
-          s -> mainStream.play(SoundStream.SoundStore.TRIGGER),
-          s -> mainStream.play(SoundStream.SoundStore.GENERATED)
+        mainStream.play(
+          triggered.ifActiveElse(SoundStream.SoundStore.TRIGGER, SoundStream.SoundStore.GENERATED)
         );
     }
 }
@@ -113,7 +112,7 @@ class SidekicksObserver implements LevelObserver {
     }
 
     @Override
-    public void onCapsuleSpawn() {
+    public void onCapsuleAccepted() {
         sidekickMap.values().forEach(sdk -> sdk.ifPassive(CooldownSidekick::decreaseCooldown));
     }
 }
@@ -213,20 +212,25 @@ class ParticleManager implements LevelObserver {
 
     private void addManaParticle(GridObject obj) {
         if (sidekicks.containsKey(obj.color()))
-            sidekicks.get(obj.color()).ifActive(sdk -> mana.add(new ManaParticle(obj, sdk)));
+            mana.add(new ManaParticle(obj, sidekicks.get(obj.color())));
     }
 
     @Override
     public void onObjectHit(GridObject obj) {
         popping.add(new GridParticleEffect(obj));
-        addManaParticle(obj);
     }
 
     @Override
     public void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
         LevelObserver.super.onMatchPerformed(destroyed);
-        destroyed.values().forEach(match -> {
-            int bonus = match.size() >= 9 ? 3 : match.size() >= 5 ? 1 : 0;
+        destroyed.forEach((color, match) -> {
+            if (!sidekicks.containsKey(color)) return;
+            var sdk = sidekicks.get(color);
+            sdk.ifActive(s -> match.forEach(this::addManaParticle));
+            int bonus = sdk.ifActiveElse(
+              match.size() >= 9 ? 3 : match.size() >= 5 ? 1 : 0,
+              match.size() >= 9 ? 2 : match.size() >= 5 ? 1 : 0
+            );
             IntStream.range(0, bonus).forEach(
               n -> addManaParticle(Utils.getRandomFrom(match))
             );
@@ -247,7 +251,7 @@ class ParticleManager implements LevelObserver {
     public void onLevelUpdate() {
         getParticleEffects().forEach(GridParticleEffect::updateAnim);
         mana.stream().filter(ManaParticle::hasArrived).forEach(m -> {
-            sidekicks.get(m.target.color).ifActive(ManaSidekick::increaseMana);
+            sidekicks.get(m.target.color).ifActiveElse(ManaSidekick::increaseMana, CooldownSidekick::decreaseCooldown);
             stream.play(SoundStream.SoundStore.MANA);
         });
         popping.removeIf(GridParticleEffect::hasVanished);

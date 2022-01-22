@@ -83,7 +83,6 @@ public enum SidekickId {
 }
 
 class SidekickAttack {
-    private static final double delay = 750;
     private final PeriodicTask moveTasks;
 
     private SidekickAttack(Level level, double speed, Stream<Runnable> stream) {
@@ -91,7 +90,6 @@ class SidekickAttack {
         moves.add(level::deleteMatches);
         moves.add(level::spawnCapsuleIfAbsent);
         moveTasks = PeriodicTask.TaskBuilder.everyMilliseconds(speed, () -> moves.removeFirst().run())
-          .delayedByMilliseconds(delay)
           .endWhen(moves::isEmpty)
           .build();
     }
@@ -105,7 +103,7 @@ class SidekickAttack {
     }
 
     private SidekickAttack(Level level, Runnable move) {
-        this(level, delay, move);
+        this(level, 0, move);
     }
 
     PeriodicTask periodicMoves() {
@@ -153,7 +151,7 @@ class SidekickAttack {
     }
 
     static SidekickAttack hitRandomGerm(Sidekick sdk, Level lvl) {
-        return new SidekickAttack(lvl,
+        return new SidekickAttack(lvl, 750,
           () -> Utils.getOptionalRandomFrom(lvl.getGrid().germStack()).ifPresent(g -> lvl.attack(g, sdk))
         );
     }

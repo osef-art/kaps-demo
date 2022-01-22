@@ -251,6 +251,7 @@ public class Level extends ApplicationAdapter {
 
     private void acceptAndSpawnNew(Capsule capsule) {
         accept(capsule);
+        observers.forEach(LevelObserver::onCapsuleAccepted);
         triggerSidekicksIfReady();
         if (sidekicks.stream().noneMatch(Sidekick::isAttacking))
             spawnCapsuleIfAbsent();
@@ -263,7 +264,6 @@ public class Level extends ApplicationAdapter {
 
     void spawnCapsuleIfAbsent() {
         if (controlledCapsules.isEmpty()) {
-            observers.forEach(LevelObserver::onCapsuleSpawn);
             spawnCapsule();
             gridRefresher.reset();
         }
@@ -291,7 +291,7 @@ public class Level extends ApplicationAdapter {
     }
 
     void injectNext(Capsule capsule) {
-        upcomingCapsules.add(0, capsule);
+        upcomingCapsules.add(1, capsule);
     }
 
     public void pause() {
