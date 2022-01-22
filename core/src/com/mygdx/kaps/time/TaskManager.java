@@ -27,8 +27,8 @@ public class TaskManager {
         tasks.add(task);
     }
 
-    public void add(PeriodicTask task, Runnable finalJob) {
-        add(new PeriodicTask(task, finalJob));
+    public void add(PeriodicTask.TaskBuilder builder) {
+        add(builder.build());
     }
 
     public void pauseTasks() {

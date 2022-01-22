@@ -12,6 +12,8 @@ public class DesktopLauncher {
         config.width = 480;
         config.height = 800;
         config.vSyncEnabled = true;
+        config.resizable = false;
+        config.backgroundFPS = -1;
         config.pauseWhenMinimized = true;
         config.pauseWhenBackground = true;
         config.addIcon("android/assets/sprites/icons/icon.png", Files.FileType.Local);

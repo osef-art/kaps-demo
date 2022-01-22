@@ -283,7 +283,7 @@ public class Level extends ApplicationAdapter {
     }
 
     private void fastenGridRefreshing() {
-        gridRefresher.updateLimit(gridRefresher.getLimit() * .975);
+        gridRefresher.updateLimit(gridRefresher.getDuration() * .975);
     }
 
     void injectNext(Capsule capsule) {
