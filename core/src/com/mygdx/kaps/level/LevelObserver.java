@@ -96,27 +96,6 @@ class SoundPlayerObserver implements LevelObserver {
     }
 }
 
-class SidekicksObserver implements LevelObserver {
-    private final Map<Color, Sidekick> sidekickMap = new HashMap<>();
-
-    SidekicksObserver(List<Sidekick> sidekicks) {
-        sidekicks.forEach(s -> sidekickMap.put(s.color(), s));
-    }
-
-    @Override
-    public void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
-        LevelObserver.super.onMatchPerformed(destroyed);
-        sidekickMap.forEach((color, sdk) -> sdk.ifPassive(s -> {
-            if (destroyed.containsKey(color) && destroyed.get(color).size() >= 5) s.decreaseCooldown();
-        }));
-    }
-
-    @Override
-    public void onCapsuleAccepted() {
-        sidekickMap.values().forEach(sdk -> sdk.ifPassive(CooldownSidekick::decreaseCooldown));
-    }
-}
-
 class ParticleManager implements LevelObserver {
     static class GridParticleEffect {
         private final Coordinates coordinates;

@@ -7,7 +7,6 @@ import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.renderer.SpriteData;
 
 import java.util.Arrays;
-import java.util.Set;
 import java.util.function.Function;
 
 public abstract class Germ extends GridObject {
@@ -65,12 +64,12 @@ public abstract class Germ extends GridObject {
         this.kind = kind;
     }
 
-    public static Germ ofSymbol(char symbol, Set<Color> colors) {
-        return GermSupplier.getKindOfSymbol(symbol).apply(Utils.getRandomFrom(colors));
+    public static Germ ofSymbol(char symbol) {
+        return GermSupplier.getKindOfSymbol(symbol).apply(Color.random());
     }
 
-    public static Germ random(Coordinates coordinates, Color color) {
-        var randomGerm = Utils.getRandomFrom(GermSupplier.values()).associatedGerm.apply(color);
+    public static Germ random(Coordinates coordinates) {
+        var randomGerm = Utils.getRandomFrom(GermSupplier.values()).associatedGerm.apply(Color.random());
         randomGerm.coordinates().set(coordinates);
         return randomGerm;
     }

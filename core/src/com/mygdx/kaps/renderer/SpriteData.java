@@ -59,7 +59,7 @@ public class SpriteData {
         Arrays.stream(SidekickId.values()).forEach(id -> {
             sidekicks.put(id, new HashMap<>());
             Arrays.asList(true, false).forEach(
-              left -> sidekicks.get(id).put(left, new AnimatedSprite(id.getAnimPath(), 4, .2f, true, left))
+              left -> sidekicks.get(id).put(left, new AnimatedSprite(SPRITES_PATH + id.getAnimPath(), 4, .2f, true, left))
             );
         });
     }

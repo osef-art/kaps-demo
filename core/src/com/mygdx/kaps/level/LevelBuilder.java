@@ -1,7 +1,6 @@
 package com.mygdx.kaps.level;
 
 import com.mygdx.kaps.Utils;
-import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.Germ;
 
@@ -18,14 +17,9 @@ import java.util.stream.Stream;
 
 public class LevelBuilder {
     private final Set<SidekickId> sidekicks = new HashSet<>();
-    private final Color blank = Color.randomBlank();
     private final static int maxSidekicks = 2;
     private final static int maxLevels = 20;
     private int levelNum = -1;
-
-    private boolean isValid(Level level) {
-        return level.getGrid().getMatches().isEmpty();
-    }
 
     private void fillParty() {
         while (sidekicks.size() < maxSidekicks)
@@ -45,13 +39,12 @@ public class LevelBuilder {
               new Random().nextInt(3)
             );
             if (grid.isEmptyTile(randomTile)) {
-                grid.put(Germ.random(randomTile, Utils.getRandomFrom(Color.getSetFrom(sidekicks, blank))));
+                grid.put(Germ.random(randomTile));
                 germNumber--;
             }
         } while (germNumber > 0);
 
-        var lvl = new Level(grid, sidekicks, blank);
-        return isValid(lvl) ? lvl : generateRandomLevel(width, height, germNumber);
+        return new Level(grid, sidekicks);
     }
 
     private Level loadLevelFrom(String filePath) {
@@ -70,13 +63,12 @@ public class LevelBuilder {
             var chars = line.toCharArray();
             var germs = IntStream.range(0, chars.length)
               .mapToObj(n -> chars[n])
-              .map(c -> c == '.' ? null : Germ.ofSymbol(c, Color.getSetFrom(sidekicks, blank)))
+              .map(c -> c == '.' ? null : Germ.ofSymbol(c))
               .collect(Collectors.toList());
             return new Grid.Row(germs);
         }).collect(Collectors.toList());
 
-        var lvl = new Level(new Grid(rows), sidekicks, blank);
-        return isValid(lvl) ? lvl : loadLevelFrom(filePath);
+        return new Level(new Grid(rows), sidekicks);
     }
 
     public void addSidekick(String name) {

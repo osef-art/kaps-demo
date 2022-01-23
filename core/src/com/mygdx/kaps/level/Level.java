@@ -53,17 +53,21 @@ public class Level extends ApplicationAdapter {
     private final GameView view;
     private final Grid grid;
 
-    Level(Grid grid, Set<SidekickId> sidekicks, Color blankColor) {
-        this.grid = grid;
-        parameters = new LevelParameters(this);
+    Level(Grid gridModel, Set<SidekickId> sidekickSet) {
+        grid = gridModel;
 
-        this.sidekicks = sidekicks.stream()
+        sidekicks = sidekickSet.stream()
           .map(Sidekick::ofId)
           .collect(Collectors.toUnmodifiableList());
-        colors = Color.getSetFrom(sidekicks, blankColor);
-        sidekicks.forEach(s -> {
-            if (!colors.contains(s.color)) throw new IllegalArgumentException("Insufficient color set.");
-        });
+        colors = Stream.of(sidekicks.stream().map(Sidekick::color), Stream.of(Color.randomBlank()))
+          .flatMap(s -> s)
+          .collect(Collectors.toUnmodifiableSet());
+
+        do gridModel.stack().forEach(o -> o.repaint(Utils.getRandomFrom(colors)));
+        while (!gridModel.getMatches().isEmpty());
+
+        view = new GameView(this);
+        parameters = new LevelParameters(this);
 
         upcomingCapsules = IntStream.range(0, 2)
           .mapToObj(n -> Capsule.randomNewInstance(this))
@@ -77,11 +81,9 @@ public class Level extends ApplicationAdapter {
         particleManager = new ParticleManager(this.sidekicks);
         observers = Arrays.asList(
           new SoundPlayerObserver(),
-          new SidekicksObserver(this.sidekicks),
           new GameEndManager(this),
           particleManager
         );
-        view = new GameView(this);
 
         spawnCapsule();
     }
@@ -292,6 +294,7 @@ public class Level extends ApplicationAdapter {
 
     private void triggerSidekicksIfReady() {
         sidekicks.stream()
+          .peek(sdk -> sdk.ifPassive(CooldownSidekick::decreaseCooldown))
           .filter(Sidekick::isReady)
           .forEach(sdk -> {
               sdk.trigger(this);
