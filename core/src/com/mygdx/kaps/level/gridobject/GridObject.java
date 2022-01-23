@@ -1,6 +1,7 @@
 package com.mygdx.kaps.level.gridobject;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.renderer.SpriteData;
 
@@ -21,11 +22,13 @@ interface IGridObject {
 
     boolean isDestroyed();
 
-    void takeHit();
-
     Sprite getSprite(SpriteData data);
 
+    void takeHit();
+
     void repaint(Color color);
+
+    default void triggerEffect(Level level) {}
 }
 
 public abstract class GridObject implements IGridObject {

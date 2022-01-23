@@ -262,7 +262,7 @@ class ParticleManager implements LevelObserver {
 
 class GameEndManager implements LevelObserver {
     private enum GameEndCase {
-        GERMS_CLEARED(lvl -> lvl.getGrid().germsCount() <= 0, "LEVEL CLEARED !", SoundStream.SoundStore.CLEARED),
+        GERMS_CLEARED(lvl -> lvl.getGermsCount() <= 0, "LEVEL CLEARED !", SoundStream.SoundStore.CLEARED),
         SPAWN_OVERLAP(lvl -> lvl.controlledCapsules().stream()
           .map(c -> c.atLeastOneVerify(p -> lvl.getGrid().get(p.coordinates())
             .map(o -> !o.isDropping())

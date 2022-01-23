@@ -3,15 +3,17 @@ package com.mygdx.kaps.level;
 import com.mygdx.kaps.level.gridobject.*;
 
 import java.util.Optional;
+import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+
 class Capsule {
     private final LinkedCapsulePart main;
     private Capsule preview;
 
     private Capsule(CapsulePart main, CapsulePart slave, Orientation mainOrientation) {
-        var linked = new LinkedCapsulePart(slave.coordinates(), slave.color());
-        this.main = new LinkedCapsulePart(main.coordinates(), main.color(), mainOrientation, linked);
+        var linked = new LinkedCapsulePart(slave.coordinates(), slave.color(), slave.type());
+        this.main = new LinkedCapsulePart(main.coordinates(), main.color(), main.type(), mainOrientation, linked);
     }
 
     private Capsule(LinkedCapsulePart main, LinkedCapsulePart slave) {
@@ -37,6 +39,18 @@ class Capsule {
     static Capsule randomMonoColorInstance(Level level) {
         var color = level.randomLevelColor();
         return new Capsule(level.spawningCoordinates(), color, color);
+    }
+
+    static Capsule randomExplosiveInstance(Level level) {
+        var coordinates = level.spawningCoordinates();
+        var explosive = new Random().nextBoolean();
+        var main =  CapsulePart.explosiveCapsule(coordinates, level.randomLevelColor());
+        var slave = new CapsulePart(coordinates, level.randomLevelColor());
+        return new Capsule(
+          explosive ? main : slave,
+          explosive ? slave : main,
+          Orientation.LEFT
+        );
     }
 
     Capsule copy() {

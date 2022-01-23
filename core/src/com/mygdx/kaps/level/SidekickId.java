@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 public enum SidekickId {
     SEAN(Color.COLOR_1, AttackType.MELEE, SidekickAttack::hitRandomObjectAndAdjacents, 20, 2),
-    ZYRAME(Color.COLOR_2, AttackType.SLICE, SidekickAttack::hit2RandomGerms, 18, 2),
+    ZYRAME(Color.COLOR_2, AttackType.SLICE, SidekickAttack::hit2RandomGerms, 22, 2),
     R3D(Color.COLOR_3, AttackType.SLICE, SidekickAttack::hitRandomColumn, 25, 1, "Red"),
     MIMAPS(Color.COLOR_4, AttackType.FIRE, SidekickAttack::hit3RandomObjects, 15, 2),
     PAINTER(Color.COLOR_5, AttackType.BRUSH, SidekickAttack::paint5RandomObjects, 10, 1, "Paint"),
@@ -87,7 +87,10 @@ class SidekickAttack {
 
     private SidekickAttack(Level level, double speed, Stream<Runnable> stream) {
         LinkedList<Runnable> moves = stream.collect(Collectors.toCollection(LinkedList::new));
-        moves.add(level::deleteMatches);
+        moves.add(() -> {
+            level.hitMatches();
+            level.getGrid().initEveryCapsuleDropping();
+        });
         moves.add(level::spawnCapsuleIfAbsent);
         moveTasks = PeriodicTask.TaskBuilder.everyMilliseconds(speed, () -> moves.removeFirst().run())
           .endWhen(moves::isEmpty)
@@ -178,8 +181,8 @@ class SidekickAttack {
     static SidekickAttack hitRandomDiagonals(Sidekick sdk, Level lvl) {
         var picked = getRandomObjectCoordinates(lvl);
         return new SidekickAttack(lvl, 25, Stream.of(
-            lvl.getGrid().everyTile().stream().filter(c -> c.x - picked.x == c.y - picked.y),
-            lvl.getGrid().everyTile().stream().filter(c -> c.x - picked.x == picked.y - c.y)
+            lvl.getGrid().everyTile().filter(c -> c.x - picked.x == c.y - picked.y),
+            lvl.getGrid().everyTile().filter(c -> c.x - picked.x == picked.y - c.y)
           )
           .flatMap(Function.identity())
           .map(c -> () -> lvl.attack(c, sdk))
@@ -191,6 +194,6 @@ class SidekickAttack {
     }
 
     static SidekickAttack injectExplosiveCapsule(Level lvl) {
-        return injectMonoColorCapsule(lvl);
+        return new SidekickAttack(lvl, () -> lvl.injectNext(Capsule.randomExplosiveInstance(lvl)));
     }
 }

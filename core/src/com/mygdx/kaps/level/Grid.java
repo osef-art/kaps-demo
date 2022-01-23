@@ -88,7 +88,7 @@ public class Grid {
         }
 
         private Set<? extends GridObject> matchesFoundIn(Grid grid, MatchPattern pattern) {
-            return grid.stack().stream()
+            return grid.stack()
               .filter(Predicate.not(GridObject::isDropping))
               // map each object to a set of objects that follows pattern
               .map(o -> pattern.relativeTiles.stream()
@@ -150,7 +150,7 @@ public class Grid {
         return 0 <= x && x < getWidth() && 0 <= y && y < getHeight();
     }
 
-    public boolean isInGridBounds(Coordinates coordinates) {
+    boolean isInGridBounds(Coordinates coordinates) {
         return isInGridBounds(coordinates.x, coordinates.y);
     }
 
@@ -158,46 +158,40 @@ public class Grid {
         return isInGridBounds(coordinates) && get(coordinates).isEmpty();
     }
 
-    public Optional<? extends GridObject> get(Coordinates coordinates) {
-        return get(coordinates.x, coordinates.y);
-    }
-
     Optional<? extends GridObject> get(int x, int y) {
         return isInGridBounds(x, y) ? rows.get(y).get(x) : Optional.empty();
     }
 
-    Set<Coordinates> everyTile() {
+    Optional<? extends GridObject> get(Coordinates coordinates) {
+        return get(coordinates.x, coordinates.y);
+    }
+
+    Stream<Coordinates> everyTile() {
         return IntStream.range(0, getWidth())
           .mapToObj(x -> IntStream.range(0, getHeight())
             .mapToObj(y -> new Coordinates(x, y))
           )
-          .flatMap(Function.identity())
-          .collect(Collectors.toUnmodifiableSet());
+          .flatMap(Function.identity());
     }
 
-    Set<? extends GridObject> stack() {
+    Stream<? extends GridObject> stack() {
         return rows.stream()
           .flatMap(Row::stream)
           .filter(Optional::isPresent)
-          .map(Optional::get)
-          .collect(Collectors.toUnmodifiableSet());
+          .map(Optional::get);
     }
 
     Stream<CapsulePart> capsuleStack() {
-        return stack().stream()
+        return stack()
           .filter(GridObject::isCapsule)
           .map(o -> (CapsulePart) o)
           .filter(Predicate.not(CapsulePart::isDropping));
     }
 
     Stream<Germ> germStack() {
-        return stack().stream()
+        return stack()
           .filter(GridObject::isGerm)
           .map(o -> (Germ) o);
-    }
-
-    long germsCount() {
-        return stack().stream().filter(GridObject::isGerm).count();
     }
 
     // tiles operations
@@ -223,10 +217,6 @@ public class Grid {
           .findFirst();
     }
 
-    void hit(GridObject o, int damage) {
-        hit(o.coordinates(), damage);
-    }
-
     private void detach(Coordinates coordinates) {
         get(coordinates)
           .filter(GridObject::isCapsule)
@@ -244,17 +234,8 @@ public class Grid {
     }
 
     // stack operations
-    boolean containsMatches() {
-        return matchBrowser.allMatchesFoundIn(this).size() > 0;
-    }
-
-    Map<Color, Set<? extends GridObject>> hitMatches() {
-        var matches = matchBrowser.allMatchesFoundIn(this);
-        matches.values().forEach(s -> {
-            int damage = s.size() >= 9 ? 3 : (s.size() >= 5 ? 2 : 1);
-            s.forEach(o -> hit(o, damage));
-        });
-        return matches;
+    Map<Color, Set<? extends GridObject>> getMatches() {
+        return matchBrowser.allMatchesFoundIn(this);
     }
 
     void initEveryCapsuleDropping() {
@@ -269,7 +250,7 @@ public class Grid {
     }
 
     boolean dipOrFreezeDroppingCapsules() {
-        return stack().stream()
+        return stack()
           .filter(GridObject::isDropping)
           .filter(GridObject::isCapsule)
           .map(o -> (CapsulePart) o)

@@ -9,23 +9,22 @@ public final class LinkedCapsulePart extends CapsulePart {
     private Orientation orientation;
     private LinkedCapsulePart linked;
 
-    public LinkedCapsulePart(Coordinates coordinates, Color color) {
-        super(coordinates, color);
+    public LinkedCapsulePart(Coordinates coordinates, Color color, BonusType type) {
+        super(coordinates, color, type);
     }
 
-    private LinkedCapsulePart(Coordinates coordinates, Color color, Orientation orientation) {
-        this(coordinates, color);
+    private LinkedCapsulePart(Coordinates coordinates, Color color, BonusType type, Orientation orientation) {
+        super(coordinates, color, type);
         this.orientation = orientation;
     }
 
-    public LinkedCapsulePart(Coordinates coordinates, Color color, Orientation side, LinkedCapsulePart linked) {
-        this(coordinates, color);
-        Objects.requireNonNull(linked);
-        linkTo(linked, side.opposite());
+    public LinkedCapsulePart(Coordinates coordinates, Color color, BonusType type, Orientation side, LinkedCapsulePart linked) {
+        super(coordinates, color, type);
+        linkTo(Objects.requireNonNull(linked), side.opposite());
     }
 
     public LinkedCapsulePart copy() {
-        return new LinkedCapsulePart(coordinates(), color(), orientation);
+        return new LinkedCapsulePart(coordinates(), color(), type(), orientation);
     }
 
     public Optional<LinkedCapsulePart> linked() {

@@ -24,7 +24,7 @@ public class LevelBuilder {
     private int levelNum = -1;
 
     private boolean isValid(Level level) {
-        return !level.getGrid().containsMatches();
+        return level.getGrid().getMatches().isEmpty();
     }
 
     private void fillParty() {

@@ -104,6 +104,10 @@ public class Level extends ApplicationAdapter {
         return grid;
     }
 
+    long getGermsCount() {
+        return grid.stack().filter(GridObject::isGerm).count();
+    }
+
     public LevelParameters parameters() {
         return parameters;
     }
@@ -167,12 +171,12 @@ public class Level extends ApplicationAdapter {
 
     public void dipOrFreezeCapsule() {
         performIfPossible(c -> c.dipped().canStandIn(grid), c -> {
-              c.dip();
-              gridRefresher.reset();
-          }, c -> {
-              acceptAndSpawnNew(c);
-              observers.forEach(LevelObserver::onCapsuleFreeze);
-          });
+            c.dip();
+            gridRefresher.reset();
+        }, c -> {
+            acceptAndSpawnNew(c);
+            observers.forEach(LevelObserver::onCapsuleFreeze);
+        });
     }
 
     public void flipCapsule() {
@@ -202,21 +206,26 @@ public class Level extends ApplicationAdapter {
     private void dipOrFreezeDroppingCapsules() {
         if (grid.dipOrFreezeDroppingCapsules()) {
             observers.forEach(LevelObserver::onCapsuleFreeze);
-            deleteMatches();
+            hitMatches();
             controlledCapsules.forEach(this::updatePreview);
         }
     }
 
     // grid operations
+    private void hit(Coordinates coordinates, int damage) {
+        grid.hit(coordinates, damage).ifPresent(obj -> {
+            observers.forEach(obs -> obs.onObjectHit(obj));
+            if (obj.isDestroyed()) obj.triggerEffect(this);
+        });
+    }
+
     private void attack(Coordinates coordinates, int damage, AttackType type) {
         if (grid.isInGridBounds(coordinates))
             observers.forEach(obs -> obs.onTileAttack(coordinates, type));
-        grid.hit(coordinates, damage).ifPresent(
-          obj -> observers.forEach(obs -> obs.onObjectHit(obj))
-        );
+        hit(coordinates, damage);
     }
 
-    void attack(Coordinates coordinates, AttackType type) {
+    public void attack(Coordinates coordinates, AttackType type) {
         attack(coordinates, 1, type);
     }
 
@@ -233,13 +242,17 @@ public class Level extends ApplicationAdapter {
         observers.forEach(o -> o.onObjectPaint(obj, color));
     }
 
-    void deleteMatches() {
-        var destroyed = grid.hitMatches();
-        if (!destroyed.isEmpty()) {
-            observers.forEach(obs -> obs.onMatchPerformed(destroyed));
-            fastenGridRefreshing();
-        }
+    void hitMatches() {
+        var matches = grid.getMatches();
+        if (matches.isEmpty()) return;
+
+        matches.values().forEach(s -> {
+            int damage = s.size() >= 9 ? 3 : (s.size() >= 5 ? 2 : 1);
+            s.forEach(o -> hit(o.coordinates(), damage));
+        });
+        observers.forEach(obs -> obs.onMatchPerformed(matches));
         grid.initEveryCapsuleDropping();
+        fastenGridRefreshing();
     }
 
     private void accept(Capsule capsule) {
