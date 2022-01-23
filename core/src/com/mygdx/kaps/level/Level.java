@@ -81,7 +81,7 @@ public class Level extends ApplicationAdapter {
         particleManager = new ParticleManager(this.sidekicks);
         observers = Arrays.asList(
           new SoundPlayerObserver(),
-          new GameEndManager(this),
+          new GameEndManager(),
           particleManager
         );
 
@@ -266,7 +266,6 @@ public class Level extends ApplicationAdapter {
 
     private void acceptAndSpawnNew(Capsule capsule) {
         accept(capsule);
-        observers.forEach(LevelObserver::onCapsuleAccepted);
         triggerSidekicksIfReady();
         if (sidekicks.stream().noneMatch(Sidekick::isAttacking))
             spawnCapsuleIfAbsent();
@@ -313,7 +312,6 @@ public class Level extends ApplicationAdapter {
     public void pause() {
         SoundStream.play(SoundStream.SoundStore.PAUSE, 1f);
         taskManager.pauseTasks();
-
     }
 
     public void resume() {
@@ -322,7 +320,7 @@ public class Level extends ApplicationAdapter {
 
     public void render() {
         if (!parameters.paused) {
-            observers.forEach(LevelObserver::onLevelUpdate);
+            observers.forEach(o -> o.onLevelUpdate(this));
             taskManager.update();
 
             sidekicks.forEach(Sidekick::updateTasks);

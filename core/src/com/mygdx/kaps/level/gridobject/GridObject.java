@@ -22,6 +22,8 @@ interface IGridObject {
 
     boolean isDestroyed();
 
+    int manaWorth();
+
     Sprite getSprite(SpriteData data);
 
     void takeHit();
@@ -33,12 +35,18 @@ interface IGridObject {
 
 public abstract class GridObject implements IGridObject {
     private final Coordinates coordinates;
+    private final int mana;
     private boolean destroyed;
     private Color color;
 
-    GridObject(Coordinates coordinates, Color color) {
-        this.color = color;
+    GridObject(Coordinates coordinates, Color color, int mana) {
         this.coordinates = Objects.requireNonNull(coordinates).copy();
+        this.color = color;
+        this.mana = mana;
+    }
+
+    GridObject(Coordinates coordinates, Color color) {
+        this(coordinates, color, 1);
     }
 
     @Override
@@ -56,6 +64,10 @@ public abstract class GridObject implements IGridObject {
 
     public boolean isDestroyed() {
         return destroyed;
+    }
+
+    public int manaWorth() {
+        return mana;
     }
 
     public void takeHit() {

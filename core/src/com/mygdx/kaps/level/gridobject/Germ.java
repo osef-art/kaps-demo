@@ -13,8 +13,8 @@ public abstract class Germ extends GridObject {
     public enum GermKind {
         BASIC(.1f),
         WALL(.15f),
-        THORN(.125f),
-        VIRUS(.15f),
+        THORN(.1f),
+        VIRUS(.125f),
         ;
 
         private final float animationSpeed;
@@ -33,7 +33,7 @@ public abstract class Germ extends GridObject {
         }
     }
 
-    enum GermSupplier {
+    private enum GermSupplier {
         B(BasicGerm::new),
         W(c -> new WallGerm(c, 2)),
         X(c -> new WallGerm(c, 3)),
@@ -59,9 +59,13 @@ public abstract class Germ extends GridObject {
 
     private final GermKind kind;
 
-    Germ(Color color, GermKind kind) {
-        super(new Coordinates(), color);
+    Germ(Color color, GermKind kind, int mana) {
+        super(new Coordinates(), color, mana);
         this.kind = kind;
+    }
+
+    Germ(Color color, GermKind kind) {
+        this(color, kind, 2);
     }
 
     public static Germ ofSymbol(char symbol) {
@@ -101,7 +105,7 @@ final class WallGerm extends Germ {
     private int health;
 
     WallGerm(Color color, int health) {
-        super(color, GermKind.BASIC);
+        super(color, GermKind.BASIC, 3);
         if (health <= 0 || maxHealth < health)
             throw new IllegalArgumentException("Invalid health: " + health + " / " + maxHealth);
 

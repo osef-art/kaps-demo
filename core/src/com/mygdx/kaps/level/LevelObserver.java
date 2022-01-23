@@ -24,15 +24,13 @@ interface LevelObserver {
 
     default void onCapsuleDrop() {}
 
-    default void onCapsuleAccepted() {}
-
     default void onIllegalMove() {}
+
+    default void onObjectHit(GridObject obj) {}
 
     default void onObjectPaint(GridObject obj, Color color) {}
 
     default void onTileAttack(Coordinates coordinates, AttackType type) {}
-
-    default void onObjectHit(GridObject obj) {}
 
     default void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
         destroyed.values().forEach(s -> s.forEach(this::onObjectHit));
@@ -40,7 +38,7 @@ interface LevelObserver {
 
     default void onSidekickTriggered(Sidekick triggered) {}
 
-    default void onLevelUpdate() {}
+    default void onLevelUpdate(Level level) {}
 }
 
 class SoundPlayerObserver implements LevelObserver {
@@ -190,8 +188,10 @@ class ParticleManager implements LevelObserver {
     }
 
     private void addManaParticle(GridObject obj) {
-        if (sidekicks.containsKey(obj.color()))
-            mana.add(new ManaParticle(obj, sidekicks.get(obj.color())));
+        if (sidekicks.containsKey(obj.color()) && obj.isDestroyed())
+            IntStream.range(0, obj.manaWorth()).forEach(
+              n -> mana.add(new ManaParticle(obj, sidekicks.get(obj.color())))
+            );
     }
 
     @Override
@@ -227,7 +227,7 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
-    public void onLevelUpdate() {
+    public void onLevelUpdate(Level level) {
         getParticleEffects().forEach(GridParticleEffect::updateAnim);
         mana.stream().filter(ManaParticle::hasArrived).forEach(m -> {
             sidekicks.get(m.target.color).ifActiveElse(ManaSidekick::increaseMana, CooldownSidekick::decreaseCooldown);
@@ -248,7 +248,8 @@ class GameEndManager implements LevelObserver {
             .orElse(false)
           ))
           .reduce(Boolean::logicalOr)
-          .orElse(false), "GAME OVER !", SoundStream.SoundStore.GAME_OVER);
+          .orElse(false), "GAME OVER !", SoundStream.SoundStore.GAME_OVER),
+        ;
 
         private final SoundStream.SoundStore sound;
         private final Predicate<Level> condition;
@@ -260,7 +261,7 @@ class GameEndManager implements LevelObserver {
             this.sound = sound;
         }
 
-        void endGameIfChecked(Level level) {
+        private void endGameIfChecked(Level level) {
             if (!condition.test(level)) return;
             SoundStream.play(sound, .75f);
             System.out.println(message);
@@ -272,14 +273,8 @@ class GameEndManager implements LevelObserver {
         }
     }
 
-    private final Level level;
-
-    GameEndManager(Level level) {
-        this.level = level;
-    }
-
     @Override
-    public void onLevelUpdate() {
+    public void onLevelUpdate(Level level) {
         if (level.visualParticles().getParticleEffects().findAny().isEmpty())
             Arrays.stream(GameEndCase.values()).forEach(c -> c.endGameIfChecked(level));
     }

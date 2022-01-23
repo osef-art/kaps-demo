@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 public class SpriteData {
-    private static final float poppingSpeed = .075f;
+    private static final float poppingSpeed = .065f;
     private static final String SPRITES_PATH = "android/assets/sprites/";
     private static final Map<Color, Map<CapsulePart.BonusType, Map<Orientation, Sprite>>> capsules = new HashMap<>();
     private static final Map<Color, Map<Germ.GermKind, AnimatedSprite>> germs = new HashMap<>();
@@ -39,25 +39,23 @@ public class SpriteData {
                 });
             });
 
-            Arrays.stream(Germ.GermKind.values()).forEach(k -> {
-                if (k == Germ.GermKind.WALL) {
-                    IntStream.range(0, 4).forEach(
-                      n -> wallGerms.get(color).add(new AnimatedSprite(
-                        SPRITES_PATH + "germs/" + k + "/level" + (n + 1) + "/color" + color.id() + "/idle_",
-                        n > 1 ? 4 : 8,
-                        n > 1 ? .2f : .15f
-                      ))
-                    );
-                    return;
-                }
-                germs.get(color).put(k, new AnimatedSprite(
-                  SPRITES_PATH + "germs/" + k + "/color" + color.id() + "/idle_", 8, k.getAnimationSpeed()
-                ));
+            Arrays.stream(Germ.GermKind.values()).forEach(kind -> {
+                if (kind == Germ.GermKind.WALL)
+                    IntStream.range(0, 4).forEach(n -> wallGerms.get(color).add(new AnimatedSprite(
+                      SPRITES_PATH + "germs/" + kind + "/level" + (n + 1) + "/color" + color.id() + "/idle_",
+                      n > 1 ? 4 : 8,
+                      n > 1 ? .2f : .15f
+                    )));
+                else
+                    germs.get(color).put(kind, new AnimatedSprite(
+                      SPRITES_PATH + "germs/" + kind + "/color" + color.id() + "/idle_", 8, kind.getAnimationSpeed()
+                    ));
             });
         });
 
         Arrays.stream(SidekickId.values()).forEach(id -> {
             sidekicks.put(id, new HashMap<>());
+
             Arrays.asList(true, false).forEach(
               left -> sidekicks.get(id).put(left, new AnimatedSprite(SPRITES_PATH + id.getAnimPath(), 4, .2f, true, left))
             );
