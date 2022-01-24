@@ -70,11 +70,11 @@ public class Timer {
         offsets.clear();
     }
 
-    void pause() {
+    public void pause() {
         offsets.add(new Chrono());
     }
 
-    void resume() {
+    public void resume() {
         if (offsets.isEmpty()) return;
         offsets.get(offsets.size() - 1).stop();
     }

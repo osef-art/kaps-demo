@@ -28,15 +28,21 @@ interface LevelObserver {
 
     default void onObjectHit(GridObject obj) {}
 
+    default void onObjectDestroyed(GridObject obj) {
+        onObjectHit(obj);
+    }
+
     default void onObjectPaint(GridObject obj, Color color) {}
 
     default void onTileAttack(Coordinates coordinates, AttackType type) {}
 
-    default void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
-        destroyed.values().forEach(s -> s.forEach(this::onObjectHit));
-    }
+    default void onMatchPerformed(Map<Color, Set<? extends GridObject>> matches) {}
 
     default void onSidekickTriggered(Sidekick triggered) {}
+
+    default void onGamePaused() {}
+
+    default void onGameResumed() {}
 
     default void onLevelUpdate(Level level) {}
 }
@@ -66,14 +72,14 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
-    public void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
-        var containsGerms = destroyed.values().stream()
+    public void onMatchPerformed(Map<Color, Set<? extends GridObject>> matches) {
+        var containsGerms = matches.values().stream()
           .flatMap(Collection::stream)
           .anyMatch(GridObject::isGerm);
         if (containsGerms) mainStream.play(SoundStream.SoundStore.PLOP, 0);
-        else if (destroyed.values().stream().anyMatch(s -> s.size() >= 5))
+        else if (matches.values().stream().anyMatch(s -> s.size() >= 5))
             mainStream.play(SoundStream.SoundStore.MATCH_FIVE);
-        else if (!destroyed.isEmpty()) mainStream.play(SoundStream.SoundStore.IMPACT);
+        else if (!matches.isEmpty()) mainStream.play(SoundStream.SoundStore.IMPACT);
     }
 
     @Override
@@ -188,7 +194,7 @@ class ParticleManager implements LevelObserver {
     }
 
     private void addManaParticle(GridObject obj) {
-        if (sidekicks.containsKey(obj.color()) && obj.isDestroyed())
+        if (sidekicks.containsKey(obj.color()))
             IntStream.range(0, obj.manaWorth()).forEach(
               n -> mana.add(new ManaParticle(obj, sidekicks.get(obj.color())))
             );
@@ -200,13 +206,16 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
-    public void onMatchPerformed(Map<Color, Set<? extends GridObject>> destroyed) {
-        LevelObserver.super.onMatchPerformed(destroyed);
-        destroyed.forEach((color, match) -> {
+    public void onObjectDestroyed(GridObject obj) {
+        LevelObserver.super.onObjectDestroyed(obj);
+        addManaParticle(obj);
+    }
+
+    @Override
+    public void onMatchPerformed(Map<Color, Set<? extends GridObject>> matches) {
+        matches.forEach((color, match) -> {
             if (!sidekicks.containsKey(color)) return;
-            var sdk = sidekicks.get(color);
-            sdk.ifActive(s -> match.forEach(this::addManaParticle));
-            int bonus = sdk.ifActiveElse(
+            int bonus = sidekicks.get(color).ifActiveElse(
               match.size() >= 9 ? 3 : match.size() >= 5 ? 1 : 0,
               match.size() >= 9 ? 2 : match.size() >= 5 ? 1 : 0
             );
@@ -224,6 +233,16 @@ class ParticleManager implements LevelObserver {
     @Override
     public void onObjectPaint(GridObject obj, Color color) {
         attacks.add(new GridParticleEffect(obj, color));
+    }
+
+    @Override
+    public void onGamePaused() {
+        mana.forEach(p -> p.progression.pause());
+    }
+
+    @Override
+    public void onGameResumed() {
+        mana.forEach(p -> p.progression.resume());
     }
 
     @Override

@@ -42,15 +42,17 @@ public class Level extends ApplicationAdapter {
     }
 
     private final LevelParameters parameters;
-    private final ParticleManager particleManager;
+    private final GameView view;
+
+    private final TaskManager taskManager;
+    private final PeriodicTask gridRefresher;
     private final List<LevelObserver> observers;
+    private final ParticleManager particleManager;
+
     private final LinkedList<Capsule> upcomingCapsules;
     private final List<Capsule> controlledCapsules = new ArrayList<>();
     private final List<Sidekick> sidekicks;
     private final Set<Color> colors;
-    private final TaskManager taskManager;
-    private final PeriodicTask gridRefresher;
-    private final GameView view;
     private final Grid grid;
 
     Level(Grid gridModel, Set<SidekickId> sidekickSet) {
@@ -66,8 +68,8 @@ public class Level extends ApplicationAdapter {
         do gridModel.stack().forEach(o -> o.repaint(Utils.getRandomFrom(colors)));
         while (!gridModel.getMatches().isEmpty());
 
-        view = new GameView(this);
         parameters = new LevelParameters(this);
+        view = new GameView(this);
 
         upcomingCapsules = IntStream.range(0, 2)
           .mapToObj(n -> Capsule.randomNewInstance(this))
@@ -145,7 +147,6 @@ public class Level extends ApplicationAdapter {
     private void performIfPossible(Predicate<Capsule> condition, Consumer<Capsule> action, Consumer<Capsule> alternative) {
         if (parameters.paused) return;
         controlledCapsules.stream()
-          .filter(Predicate.not(Capsule::isDropping))
           .collect(Collectors.toUnmodifiableMap(condition::test, Arrays::asList,
             (l1, l2) -> Stream.of(l1, l2).flatMap(Collection::stream).collect(Collectors.toList()))
           )
@@ -215,10 +216,12 @@ public class Level extends ApplicationAdapter {
 
     // grid operations
     private void hit(Coordinates coordinates, int damage) {
-        grid.hit(coordinates, damage).ifPresent(obj -> {
-            observers.forEach(obs -> obs.onObjectHit(obj));
-            if (obj.isDestroyed()) obj.triggerEffect(this);
-        });
+        grid.hit(coordinates, damage)
+          .filter(GridObject::isDestroyed)
+          .ifPresent(obj -> {
+              observers.forEach(obs -> obs.onObjectDestroyed(obj));
+              obj.triggerEffect(this);
+          });
     }
 
     private void attack(Coordinates coordinates, int damage, AttackType type) {
@@ -312,10 +315,12 @@ public class Level extends ApplicationAdapter {
     public void pause() {
         SoundStream.play(SoundStream.SoundStore.PAUSE, 1f);
         taskManager.pauseTasks();
+        observers.forEach(LevelObserver::onGamePaused);
     }
 
     public void resume() {
         taskManager.resumeTasks();
+        observers.forEach(LevelObserver::onGameResumed);
     }
 
     public void render() {
