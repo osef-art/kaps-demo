@@ -75,16 +75,15 @@ public class Level extends ApplicationAdapter {
           .mapToObj(n -> Capsule.randomNewInstance(this))
           .collect(Collectors.toCollection(LinkedList::new));
 
-        gridRefresher = PeriodicTask.everySeconds(1, this::dipOrFreezeCapsule);
         taskManager = new TaskManager(
-          gridRefresher, PeriodicTask.everyMilliseconds(10, this::dipOrFreezeDroppingCapsules)
+          gridRefresher = PeriodicTask.everySeconds(1, this::dipOrFreezeCapsule),
+          PeriodicTask.everyMilliseconds(10, this::dipOrFreezeDroppingCapsules)
         );
 
-        particleManager = new ParticleManager(this.sidekicks);
         observers = Arrays.asList(
+          particleManager = new ParticleManager(this.sidekicks),
           new SoundPlayerObserver(),
-          new GameEndManager(),
-          particleManager
+          new GameEndManager()
         );
 
         spawnCapsule();

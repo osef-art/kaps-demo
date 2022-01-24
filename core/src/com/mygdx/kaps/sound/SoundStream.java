@@ -24,11 +24,13 @@ public class SoundStream {
         FLIP(3),
         PLOP(4),
         IMPACT,
+        BREAK,
         PAINT,
         PAUSE,
         DROP,
         CANT,
-        MANA;
+        MANA,
+        ;
 
         private final List<String> paths;
 

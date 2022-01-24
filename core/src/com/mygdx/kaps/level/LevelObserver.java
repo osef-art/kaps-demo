@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.Coordinates;
+import com.mygdx.kaps.level.gridobject.Germ;
 import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.renderer.SpriteData;
@@ -73,11 +74,18 @@ class SoundPlayerObserver implements LevelObserver {
 
     @Override
     public void onMatchPerformed(Map<Color, Set<? extends GridObject>> matches) {
-        var containsGerms = matches.values().stream()
+        var germs = matches.values().stream()
           .flatMap(Collection::stream)
-          .anyMatch(GridObject::isGerm);
-        if (containsGerms) mainStream.play(SoundStream.SoundStore.PLOP, 0);
-        else if (matches.values().stream().anyMatch(s -> s.size() >= 5))
+          .filter(GridObject::isGerm)
+          .map(o -> (Germ) o)
+          .collect(Collectors.toUnmodifiableSet());
+
+        if (germs.size() > 0) {
+            if (germs.stream().anyMatch(GridObject::isDestroyed))
+                mainStream.play(SoundStream.SoundStore.PLOP, 0);
+            else if (germs.stream().anyMatch(g -> g.isKind(Germ.GermKind.WALL)))
+                mainStream.play(SoundStream.SoundStore.BREAK);
+        } else if (matches.values().stream().anyMatch(s -> s.size() >= 5))
             mainStream.play(SoundStream.SoundStore.MATCH_FIVE);
         else if (!matches.isEmpty()) mainStream.play(SoundStream.SoundStore.IMPACT);
     }

@@ -78,6 +78,8 @@ public abstract class Germ extends GridObject {
         return randomGerm;
     }
 
+    public boolean isKind(GermKind kind) {return kind == this.kind;}
+
     @Override
     public boolean isGerm() {
         return true;
@@ -105,7 +107,7 @@ final class WallGerm extends Germ {
     private int health;
 
     WallGerm(Color color, int health) {
-        super(color, GermKind.BASIC, 3);
+        super(color, GermKind.WALL, 3);
         if (health <= 0 || maxHealth < health)
             throw new IllegalArgumentException("Invalid health: " + health + " / " + maxHealth);
 
