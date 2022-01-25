@@ -12,6 +12,7 @@ import com.mygdx.kaps.sound.SoundStream;
 import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -267,7 +268,7 @@ class ParticleManager implements LevelObserver {
 }
 
 class GameEndManager implements LevelObserver {
-    private enum GameEndCase {
+    enum GameEndCase {
         GERMS_CLEARED(lvl -> lvl.getGermsCount() <= 0, "LEVEL CLEARED !", SoundStream.SoundStore.CLEARED),
         SPAWN_OVERLAP(lvl -> lvl.controlledCapsules().stream()
           .map(c -> c.atLeastOneVerify(p -> lvl.getGrid().get(p.coordinates())
@@ -291,13 +292,22 @@ class GameEndManager implements LevelObserver {
         private void endGameIfChecked(Level level) {
             if (!condition.test(level)) return;
             SoundStream.play(sound, .75f);
-            System.out.println(message);
             try {
                 Thread.sleep(2500);
             } catch (InterruptedException ignored) {
             }
             System.exit(0);
         }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    void ifChecked(Level level, Consumer<GameEndCase> action) {
+        Arrays.stream(GameEndCase.values())
+          .filter(c -> c.condition.test(level))
+          .forEach(action);
     }
 
     @Override

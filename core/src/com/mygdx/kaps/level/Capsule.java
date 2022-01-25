@@ -1,13 +1,19 @@
 package com.mygdx.kaps.level;
 
+import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.*;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 class Capsule {
+    enum CapsuleType {UNIFORM, EXPLOSIVE}
+
     private final LinkedCapsulePart main;
     private Capsule preview;
 
@@ -20,32 +26,17 @@ class Capsule {
         this(main, slave, main.orientation());
     }
 
-    private Capsule(Coordinates coordinates, Color mainColor, Color slaveColor) {
-        this(
-          new CapsulePart(coordinates, mainColor),
-          new CapsulePart(coordinates, slaveColor),
-          Orientation.LEFT
-        );
-    }
-
-    static Capsule randomNewInstance(Level level) {
-        return new Capsule(
-          level.spawningCoordinates(),
-          level.randomLevelColor(),
-          level.randomLevelColor()
-        );
-    }
-
-    static Capsule randomMonoColorInstance(Level level) {
-        var color = level.randomLevelColor();
-        return new Capsule(level.spawningCoordinates(), color, color);
-    }
-
-    static Capsule randomExplosiveInstance(Level level) {
-        var coordinates = level.spawningCoordinates();
+    static Capsule buildRandomInstance(Coordinates coordinates, Set<Color> colors, CapsuleType... types) {
+        var typeSet = Arrays.stream(types).collect(Collectors.toUnmodifiableSet());
+        var mainColor = Utils.getRandomFrom(colors);
+        var slaveColor = Utils.getRandomFrom(colors);
         var explosive = new Random().nextBoolean();
-        var main =  CapsulePart.explosiveCapsule(coordinates, level.randomLevelColor());
-        var slave = new CapsulePart(coordinates, level.randomLevelColor());
+
+        var main = typeSet.contains(CapsuleType.EXPLOSIVE) ?
+                     CapsulePart.explosiveCapsule(coordinates, mainColor) :
+                     new CapsulePart(coordinates, mainColor);
+        var slave = new CapsulePart(coordinates, typeSet.contains(CapsuleType.UNIFORM) ? mainColor : slaveColor);
+
         return new Capsule(
           explosive ? main : slave,
           explosive ? slave : main,
@@ -77,10 +68,6 @@ class Capsule {
 
     boolean canStandIn(Grid grid) {
         return main.verify(grid::canBePut);
-    }
-
-    boolean isDropping() {
-        return main.verify(CapsulePart::isDropping);
     }
 
     boolean atLeastOneVerify(Predicate<CapsulePart> condition) {

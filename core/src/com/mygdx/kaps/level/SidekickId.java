@@ -24,7 +24,7 @@ public enum SidekickId {
     XERETH(Color.COLOR_6, AttackType.SLICE, SidekickAttack::hitRandomDiagonals, 25, 1),
     BOMBER(Color.COLOR_7, AttackType.FIREARM, (sdk, lvl) -> SidekickAttack.injectExplosiveCapsule(lvl), 13, true),
     JIM(Color.COLOR_10, AttackType.SLICE, SidekickAttack::hitRandomLine, 18, 1),
-    UNI(Color.COLOR_11, AttackType.BRUSH, (sdk, lvl) -> SidekickAttack.injectMonoColorCapsule(lvl), 4, true, "Color"),
+    UNI(Color.COLOR_11, AttackType.BRUSH, (sdk, lvl) -> SidekickAttack.injectUniformCapsule(lvl), 4, true, "Color"),
     SNIPER(Color.COLOR_12, AttackType.FIREARM, SidekickAttack::hitRandomGerm, 20, 3),
     ;
 
@@ -189,11 +189,11 @@ class SidekickAttack {
         );
     }
 
-    static SidekickAttack injectMonoColorCapsule(Level lvl) {
-        return new SidekickAttack(lvl, () -> lvl.injectNext(Capsule.randomMonoColorInstance(lvl)));
+    static SidekickAttack injectUniformCapsule(Level lvl) {
+        return new SidekickAttack(lvl, () -> lvl.injectNext(lvl.newRandomCapsule(Capsule.CapsuleType.UNIFORM)));
     }
 
     static SidekickAttack injectExplosiveCapsule(Level lvl) {
-        return new SidekickAttack(lvl, () -> lvl.injectNext(Capsule.randomExplosiveInstance(lvl)));
+        return new SidekickAttack(lvl, () -> lvl.injectNext(lvl.newRandomCapsule(Capsule.CapsuleType.EXPLOSIVE)));
     }
 }

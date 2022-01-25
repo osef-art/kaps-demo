@@ -48,6 +48,7 @@ public class Level extends ApplicationAdapter {
     private final PeriodicTask gridRefresher;
     private final List<LevelObserver> observers;
     private final ParticleManager particleManager;
+    private final GameEndManager gameEndManager;
 
     private final LinkedList<Capsule> upcomingCapsules;
     private final List<Capsule> controlledCapsules = new ArrayList<>();
@@ -72,7 +73,7 @@ public class Level extends ApplicationAdapter {
         view = new GameView(this);
 
         upcomingCapsules = IntStream.range(0, 2)
-          .mapToObj(n -> Capsule.randomNewInstance(this))
+          .mapToObj(n -> newRandomCapsule())
           .collect(Collectors.toCollection(LinkedList::new));
 
         taskManager = new TaskManager(
@@ -82,11 +83,37 @@ public class Level extends ApplicationAdapter {
 
         observers = Arrays.asList(
           particleManager = new ParticleManager(this.sidekicks),
-          new SoundPlayerObserver(),
-          new GameEndManager()
+          gameEndManager = new GameEndManager(),
+          new SoundPlayerObserver()
         );
 
         spawnCapsule();
+    }
+
+    Grid getGrid() {
+        return grid;
+    }
+
+    double refreshingProgression() {
+        return gridRefresher.ratio();
+    }
+
+    long getGermsCount() {
+        return grid.stack().filter(GridObject::isGerm).count();
+    }
+
+    Capsule newRandomCapsule(Capsule.CapsuleType ... types) {
+        return Capsule.buildRandomInstance(
+          new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1), colors, types
+        );
+    }
+
+    List<Capsule> controlledCapsules() {
+        return controlledCapsules;
+    }
+
+    List<Capsule> upcoming() {
+        return upcomingCapsules;
     }
 
     List<Sidekick> getSidekicks() {
@@ -99,40 +126,16 @@ public class Level extends ApplicationAdapter {
           .collect(Collectors.toUnmodifiableSet());
     }
 
-    public Color randomLevelColor() {
-        return Utils.getRandomFrom(colors);
-    }
-
-    Grid getGrid() {
-        return grid;
-    }
-
-    long getGermsCount() {
-        return grid.stack().filter(GridObject::isGerm).count();
-    }
-
-    public LevelParameters parameters() {
-        return parameters;
-    }
-
-    List<Capsule> controlledCapsules() {
-        return controlledCapsules;
-    }
-
-    List<Capsule> upcoming() {
-        return upcomingCapsules;
-    }
-
-    public Coordinates spawningCoordinates() {
-        return new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1);
-    }
-
     ParticleManager visualParticles() {
         return particleManager;
     }
 
-    double refreshingProgression() {
-        return gridRefresher.ratio();
+    GameEndManager gameEndManager() {
+        return gameEndManager;
+    }
+
+    public LevelParameters parameters() {
+        return parameters;
     }
 
     /**
@@ -289,7 +292,7 @@ public class Level extends ApplicationAdapter {
         var upcoming = upcomingCapsules.removeFirst();
         updatePreview(upcoming);
         if (upcomingCapsules.size() < 2)
-            upcomingCapsules.add(Capsule.randomNewInstance(this));
+            upcomingCapsules.add(newRandomCapsule());
         controlledCapsules.add(upcoming);
     }
 

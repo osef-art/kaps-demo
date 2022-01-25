@@ -257,6 +257,10 @@ public class GameView extends ApplicationAdapter {
         });
     }
 
+    private void renderEndMessage() {
+        model.gameEndManager().ifChecked(model, c -> tr.get(Font.BIG).drawText(c.getMessage(), dimensions.screen));
+    }
+
     void updateSprites() {
         spriteData.updateSprites();
     }
@@ -269,6 +273,7 @@ public class GameView extends ApplicationAdapter {
         renderGrid();
         renderFallingCapsules();
         renderParticles();
+        renderEndMessage();
     }
 
     public void dispose() {
