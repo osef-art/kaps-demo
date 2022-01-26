@@ -39,7 +39,7 @@ interface LevelObserver {
 
     default void onSidekickTriggered(Sidekick triggered) {}
 
-    default     void onGermTriggered(CooldownGerm triggered) {}
+    default void onGermTriggered(CooldownGerm triggered) {}
 
     default void onGamePaused() {}
 
@@ -318,5 +318,19 @@ class GameEndManager implements LevelObserver {
     public void onLevelUpdate(Level level) {
         if (level.visualParticles().getParticleEffects().findAny().isEmpty())
             Arrays.stream(GameEndCase.values()).forEach(c -> c.endGameIfChecked(level));
+    }
+}
+
+class LevelAttackObserver implements LevelObserver {
+    private final Level level;
+
+    LevelAttackObserver(Level level) {
+        this.level = level;
+    }
+
+    @Override
+    public void onCapsuleFreeze() {
+        level.triggerGermsIfReady();
+        level.triggerSidekicksIfReady();
     }
 }

@@ -87,6 +87,7 @@ public class Level extends ApplicationAdapter {
         observers = Arrays.asList(
           particleManager = new ParticleManager(this.sidekicks),
           gameEndManager = new GameEndManager(),
+          new LevelAttackObserver(this),
           new SoundPlayerObserver()
         );
 
@@ -277,8 +278,8 @@ public class Level extends ApplicationAdapter {
 
     private void acceptAndSpawnNew(Capsule capsule) {
         accept(capsule);
-        triggerSidekicksIfReady();
-        triggerGermsIfReady();
+        decreaseAllCooldowns();
+
         if (sidekicks.stream().noneMatch(Sidekick::isAttacking))
             spawnCapsuleIfAbsent();
     }
@@ -305,9 +306,8 @@ public class Level extends ApplicationAdapter {
         controlledCapsules.add(upcoming);
     }
 
-    private void triggerGermsIfReady() {
+    void triggerGermsIfReady() {
         sidekicks.stream()
-          .peek(sdk -> sdk.ifPassive(CooldownSidekick::decreaseCooldown))
           .filter(Sidekick::isReady)
           .forEach(sdk -> {
               sdk.trigger(this);
@@ -315,14 +315,18 @@ public class Level extends ApplicationAdapter {
           });
     }
 
-    private void triggerSidekicksIfReady() {
+    void triggerSidekicksIfReady() {
         grid.cooldownGermStack()
-          .peek(CooldownGerm::decreaseCooldown)
           .filter(CooldownGerm::isReady)
           .forEach(g -> {
               g.trigger(this);
               observers.forEach(o -> o.onGermTriggered(g));
           });
+    }
+
+    private void decreaseAllCooldowns() {
+        sidekicks.forEach(sdk -> sdk.ifPassive(CooldownSidekick::decreaseCooldown));
+        grid.cooldownGermStack().forEach(CooldownGerm::decreaseCooldown);
     }
 
     private void fastenGridRefreshing() {
@@ -333,6 +337,7 @@ public class Level extends ApplicationAdapter {
     void prepareNext(Capsule.CapsuleType type) {
         incomingTypes.add(type);
     }
+
     public void pause() {
         SoundStream.play(SoundStream.SoundStore.PAUSE, 1f);
         taskManager.pauseTasks();

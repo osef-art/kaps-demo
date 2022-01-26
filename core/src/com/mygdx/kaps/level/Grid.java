@@ -211,6 +211,7 @@ public class Grid {
     }
 
     void replace(GridObject old, GridObject newObj) {
+        detach(old.coordinates());
         newObj.coordinates().set(old.coordinates());
         set(old.coordinates(), newObj);
     }
