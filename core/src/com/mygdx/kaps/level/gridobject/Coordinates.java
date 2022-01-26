@@ -46,7 +46,7 @@ public class Coordinates {
         map(n -> n + x, n -> n + y);
     }
 
-    void set(Coordinates coordinates) {
+    public void set(Coordinates coordinates) {
         set(coordinates.x, coordinates.y);
     }
 

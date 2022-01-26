@@ -3,24 +3,38 @@ package com.mygdx.kaps.level.gridobject;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.Utils;
+import com.mygdx.kaps.level.AttackType;
+import com.mygdx.kaps.level.GermAttack;
+import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.renderer.SpriteData;
 
 import java.util.Arrays;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public abstract class Germ extends GridObject {
     public enum GermKind {
         BASIC(.1f),
         WALL(.15f),
-        THORN(.1f),
-        VIRUS(.125f),
+        VIRUS(.125f, 2, AttackType.MAGIC, (lvl, g) -> GermAttack.contaminateRandomCapsule(lvl)),
+        THORN(.1f, 5, AttackType.SLICE, GermAttack::hitRandomAdjacent),
         ;
 
         private final float animationSpeed;
+        private final BiFunction<Level, Germ, GermAttack> attack;
+        private final AttackType attackType;
+        private final int cooldown;
+
+        GermKind(float speed, int cooldown, AttackType type, BiFunction<Level, Germ, GermAttack> attack) {
+            animationSpeed = speed;
+            this.cooldown = cooldown;
+            this.attack = attack;
+            attackType = type;
+        }
 
         GermKind(float speed) {
-            animationSpeed = speed;
+            this(speed, 0, AttackType.MELEE, (lvl, g) -> GermAttack.doNothing(lvl));
         }
 
         @Override
@@ -30,6 +44,18 @@ public abstract class Germ extends GridObject {
 
         public float getAnimationSpeed() {
             return animationSpeed;
+        }
+
+        int getCooldown() {
+            return cooldown;
+        }
+
+        GermAttack newAttack(Level level, Germ germ) {
+            return attack.apply(level, germ);
+        }
+
+        AttackType getAttackType() {
+            return attackType;
         }
     }
 
@@ -48,7 +74,7 @@ public abstract class Germ extends GridObject {
             associatedGerm = supplier;
         }
 
-        private static Function<Color, Germ> getKindOfSymbol(char symbol) {
+        private static Function<Color, Germ> getGermOfSymbol(char symbol) {
             return Arrays.stream(values())
               .filter(k -> (symbol) == k.toString().charAt(0))
               .findFirst()
@@ -57,7 +83,7 @@ public abstract class Germ extends GridObject {
         }
     }
 
-    private final GermKind kind;
+    final GermKind kind;
 
     Germ(Color color, GermKind kind, int mana) {
         super(new Coordinates(), color, mana);
@@ -69,7 +95,15 @@ public abstract class Germ extends GridObject {
     }
 
     public static Germ ofSymbol(char symbol) {
-        return GermSupplier.getKindOfSymbol(symbol).apply(Color.random());
+        return GermSupplier.getGermOfSymbol(symbol).apply(Color.random());
+    }
+
+    public static Germ ofKind(GermKind kind, Color color) {
+        return Arrays.stream(GermSupplier.values())
+          .map(k -> k.associatedGerm.apply(color))
+          .filter(g -> g.isOfKind(kind))
+          .findFirst()
+          .orElseThrow(() -> new IllegalArgumentException("Couldn't resolve germ of kind: " + kind));
     }
 
     public static Germ random(Coordinates coordinates) {
@@ -78,7 +112,13 @@ public abstract class Germ extends GridObject {
         return randomGerm;
     }
 
-    public boolean isKind(GermKind kind) {return kind == this.kind;}
+    public boolean isOfKind(GermKind kind) {
+        return kind == this.kind;
+    }
+
+    public boolean hasCooldown() {
+        return false;
+    }
 
     @Override
     public boolean isGerm() {
@@ -137,14 +177,3 @@ final class WallGerm extends Germ {
     }
 }
 
-final class VirusGerm extends Germ {
-    VirusGerm(Color color) {
-        super(color, GermKind.VIRUS);
-    }
-}
-
-final class ThornGerm extends Germ {
-    ThornGerm(Color color) {
-        super(color, GermKind.THORN);
-    }
-}

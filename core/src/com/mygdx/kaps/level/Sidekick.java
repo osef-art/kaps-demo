@@ -74,15 +74,15 @@ public abstract class Sidekick implements ISidekick {
         return !tasks.isEmpty();
     }
 
-    void updateTasks() {
-        tasks.update();
-    }
-
     void trigger(Level level) {
         tasks.add(id.attack.apply(this, level).periodicMoves());
         tasks.add(
           PeriodicTask.TaskBuilder.everyMilliseconds(10, this::emptyGauge).endWhen(this::gaugeIsReset)
         );
+    }
+
+    void updateTasks() {
+        tasks.update();
     }
 }
 

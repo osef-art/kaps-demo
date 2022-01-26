@@ -30,7 +30,7 @@ public class SoundStream {
         DROP,
         CANT,
         MANA,
-        ;
+        VIRUS;
 
         private final List<String> paths;
 

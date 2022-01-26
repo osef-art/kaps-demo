@@ -2,10 +2,7 @@ package com.mygdx.kaps.level;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.Utils;
-import com.mygdx.kaps.level.gridobject.Color;
-import com.mygdx.kaps.level.gridobject.Coordinates;
-import com.mygdx.kaps.level.gridobject.Germ;
-import com.mygdx.kaps.level.gridobject.GridObject;
+import com.mygdx.kaps.level.gridobject.*;
 import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.renderer.SpriteData;
 import com.mygdx.kaps.sound.SoundStream;
@@ -41,6 +38,8 @@ interface LevelObserver {
     default void onMatchPerformed(Map<Color, Set<? extends GridObject>> matches) {}
 
     default void onSidekickTriggered(Sidekick triggered) {}
+
+    default     void onGermTriggered(CooldownGerm triggered) {}
 
     default void onGamePaused() {}
 
@@ -84,7 +83,7 @@ class SoundPlayerObserver implements LevelObserver {
         if (germs.size() > 0) {
             if (germs.stream().anyMatch(GridObject::isDestroyed))
                 mainStream.play(SoundStream.SoundStore.PLOP, 0);
-            else if (germs.stream().anyMatch(g -> g.isKind(Germ.GermKind.WALL)))
+            else if (germs.stream().anyMatch(g -> g.isOfKind(Germ.GermKind.WALL)))
                 mainStream.play(SoundStream.SoundStore.BREAK);
         } else if (matches.values().stream().anyMatch(s -> s.size() >= 5))
             mainStream.play(SoundStream.SoundStore.MATCH_FIVE);
@@ -106,6 +105,11 @@ class SoundPlayerObserver implements LevelObserver {
         mainStream.play(
           triggered.ifActiveElse(SoundStream.SoundStore.TRIGGER, SoundStream.SoundStore.GENERATED)
         );
+    }
+
+    @Override
+    public void onGermTriggered(CooldownGerm triggered) {
+        mainStream.play(triggered.attackSound());
     }
 }
 

@@ -187,7 +187,7 @@ public class GameView extends ApplicationAdapter {
     private void renderGrid() {
         model.getGrid().stack().forEach(o -> spr.render(o.getSprite(spriteData), dimensions.tileAt(o.coordinates())));
         sr.drawRoundedGauge(
-          dimensions.timeBar, model.refreshingProgression(), new Color(.2f, .2f, .3f, 1f), new Color(.3f, .3f, .4f, 1f)
+          dimensions.timeBar, model.refreshingProgression(), new Color(.2f, .2f, .3f, 1f), new Color(.4f, .4f, .5f, 1f)
         );
     }
 
@@ -258,7 +258,7 @@ public class GameView extends ApplicationAdapter {
     }
 
     private void renderEndMessage() {
-        model.gameEndManager().ifChecked(model, c -> tr.get(Font.BIG).drawText(c.getMessage(), dimensions.screen));
+        model.gameEndManager().ifChecked(model, c -> tr.get(Font.BIG).drawText(c.getMessage(), dimensions.gridZone));
     }
 
     void updateSprites() {

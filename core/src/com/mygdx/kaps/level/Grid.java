@@ -189,9 +189,11 @@ public class Grid {
     }
 
     Stream<Germ> germStack() {
-        return stack()
-          .filter(GridObject::isGerm)
-          .map(o -> (Germ) o);
+        return stack().filter(GridObject::isGerm).map(o -> (Germ) o);
+    }
+
+    Stream<CooldownGerm> cooldownGermStack() {
+        return germStack().filter(Germ::hasCooldown).map(g -> (CooldownGerm) g);
     }
 
     // tiles operations
@@ -206,6 +208,11 @@ public class Grid {
 
     void put(GridObject obj) {
         set(obj.coordinates(), obj);
+    }
+
+    void replace(GridObject old, GridObject newObj) {
+        newObj.coordinates().set(old.coordinates());
+        set(old.coordinates(), newObj);
     }
 
     Optional<? extends GridObject> hit(Coordinates coordinates, int damage) {

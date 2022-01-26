@@ -3,6 +3,7 @@ package com.mygdx.kaps.level;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.Color;
+import com.mygdx.kaps.level.gridobject.CooldownGerm;
 import com.mygdx.kaps.level.gridobject.Coordinates;
 import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.sound.SoundStream;
@@ -102,7 +103,7 @@ public class Level extends ApplicationAdapter {
         return grid.stack().filter(GridObject::isGerm).count();
     }
 
-    Capsule newRandomCapsule(Capsule.CapsuleType ... types) {
+    Capsule newRandomCapsule(Capsule.CapsuleType... types) {
         return Capsule.buildRandomInstance(
           new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1), colors, types
         );
@@ -272,6 +273,7 @@ public class Level extends ApplicationAdapter {
     private void acceptAndSpawnNew(Capsule capsule) {
         accept(capsule);
         triggerSidekicksIfReady();
+        triggerGermsIfReady();
         if (sidekicks.stream().noneMatch(Sidekick::isAttacking))
             spawnCapsuleIfAbsent();
     }
@@ -296,13 +298,23 @@ public class Level extends ApplicationAdapter {
         controlledCapsules.add(upcoming);
     }
 
-    private void triggerSidekicksIfReady() {
+    private void triggerGermsIfReady() {
         sidekicks.stream()
           .peek(sdk -> sdk.ifPassive(CooldownSidekick::decreaseCooldown))
           .filter(Sidekick::isReady)
           .forEach(sdk -> {
               sdk.trigger(this);
               observers.forEach(o -> o.onSidekickTriggered(sdk));
+          });
+    }
+
+    private void triggerSidekicksIfReady() {
+        grid.cooldownGermStack()
+          .peek(CooldownGerm::decreaseCooldown)
+          .filter(CooldownGerm::isReady)
+          .forEach(g -> {
+              g.trigger(this);
+              observers.forEach(o -> o.onGermTriggered(g));
           });
     }
 
@@ -332,6 +344,7 @@ public class Level extends ApplicationAdapter {
             taskManager.update();
 
             sidekicks.forEach(Sidekick::updateTasks);
+            grid.cooldownGermStack().forEach(CooldownGerm::updateTasks);
             view.updateSprites();
         }
         view.render();

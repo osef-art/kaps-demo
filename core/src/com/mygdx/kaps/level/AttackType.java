@@ -7,7 +7,7 @@ public enum AttackType {
     FIRE("fire", SoundStream.SoundStore.FIRE),
     FIREARM("fire", SoundStream.SoundStore.SHOT),
     MELEE("pain", SoundStream.SoundStore.SHOT),
-    // MAGIC("pain", SoundStream.SoundStore.SLICE),
+    MAGIC("pain", SoundStream.SoundStore.VIRUS),
     BRUSH("paint", SoundStream.SoundStore.PAINT),
     ;
 
