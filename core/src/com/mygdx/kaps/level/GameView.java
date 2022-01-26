@@ -199,11 +199,17 @@ public class GameView extends ApplicationAdapter {
     }
 
     private void renderStack() {
-        model.getGrid().stack().forEach(o -> spr.render(o.getSprite(spriteData), dimensions.tileAt(o.coordinates())));
-        model.getGrid().cooldownGermStack().forEach(g -> {
-            var corner = dimensions.tileCornerAt(g.coordinates());
-            sr.drawArc(corner, 270, 360 * (float) g.gaugeRatio(), new Color(1, 1, 1, .5f));
-            tr.get(Font.LITTLE).drawText(g.turnsLeft() + "", corner);
+        model.getGrid().capsuleStack().forEach(o -> spr.render(o.getSprite(spriteData), dimensions.tileAt(o.coordinates())));
+        model.getGrid().germStack().forEach(germ -> {
+            var corner = dimensions.tileCornerAt(germ.coordinates());
+            germ.ifHasCooldownElse(g -> {
+                  if (!g.isAttacking())
+                      spr.render(g.getSprite(spriteData), dimensions.tileAt(g.coordinates()));
+                  sr.drawArc(corner, 270, 360 * (float) g.gaugeRatio(), new Color(1, 1, 1, .5f));
+                  tr.get(Font.LITTLE).drawText(g.turnsLeft() + "", corner);
+              },
+              g -> spr.render(g.getSprite(spriteData), dimensions.tileAt(g.coordinates()))
+            );
         });
         sr.drawRoundedGauge(
           dimensions.timeBar, model.refreshingProgression(), new Color(.2f, .2f, .3f, 1f), new Color(.4f, .4f, .5f, 1f)

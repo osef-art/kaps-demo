@@ -4,10 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.kaps.level.AttackType;
 import com.mygdx.kaps.level.SidekickId;
-import com.mygdx.kaps.level.gridobject.CapsulePart;
-import com.mygdx.kaps.level.gridobject.Color;
-import com.mygdx.kaps.level.gridobject.Germ;
-import com.mygdx.kaps.level.gridobject.Orientation;
+import com.mygdx.kaps.level.gridobject.*;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -32,7 +29,7 @@ public class SpriteData {
                 Arrays.stream(Orientation.values()).forEach(o -> {
                     var sprite = new Sprite(new Texture(
                       SPRITES_PATH + "caps/" + (type == CapsulePart.BonusType.NONE ? "" : "bomb/")
-                        + "color" + color.id() + "/" + o + ".png")
+                        + "color" + color + "/" + o + ".png")
                     );
                     sprite.flip(false, true);
                     capsules.get(color).get(type).put(o, sprite);
@@ -42,13 +39,13 @@ public class SpriteData {
             Arrays.stream(Germ.GermKind.values()).forEach(kind -> {
                 if (kind == Germ.GermKind.WALL)
                     IntStream.range(0, 4).forEach(n -> wallGerms.get(color).add(new AnimatedSprite(
-                      SPRITES_PATH + "germs/" + kind + "/level" + (n + 1) + "/color" + color.id() + "/idle_",
+                      SPRITES_PATH + "germs/" + kind + "/level" + (n + 1) + "/color" + color + "/idle_",
                       n > 1 ? 4 : 8,
                       n > 1 ? .2f : .15f
                     )));
                 else
                     germs.get(color).put(kind, new AnimatedSprite(
-                      SPRITES_PATH + "germs/" + kind + "/color" + color.id() + "/idle_", 8, kind.getAnimationSpeed()
+                      SPRITES_PATH + "germs/" + kind + "/color" + color + "/idle_", 8, kind.getAnimationSpeed()
                     ));
             });
         });
@@ -72,12 +69,8 @@ public class SpriteData {
         return poppingSpeed + new Random().nextFloat() * .1f;
     }
 
-    public static AnimatedSprite attackEffect(AttackType type) {
-        return new AnimatedSprite(SPRITES_PATH + "fx/" + type + "_", 8, randomAnimSpeed());
-    }
-
     private static AnimatedSprite poppingAnimation(String path, Color color) {
-        return new AnimatedSprite(SPRITES_PATH + path + "/color" + color.id() + "/pop_", 8, poppingSpeed);
+        return new AnimatedSprite(SPRITES_PATH + path + "/color" + color + "/pop_", 8, poppingSpeed);
     }
 
     public static AnimatedSprite poppingAnimation(Color color) {
@@ -90,6 +83,14 @@ public class SpriteData {
 
     public static AnimatedSprite poppingWallAnimation(int health, Color color) {
         return poppingAnimation("/germs/" + Germ.GermKind.WALL + "/level" + (health + 1), color);
+    }
+
+    public static AnimatedSprite attackEffect(AttackType type) {
+        return new AnimatedSprite(SPRITES_PATH + "fx/" + type + "_", 8, randomAnimSpeed());
+    }
+
+    public static AnimatedSprite attackEffect(CooldownGerm germ) {
+        return new AnimatedSprite(SPRITES_PATH + "germs/" + germ.kind() + "/color" + germ.color() + "/atk_", 8, randomAnimSpeed());
     }
 
     public Sprite getCapsule(Orientation orientation, Color color, CapsulePart.BonusType type) {

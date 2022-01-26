@@ -5,9 +5,12 @@ import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.sound.SoundStream;
 import com.mygdx.kaps.time.TaskManager;
 
+import java.util.function.Consumer;
+
 public abstract class CooldownGerm extends Germ {
     private final TaskManager tasks = new TaskManager();
     private final Gauge cooldown;
+    private boolean attacking;
 
     public CooldownGerm(Color color, GermKind kind) {
         super(color, kind);
@@ -31,8 +34,20 @@ public abstract class CooldownGerm extends Germ {
         return cooldown.isEmpty();
     }
 
+    public boolean isAttacking() {
+        return attacking;
+    }
+
     public SoundStream.SoundStore attackSound() {
         return kind.getAttackType().sound();
+    }
+
+    public void startAttacking() {
+        attacking = true;
+    }
+
+    public void stopAttacking() {
+        attacking = false;
     }
 
     public void reset() {
@@ -41,6 +56,10 @@ public abstract class CooldownGerm extends Germ {
 
     public void decreaseCooldown() {
         cooldown.decreaseIfPossible();
+    }
+
+    public void ifHasCooldownElse(Consumer<CooldownGerm> cooldownAction, Consumer<Germ> germAction) {
+        cooldownAction.accept(this);
     }
 
     public void trigger(Level level) {

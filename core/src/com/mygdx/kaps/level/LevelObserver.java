@@ -117,24 +117,30 @@ class ParticleManager implements LevelObserver {
     static class GridParticleEffect {
         private final Coordinates coordinates;
         private final AnimatedSprite anim;
+        private final Runnable finalJob;
         private final float scale;
 
-        private GridParticleEffect(Coordinates coordinates, AnimatedSprite anim, float scale) {
+        private GridParticleEffect(Coordinates coordinates, AnimatedSprite anim, Runnable job, float scale) {
             this.coordinates = coordinates;
             this.scale = scale;
             this.anim = anim;
+            finalJob = job;
         }
 
         private GridParticleEffect(GridObject obj) {
-            this(obj.coordinates(), obj.poppingAnim(), 1);
+            this(obj.coordinates(), obj.poppingAnim(), () -> {}, 1);
         }
 
         private GridParticleEffect(GridObject obj, Color color) {
-            this(obj.coordinates(), SpriteData.poppingAnimation(color), 1.5f);
+            this(obj.coordinates(), SpriteData.poppingAnimation(color), () -> {}, 1.5f);
         }
 
         private GridParticleEffect(Coordinates coordinates, AttackType type) {
-            this(coordinates, SpriteData.attackEffect(type), 1.25f);
+            this(coordinates, SpriteData.attackEffect(type), () -> {}, 1.25f);
+        }
+
+        private GridParticleEffect(CooldownGerm germ) {
+            this(germ.coordinates(), SpriteData.attackEffect(germ), germ::stopAttacking, 1);
         }
 
         float getScale() {
@@ -213,6 +219,10 @@ class ParticleManager implements LevelObserver {
             );
     }
 
+    void addContaminationEffect(CooldownGerm germ) {
+        popping.add(new GridParticleEffect(germ));
+    }
+
     @Override
     public void onObjectHit(GridObject obj) {
         popping.add(new GridParticleEffect(obj));
@@ -265,6 +275,7 @@ class ParticleManager implements LevelObserver {
             sidekicks.get(m.target.color).ifActiveElse(ManaSidekick::increaseMana, CooldownSidekick::decreaseCooldown);
             stream.play(SoundStream.SoundStore.MANA);
         });
+        popping.stream().filter(GridParticleEffect::hasVanished).forEach(p -> p.finalJob.run());
         popping.removeIf(GridParticleEffect::hasVanished);
         attacks.removeIf(GridParticleEffect::hasVanished);
         mana.removeIf(ManaParticle::hasArrived);

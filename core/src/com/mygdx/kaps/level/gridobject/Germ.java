@@ -11,13 +11,14 @@ import com.mygdx.kaps.renderer.SpriteData;
 
 import java.util.Arrays;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class Germ extends GridObject {
     public enum GermKind {
         BASIC(.1f),
         WALL(.15f),
-        VIRUS(.125f, 2, AttackType.MAGIC, (lvl, g) -> GermAttack.contaminateRandomCapsule(lvl)),
+        VIRUS(.125f, 8, AttackType.MAGIC, (lvl, g) -> GermAttack.contaminateRandomCapsule(lvl)),
         THORN(.1f, 5, AttackType.SLICE, GermAttack::hitRandomAdjacent),
         ;
 
@@ -98,9 +99,11 @@ public abstract class Germ extends GridObject {
         return GermSupplier.getGermOfSymbol(symbol).apply(Color.random());
     }
 
-    public static Germ ofKind(GermKind kind, Color color) {
+    public static CooldownGerm cooldownGermOfKind(GermKind kind, Color color) {
         return Arrays.stream(GermSupplier.values())
           .map(k -> k.associatedGerm.apply(color))
+          .filter(Germ::hasCooldown)
+          .map(g -> (CooldownGerm) g)
           .filter(g -> g.isOfKind(kind))
           .findFirst()
           .orElseThrow(() -> new IllegalArgumentException("Couldn't resolve germ of kind: " + kind));
@@ -125,6 +128,10 @@ public abstract class Germ extends GridObject {
         return true;
     }
 
+    public GermKind kind() {
+        return kind;
+    }
+
     @Override
     public Sprite getSprite(SpriteData data) {
         return data.getGerm(kind, color()).getCurrentSprite();
@@ -133,6 +140,10 @@ public abstract class Germ extends GridObject {
     @Override
     public AnimatedSprite poppingAnim() {
         return SpriteData.poppingGermAnimation(kind, color());
+    }
+
+    public void ifHasCooldownElse(Consumer<CooldownGerm> cooldownAction, Consumer<Germ> germAction) {
+        germAction.accept(this);
     }
 }
 

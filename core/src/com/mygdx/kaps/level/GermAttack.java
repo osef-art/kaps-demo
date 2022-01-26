@@ -173,9 +173,12 @@ public class GermAttack extends LevelAttack {
     }
 
     public static GermAttack contaminateRandomCapsule(Level lvl) {
-        return new GermAttack(lvl, () -> getRandomCapsule(lvl).ifPresent(
-          caps -> lvl.getGrid().replace(caps, Germ.ofKind(Germ.GermKind.VIRUS, caps.color())))
-        );
+        return new GermAttack(lvl, () -> getRandomCapsule(lvl).ifPresent(caps -> {
+            var virus = Germ.cooldownGermOfKind(Germ.GermKind.VIRUS, caps.color());
+            virus.startAttacking();
+            lvl.getGrid().replace(caps, virus);
+            lvl.visualParticles().addContaminationEffect(virus);
+        }));
     }
 
     public static GermAttack doNothing(Level lvl) {

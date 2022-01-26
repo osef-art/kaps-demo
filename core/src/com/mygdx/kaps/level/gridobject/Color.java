@@ -36,16 +36,17 @@ public enum Color {
         );
     }
 
+    @Override
+    public String toString() {
+        return Integer.toString(ordinal() + 1);
+    }
+
     public static Color random() {
         return Utils.getRandomFrom(values());
     }
 
     public static Color randomBlank() {
         return Utils.getRandomFrom(Arrays.stream(values()).filter(c -> c.blank));
-    }
-
-    public int id() {
-        return ordinal() + 1;
     }
 
     public com.badlogic.gdx.graphics.Color value() {
