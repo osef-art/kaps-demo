@@ -2,6 +2,7 @@ package com.mygdx.kaps.level;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.mygdx.kaps.Utils;
+import com.mygdx.kaps.level.Capsule.CapsuleType;
 import com.mygdx.kaps.level.gridobject.Color;
 import com.mygdx.kaps.level.gridobject.CooldownGerm;
 import com.mygdx.kaps.level.gridobject.Coordinates;
@@ -52,6 +53,7 @@ public class Level extends ApplicationAdapter {
     private final GameEndManager gameEndManager;
 
     private final LinkedList<Capsule> upcomingCapsules;
+    private final Set<Capsule.CapsuleType> incomingTypes = new HashSet<>();
     private final List<Capsule> controlledCapsules = new ArrayList<>();
     private final List<Sidekick> sidekicks;
     private final Set<Color> colors;
@@ -103,10 +105,13 @@ public class Level extends ApplicationAdapter {
         return grid.stack().filter(GridObject::isGerm).count();
     }
 
-    Capsule newRandomCapsule(Capsule.CapsuleType... types) {
-        return Capsule.buildRandomInstance(
-          new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1), colors, types
+    Capsule newRandomCapsule(CapsuleType... types) {
+        incomingTypes.addAll(Arrays.asList(types));
+        var caps = Capsule.buildRandomInstance(
+          new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1), colors, incomingTypes
         );
+        incomingTypes.clear();
+        return caps;
     }
 
     List<Capsule> controlledCapsules() {
@@ -293,6 +298,8 @@ public class Level extends ApplicationAdapter {
     private void spawnCapsule() {
         var upcoming = upcomingCapsules.removeFirst();
         updatePreview(upcoming);
+        upcomingCapsules.add(0, newRandomCapsule());
+
         if (upcomingCapsules.size() < 2)
             upcomingCapsules.add(newRandomCapsule());
         controlledCapsules.add(upcoming);
@@ -323,10 +330,9 @@ public class Level extends ApplicationAdapter {
             gridRefresher.updateLimit(gridRefresher.getDuration() * .975);
     }
 
-    void injectNext(Capsule capsule) {
-        upcomingCapsules.add(1, capsule);
+    void prepareNext(Capsule.CapsuleType type) {
+        incomingTypes.add(type);
     }
-
     public void pause() {
         SoundStream.play(SoundStream.SoundStore.PAUSE, 1f);
         taskManager.pauseTasks();

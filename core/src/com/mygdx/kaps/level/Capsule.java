@@ -3,13 +3,11 @@ package com.mygdx.kaps.level;
 import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.*;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 class Capsule {
     enum CapsuleType {UNIFORM, EXPLOSIVE}
@@ -26,16 +24,15 @@ class Capsule {
         this(main, slave, main.orientation());
     }
 
-    static Capsule buildRandomInstance(Coordinates coordinates, Set<Color> colors, CapsuleType... types) {
-        var typeSet = Arrays.stream(types).collect(Collectors.toUnmodifiableSet());
+    static Capsule buildRandomInstance(Coordinates coordinates, Set<Color> colors, Set<CapsuleType> types) {
         var mainColor = Utils.getRandomFrom(colors);
         var slaveColor = Utils.getRandomFrom(colors);
         var explosive = new Random().nextBoolean();
 
-        var main = typeSet.contains(CapsuleType.EXPLOSIVE) ?
+        var main = types.contains(CapsuleType.EXPLOSIVE) ?
                      CapsulePart.explosiveCapsule(coordinates, mainColor) :
                      new CapsulePart(coordinates, mainColor);
-        var slave = new CapsulePart(coordinates, typeSet.contains(CapsuleType.UNIFORM) ? mainColor : slaveColor);
+        var slave = new CapsulePart(coordinates, types.contains(CapsuleType.UNIFORM) ? mainColor : slaveColor);
 
         return new Capsule(
           explosive ? main : slave,

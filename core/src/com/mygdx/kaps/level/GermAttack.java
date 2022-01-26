@@ -144,11 +144,11 @@ class SidekickAttack extends LevelAttack {
     }
 
     static SidekickAttack injectUniformCapsule(Level lvl) {
-        return new SidekickAttack(lvl, () -> lvl.injectNext(lvl.newRandomCapsule(Capsule.CapsuleType.UNIFORM)));
+        return new SidekickAttack(lvl, () -> lvl.prepareNext(Capsule.CapsuleType.UNIFORM));
     }
 
     static SidekickAttack injectExplosiveCapsule(Level lvl) {
-        return new SidekickAttack(lvl, () -> lvl.injectNext(lvl.newRandomCapsule(Capsule.CapsuleType.EXPLOSIVE)));
+        return new SidekickAttack(lvl, () -> lvl.prepareNext(Capsule.CapsuleType.EXPLOSIVE));
     }
 }
 
