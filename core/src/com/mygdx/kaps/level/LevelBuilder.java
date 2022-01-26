@@ -31,25 +31,24 @@ public class LevelBuilder {
             throw new IllegalArgumentException("Too many germs for a " + width + "x" + height + " grid: " + germNumber);
 
         var grid = new Grid(width, height);
-        fillParty();
 
         do {
-            var randomTile = new Coordinates(
+            var germ = Germ.random(new Coordinates(
               new Random().nextInt(grid.getWidth()),
               new Random().nextInt(3)
-            );
-            if (grid.isEmptyTile(randomTile)) {
-                grid.put(Germ.random(randomTile));
+            ));
+            if (grid.canBePut(germ)) {
+                grid.put(germ);
                 germNumber--;
             }
         } while (germNumber > 0);
 
+        fillParty();
         return new Level(grid, sidekicks);
     }
 
     private Level loadLevelFrom(String filePath) {
         List<String> gridData;
-        fillParty();
 
         try {
             Stream<String> lines = Files.lines(Path.of(filePath));
@@ -68,6 +67,7 @@ public class LevelBuilder {
             return new Grid.Row(germs);
         }).collect(Collectors.toList());
 
+        fillParty();
         return new Level(new Grid(rows), sidekicks);
     }
 

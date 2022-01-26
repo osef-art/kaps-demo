@@ -154,8 +154,8 @@ public class Grid {
         return isInGridBounds(coordinates.x, coordinates.y);
     }
 
-    boolean isEmptyTile(Coordinates coordinates) {
-        return isInGridBounds(coordinates) && get(coordinates).isEmpty();
+    boolean canBePut(GridObject obj) {
+        return isInGridBounds(obj.coordinates()) && get(obj.coordinates()).isEmpty();
     }
 
     Optional<? extends GridObject> get(int x, int y) {
@@ -280,9 +280,5 @@ public class Grid {
           })
           .reduce(Boolean::logicalOr)
           .orElse(false);
-    }
-
-    boolean canBePut(CapsulePart caps) {
-        return isInGridBounds(caps.coordinates()) && get(caps.coordinates()).isEmpty();
     }
 }
