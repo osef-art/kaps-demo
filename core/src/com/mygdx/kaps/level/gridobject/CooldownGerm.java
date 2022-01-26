@@ -19,7 +19,7 @@ public abstract class CooldownGerm extends Germ {
         return true;
     }
 
-    int turnsLeft() {
+    public int turnsLeft() {
         return cooldown.getValue();
     }
 

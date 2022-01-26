@@ -52,6 +52,7 @@ public class GameView extends ApplicationAdapter {
         private final Rectangle screen;
         private final Rectangle gridZone;
         private final List<List<Rectangle>> gridTiles;
+        private final List<List<Rectangle>> tileCorners;
         private final Rectangle timeBar;
         private final Map<SidekickId, SidekickZone> sidekickZones = new HashMap<>();
         private final Rectangle infoZone;
@@ -64,6 +65,7 @@ public class GameView extends ApplicationAdapter {
             float topSpaceHeight = screenHeight * .8f;
             float gridHeight = topSpaceHeight * .9f;
             float tileSize = gridHeight / lvl.getGrid().getHeight();
+            float cornerSize = tileSize / 3;
             float gridWidth = lvl.getGrid().getWidth() * tileSize;
             float timeBarHeight = (topSpaceHeight - gridHeight) / 4;
             float topSpaceMargin = (topSpaceHeight - gridHeight - timeBarHeight) / 3;
@@ -81,6 +83,10 @@ public class GameView extends ApplicationAdapter {
                   tileSize,
                   tileSize
                 )).collect(Collectors.toUnmodifiableList()))
+              .collect(Collectors.toUnmodifiableList());
+            tileCorners = gridTiles.stream().map(lst -> lst.stream().map(
+                r -> new Rectangle(r.x + r.width - cornerSize, r.y + r.height - cornerSize, cornerSize, cornerSize)
+              ).collect(Collectors.toUnmodifiableList()))
               .collect(Collectors.toUnmodifiableList());
             timeBar = new Rectangle((screen.width - gridWidth) / 2, gridHeight + 2 * topSpaceMargin, gridWidth, timeBarHeight);
 
@@ -116,12 +122,12 @@ public class GameView extends ApplicationAdapter {
             return new Rectangle(screen.width - rectangle.x - rectangle.width, rectangle.y, rectangle.width, rectangle.height);
         }
 
-        private Rectangle tileAt(Coordinates coordinates) {
-            return tileAt(coordinates.x, coordinates.y);
-        }
-
         private Rectangle tileAt(int x, int y) {
             return gridTiles.get(y).get(x);
+        }
+
+        private Rectangle tileAt(Coordinates coordinates) {
+            return tileAt(coordinates.x, coordinates.y);
         }
 
         private Rectangle tileAt(int x, int y, float scale) {
@@ -136,6 +142,14 @@ public class GameView extends ApplicationAdapter {
 
         private Rectangle tileAt(Coordinates coordinates, float scale) {
             return tileAt(coordinates.x, coordinates.y, scale);
+        }
+
+        private Rectangle tileCornerAt(int x, int y) {
+            return tileCorners.get(y).get(x);
+        }
+
+        private Rectangle tileCornerAt(Coordinates coordinates) {
+            return tileCornerAt(coordinates.x, coordinates.y);
         }
     }
 
@@ -184,8 +198,13 @@ public class GameView extends ApplicationAdapter {
           }));
     }
 
-    private void renderGrid() {
+    private void renderStack() {
         model.getGrid().stack().forEach(o -> spr.render(o.getSprite(spriteData), dimensions.tileAt(o.coordinates())));
+        model.getGrid().cooldownGermStack().forEach(g -> {
+            var corner = dimensions.tileCornerAt(g.coordinates());
+            sr.drawArc(corner, 270, 360 * (float) g.gaugeRatio(), new Color(1, 1, 1, .5f));
+            tr.get(Font.LITTLE).drawText(g.turnsLeft() + "", corner);
+        });
         sr.drawRoundedGauge(
           dimensions.timeBar, model.refreshingProgression(), new Color(.2f, .2f, .3f, 1f), new Color(.4f, .4f, .5f, 1f)
         );
@@ -270,7 +289,7 @@ public class GameView extends ApplicationAdapter {
         renderUpcoming();
         model.getSidekicks().forEach(this::renderSidekick);
         renderSidekickFocus();
-        renderGrid();
+        renderStack();
         renderFallingCapsules();
         renderParticles();
         renderEndMessage();
