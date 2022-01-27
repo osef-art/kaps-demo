@@ -37,7 +37,7 @@ interface LevelObserver {
 
     default void onTileAttack(Coordinates coordinates, AttackType type) {}
 
-    default void onMatchPerformed(Map<Color, Set<? extends GridObject>> matches) {}
+    default void onMatchPerformed(Map<Color, Set<Grid.Match>> matches) {}
 
     default void onSidekickTriggered(Sidekick triggered) {}
 
@@ -75,9 +75,10 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
-    public void onMatchPerformed(Map<Color, Set<? extends GridObject>> matches) {
+    public void onMatchPerformed(Map<Color, Set<Grid.Match>> matches) {
         var germs = matches.values().stream()
           .flatMap(Collection::stream)
+          .flatMap(Grid.Match::stream)
           .filter(GridObject::isGerm)
           .map(o -> (Germ) o)
           .collect(Collectors.toUnmodifiableSet());
@@ -245,17 +246,16 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
-    public void onMatchPerformed(Map<Color, Set<? extends GridObject>> matches) {
-        matches.forEach((color, match) -> {
+    public void onMatchPerformed(Map<Color, Set<Grid.Match>> matches) {
+        matches.forEach((color, matchSet) -> matchSet.forEach(m -> {
             if (!sidekicks.containsKey(color)) return;
             int bonus = sidekicks.get(color).ifActiveElse(
-              match.size() >= 9 ? 3 : match.size() >= 5 ? 1 : 0,
-              match.size() >= 9 ? 2 : match.size() >= 5 ? 1 : 0
+              m.dependingOnSize(0, 1, 3), m.dependingOnSize(0, 1, 2)
             );
             IntStream.range(0, bonus).forEach(
-              n -> addManaParticle(Utils.getRandomFrom(match))
+              n -> addManaParticle(Utils.getRandomFrom(m.stream()))
             );
-        });
+        }));
     }
 
     @Override

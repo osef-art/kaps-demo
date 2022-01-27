@@ -46,31 +46,40 @@ public class Grid {
         }
     }
 
-    private class Match {
+    static class Match {
         private final Set<? extends GridObject> objects;
-        private static final int CLASSIC_SIZE = 4;
+        private final Color color;
         private static final int BIG_SIZE = 5;
         private static final int HUGE_SIZE = 9;
 
         private Match(Set<? extends GridObject> matched) {
-            objects = matched;
-            if (!isValid())
-                throw new IllegalArgumentException("Match " + matched + " is invalid");
+            objects = Objects.requireNonNull(matched);
+            color = matched.stream().findAny().map(GridObject::color).orElseThrow(
+              () -> new IllegalArgumentException("Match can't be empty.")
+            );
         }
 
-        private boolean isValid() {
-            return objects.size() < CLASSIC_SIZE && objects.stream().map(GridObject::color).distinct().count() == 1;
+        private Match(Stream<? extends GridObject> stream) {
+            this(stream.collect(Collectors.toUnmodifiableSet()));
+        }
+
+        private boolean isMatch(MatchHandler.MatchPattern pattern) {
+            return objects.size() >= pattern.relativeTiles.size() && objects.stream().map(GridObject::color).distinct().count() == 1;
         }
 
         <T> T dependingOnSize(T classic, T big, T huge) {
             return objects.size() >= HUGE_SIZE ? huge : objects.size() >= BIG_SIZE ? big : classic;
+        }
+
+        Stream<? extends GridObject> stream() {
+            return objects.stream();
         }
     }
 
     private static class MatchHandler {
         private static class MatchPattern {
             private final Set<Function<Coordinates, Coordinates>> relativeTiles;
-            public static final MatchPattern SQUARE_PATTERN = new MatchPattern(
+            private static final MatchPattern SQUARE_PATTERN = new MatchPattern(
               c -> c.addedTo(-1, -1),
               c -> c.addedTo(-1, 0),
               c -> c.addedTo(-1, 1),
@@ -80,12 +89,12 @@ public class Grid {
               c -> c.addedTo(1, -1),
               c -> c.addedTo(0, -1)
             );
-            public static final MatchPattern COLUMN_PATTERN = new MatchPattern(
+            private static final MatchPattern COLUMN_PATTERN = new MatchPattern(
               c -> c.addedTo(0, -1),
               c -> c.addedTo(0, -2),
               c -> c.addedTo(0, -3)
             );
-            public static final MatchPattern ROW_PATTERN = new MatchPattern(
+            private static final MatchPattern ROW_PATTERN = new MatchPattern(
               c -> c.addedTo(1, 0),
               c -> c.addedTo(2, 0),
               c -> c.addedTo(3, 0)
@@ -96,44 +105,34 @@ public class Grid {
                 relativeTiles = Arrays.stream(tiles).collect(Collectors.toSet());
                 relativeTiles.add(Function.identity());
             }
-
-            private boolean isMatch(Set<? extends GridObject> match) {
-                return match.size() >= relativeTiles.size() && match.stream().map(GridObject::color).distinct().count() == 1;
-            }
         }
 
-        private final List<MatchPattern> patterns;
+        private static final List<MatchPattern> patterns = Arrays.asList(
+          MatchPattern.SQUARE_PATTERN, MatchPattern.COLUMN_PATTERN, MatchPattern.ROW_PATTERN
+        );
 
-        public MatchHandler() {
-            patterns = Arrays.asList(
-              MatchPattern.SQUARE_PATTERN, MatchPattern.COLUMN_PATTERN, MatchPattern.ROW_PATTERN
-            );
-        }
-
-        private Set<? extends GridObject> matchesFoundIn(Grid grid, MatchPattern pattern) {
+        private Set<Match> matchesFoundIn(Grid grid, MatchPattern pattern) {
             return grid.stack()
               .filter(Predicate.not(GridObject::isDropping))
-              // map each object to a set of objects that follows pattern
-              .map(o -> pattern.relativeTiles.stream()
+              // map each object to a set of matches that follows pattern
+              .map(o -> new Match(pattern.relativeTiles.stream()
                 .map(p -> p.apply(o.coordinates()))
                 .map(grid::get)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(Collectors.toSet())
-              )
-              .filter(pattern::isMatch)
-              .flatMap(Collection::stream)
+              ))
+              .filter(m -> m.isMatch(pattern))
               .collect(Collectors.toUnmodifiableSet());
         }
 
-        private Map<Color, Set<? extends GridObject>> allMatchesFoundIn(Grid grid) {
+        private Map<Color, Set<Match>> allMatchesFoundIn(Grid grid) {
             return patterns.stream()
               .map(p -> matchesFoundIn(grid, p))
               .flatMap(Collection::stream)
               .collect(Collectors.toUnmodifiableMap(
-                GridObject::color,
-                o -> Stream.of(o).collect(Collectors.toSet()),
-                (s1, s2) -> Stream.of(s1, s2).flatMap(Collection::stream).collect(Collectors.toUnmodifiableSet()))
+                m -> m.color,
+                m -> Stream.of(m).collect(Collectors.toSet()),
+                (s1, s2) -> Stream.of(s1, s2).flatMap(Collection::stream).collect(Collectors.toSet()))
               );
         }
     }
@@ -265,7 +264,7 @@ public class Grid {
     }
 
     // stack operations
-    Map<Color, Set<? extends GridObject>> getMatches() {
+    Map<Color, Set<Match>> getMatches() {
         return matchBrowser.allMatchesFoundIn(this);
     }
 
