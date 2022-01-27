@@ -46,9 +46,50 @@ public class Grid {
         }
     }
 
-    private class MatchHandler {
-        private class MatchPattern {
+    private class Match {
+        private final Set<? extends GridObject> objects;
+        private static final int CLASSIC_SIZE = 4;
+        private static final int BIG_SIZE = 5;
+        private static final int HUGE_SIZE = 9;
+
+        private Match(Set<? extends GridObject> matched) {
+            objects = matched;
+            if (!isValid())
+                throw new IllegalArgumentException("Match " + matched + " is invalid");
+        }
+
+        private boolean isValid() {
+            return objects.size() < CLASSIC_SIZE && objects.stream().map(GridObject::color).distinct().count() == 1;
+        }
+
+        <T> T dependingOnSize(T classic, T big, T huge) {
+            return objects.size() >= HUGE_SIZE ? huge : objects.size() >= BIG_SIZE ? big : classic;
+        }
+    }
+
+    private static class MatchHandler {
+        private static class MatchPattern {
             private final Set<Function<Coordinates, Coordinates>> relativeTiles;
+            public static final MatchPattern SQUARE_PATTERN = new MatchPattern(
+              c -> c.addedTo(-1, -1),
+              c -> c.addedTo(-1, 0),
+              c -> c.addedTo(-1, 1),
+              c -> c.addedTo(0, 1),
+              c -> c.addedTo(1, 1),
+              c -> c.addedTo(1, 0),
+              c -> c.addedTo(1, -1),
+              c -> c.addedTo(0, -1)
+            );
+            public static final MatchPattern COLUMN_PATTERN = new MatchPattern(
+              c -> c.addedTo(0, -1),
+              c -> c.addedTo(0, -2),
+              c -> c.addedTo(0, -3)
+            );
+            public static final MatchPattern ROW_PATTERN = new MatchPattern(
+              c -> c.addedTo(1, 0),
+              c -> c.addedTo(2, 0),
+              c -> c.addedTo(3, 0)
+            );
 
             @SafeVarargs
             private MatchPattern(Function<Coordinates, Coordinates>... tiles) {
@@ -64,27 +105,9 @@ public class Grid {
         private final List<MatchPattern> patterns;
 
         public MatchHandler() {
-            var rowPattern = new MatchPattern(
-              c -> c.addedTo(1, 0),
-              c -> c.addedTo(2, 0),
-              c -> c.addedTo(3, 0)
+            patterns = Arrays.asList(
+              MatchPattern.SQUARE_PATTERN, MatchPattern.COLUMN_PATTERN, MatchPattern.ROW_PATTERN
             );
-            var columnPattern = new MatchPattern(
-              c -> c.addedTo(0, -1),
-              c -> c.addedTo(0, -2),
-              c -> c.addedTo(0, -3)
-            );
-            var squarePattern = new MatchPattern(
-              c -> c.addedTo(-1, -1),
-              c -> c.addedTo(-1, 0),
-              c -> c.addedTo(-1, 1),
-              c -> c.addedTo(0, 1),
-              c -> c.addedTo(1, 1),
-              c -> c.addedTo(1, 0),
-              c -> c.addedTo(1, -1),
-              c -> c.addedTo(0, -1)
-            );
-            patterns = Arrays.asList(rowPattern, columnPattern, squarePattern);
         }
 
         private Set<? extends GridObject> matchesFoundIn(Grid grid, MatchPattern pattern) {
@@ -92,8 +115,8 @@ public class Grid {
               .filter(Predicate.not(GridObject::isDropping))
               // map each object to a set of objects that follows pattern
               .map(o -> pattern.relativeTiles.stream()
-                .map(c -> c.apply(o.coordinates()))
-                .map(Grid.this::get)
+                .map(p -> p.apply(o.coordinates()))
+                .map(grid::get)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet())
