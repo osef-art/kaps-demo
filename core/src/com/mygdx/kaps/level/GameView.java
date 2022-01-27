@@ -280,7 +280,9 @@ public class GameView extends ApplicationAdapter {
             sr.drawCircle(center.x, center.y, 15, p.getTarget().color.value(.4f));
             sr.drawCircle(center.x, center.y, 5, p.getTarget().color.value());
         });
-        model.visualParticles().getGenerationParticles().forEach(p -> spr.render(p.getCurrentSprite(), dimensions.nextBox));
+        model.visualParticles().getGenerationParticles().forEach(
+          p -> spr.render(p.getCurrentSprite(), dimensions.nextBox)
+        );
     }
 
     private void renderGameMessage() {
@@ -295,10 +297,12 @@ public class GameView extends ApplicationAdapter {
     public void render() {
         renderLayout();
         renderUpcoming();
+
         model.getSidekicks().forEach(this::renderSidekick);
         renderSidekickFocus();
         renderStack();
         renderFallingCapsules();
+
         renderParticles();
         renderGameMessage();
     }

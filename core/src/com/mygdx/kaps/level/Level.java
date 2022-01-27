@@ -236,9 +236,8 @@ public class Level extends ApplicationAdapter {
     // grid operations
     private void hit(Coordinates coordinates, int damage) {
         grid.hit(coordinates, damage)
-          .filter(GridObject::isDestroyed)
           .ifPresent(obj -> {
-              observers.forEach(obs -> obs.onObjectDestroyed(obj));
+              observers.forEach(obs -> obs.onObjectHit(obj));
               obj.triggerEffect(this);
           });
     }

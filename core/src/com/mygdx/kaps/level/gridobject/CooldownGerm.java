@@ -5,8 +5,6 @@ import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.sound.SoundStream;
 import com.mygdx.kaps.time.TaskManager;
 
-import java.util.function.Consumer;
-
 public abstract class CooldownGerm extends Germ {
     private final TaskManager tasks = new TaskManager();
     private final Gauge cooldown;
@@ -56,10 +54,6 @@ public abstract class CooldownGerm extends Germ {
 
     public void decreaseCooldown() {
         cooldown.decreaseIfPossible();
-    }
-
-    public void ifHasCooldownElse(Consumer<CooldownGerm> cooldownAction, Consumer<Germ> germAction) {
-        cooldownAction.accept(this);
     }
 
     public void trigger(Level level) {

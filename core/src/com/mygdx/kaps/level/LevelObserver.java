@@ -27,11 +27,11 @@ interface LevelObserver {
 
     default void onCapsuleSpawn(Set<Capsule.CapsuleType> types) {}
 
-    default void onObjectHit(GridObject obj) {}
-
-    default void onObjectDestroyed(GridObject obj) {
-        onObjectHit(obj);
+    default void onObjectHit(GridObject obj) {
+        if (obj.isDestroyed()) onObjectDestroyed(obj);
     }
+
+    default void onObjectDestroyed(GridObject obj) {}
 
     default void onObjectPaint(GridObject obj, Color color) {}
 
@@ -207,12 +207,12 @@ class ParticleManager implements LevelObserver {
         return Stream.of(popping, attacks).flatMap(Collection::stream);
     }
 
-    List<ManaParticle> getManaParticles() {
-        return mana;
+    List<AnimatedSprite> getGenerationParticles() {
+        return generated;
     }
 
-    public List<AnimatedSprite> getGenerationParticles() {
-        return generated;
+    List<ManaParticle> getManaParticles() {
+        return mana;
     }
 
     private void addManaParticle(GridObject obj) {
@@ -234,12 +234,12 @@ class ParticleManager implements LevelObserver {
 
     @Override
     public void onObjectHit(GridObject obj) {
+        LevelObserver.super.onObjectHit(obj);
         popping.add(new GridParticleEffect(obj));
     }
 
     @Override
     public void onObjectDestroyed(GridObject obj) {
-        LevelObserver.super.onObjectDestroyed(obj);
         if (sidekicks.containsKey(obj.color()))
             sidekicks.get(obj.color()).ifActive(sdk -> addManaParticle(obj));
     }
