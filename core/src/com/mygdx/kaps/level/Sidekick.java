@@ -75,6 +75,7 @@ public abstract class Sidekick implements ISidekick {
     }
 
     void trigger(Level level) {
+        ifActive(ManaSidekick::setGaugeToMax);
         tasks.add(id.attack.apply(this, level).periodicMoves());
         tasks.add(
           PeriodicTask.TaskBuilder.everyMilliseconds(10, this::emptyGauge).endWhen(this::gaugeIsReset)
@@ -115,6 +116,10 @@ class ManaSidekick extends Sidekick {
     @Override
     public boolean gaugeIsReset() {
         return mana.isEmpty();
+    }
+
+    public void setGaugeToMax() {
+        mana.fill();
     }
 
     void increaseMana() {
