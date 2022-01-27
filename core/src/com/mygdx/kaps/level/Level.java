@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 public class Level extends ApplicationAdapter {
     public static class LevelParameters {
         private final Level model;
-        private boolean enablePreview;
+        private boolean enablePreview = true;
         private boolean paused;
 
         private LevelParameters(Level lvl) {
@@ -299,6 +299,7 @@ public class Level extends ApplicationAdapter {
     private void spawnCapsule() {
         var upcoming = upcomingCapsules.removeFirst();
         updatePreview(upcoming);
+        observers.forEach(o -> o.onCapsuleSpawn(incomingTypes));
         upcomingCapsules.add(0, newRandomCapsule());
 
         if (upcomingCapsules.size() < 2)
@@ -306,7 +307,7 @@ public class Level extends ApplicationAdapter {
         controlledCapsules.add(upcoming);
     }
 
-    void triggerGermsIfReady() {
+    void triggerSidekicksIfReady() {
         sidekicks.stream()
           .filter(Sidekick::isReady)
           .forEach(sdk -> {
@@ -315,7 +316,7 @@ public class Level extends ApplicationAdapter {
           });
     }
 
-    void triggerSidekicksIfReady() {
+    void triggerGermsIfReady() {
         grid.cooldownGermStack()
           .filter(CooldownGerm::isReady)
           .forEach(g -> {
@@ -325,7 +326,13 @@ public class Level extends ApplicationAdapter {
     }
 
     private void decreaseAllCooldowns() {
-        sidekicks.forEach(sdk -> sdk.ifPassive(CooldownSidekick::decreaseCooldown));
+        sidekicks.stream()
+          .peek(sdk -> sdk.ifPassive(CooldownSidekick::decreaseCooldown))
+          .filter(Sidekick::isReady)
+          .forEach(sdk -> sdk.ifPassive(s -> {
+              s.trigger(this);
+              observers.forEach(o -> o.onSidekickTriggered(s));
+          }));
         grid.cooldownGermStack().forEach(CooldownGerm::decreaseCooldown);
     }
 

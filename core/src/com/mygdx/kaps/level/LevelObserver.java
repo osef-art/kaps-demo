@@ -19,11 +19,13 @@ import java.util.stream.Stream;
 interface LevelObserver {
     default void onCapsuleFlipped() {}
 
-    default void onCapsuleFreeze() {}
-
     default void onCapsuleDrop() {}
 
     default void onIllegalMove() {}
+
+    default void onCapsuleFreeze() {}
+
+    default void onCapsuleSpawn(Set<Capsule.CapsuleType> types) {}
 
     default void onObjectHit(GridObject obj) {}
 
@@ -158,10 +160,6 @@ class ParticleManager implements LevelObserver {
         Coordinates coordinates() {
             return coordinates;
         }
-
-        void updateAnim() {
-            anim.updateExistenceTime();
-        }
     }
 
     static class ManaParticle {
@@ -195,6 +193,7 @@ class ParticleManager implements LevelObserver {
     private final List<GridParticleEffect> popping = new ArrayList<>();
     private final List<GridParticleEffect> attacks = new ArrayList<>();
     private final List<ManaParticle> mana = new ArrayList<>();
+    private final List<AnimatedSprite> generated = new ArrayList<>();
     private final Map<Color, Sidekick> sidekicks;
     private final SoundStream stream = new SoundStream(.2f);
 
@@ -212,6 +211,10 @@ class ParticleManager implements LevelObserver {
         return mana;
     }
 
+    public List<AnimatedSprite> getGenerationParticles() {
+        return generated;
+    }
+
     private void addManaParticle(GridObject obj) {
         if (sidekicks.containsKey(obj.color()))
             IntStream.range(0, obj.manaWorth()).forEach(
@@ -224,6 +227,12 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
+    public void onCapsuleSpawn(Set<Capsule.CapsuleType> types) {
+        if (!types.isEmpty())
+            generated.add(SpriteData.attackEffect(AttackType.MELEE));
+    }
+
+    @Override
     public void onObjectHit(GridObject obj) {
         popping.add(new GridParticleEffect(obj));
     }
@@ -231,7 +240,8 @@ class ParticleManager implements LevelObserver {
     @Override
     public void onObjectDestroyed(GridObject obj) {
         LevelObserver.super.onObjectDestroyed(obj);
-        addManaParticle(obj);
+        if (sidekicks.containsKey(obj.color()))
+            sidekicks.get(obj.color()).ifActive(sdk -> addManaParticle(obj));
     }
 
     @Override
@@ -270,7 +280,9 @@ class ParticleManager implements LevelObserver {
 
     @Override
     public void onLevelUpdate(Level level) {
-        getParticleEffects().forEach(GridParticleEffect::updateAnim);
+        Stream.of(getParticleEffects().map(p -> p.anim), generated.stream())
+          .flatMap(Function.identity())
+          .forEach(AnimatedSprite::updateExistenceTime);
         mana.stream().filter(ManaParticle::hasArrived).forEach(m -> {
             sidekicks.get(m.target.color).ifActiveElse(ManaSidekick::increaseMana, CooldownSidekick::decreaseCooldown);
             stream.play(SoundStream.SoundStore.MANA);
@@ -278,20 +290,21 @@ class ParticleManager implements LevelObserver {
         popping.stream().filter(GridParticleEffect::hasVanished).forEach(p -> p.finalJob.run());
         popping.removeIf(GridParticleEffect::hasVanished);
         attacks.removeIf(GridParticleEffect::hasVanished);
+        generated.removeIf(AnimatedSprite::isFinished);
         mana.removeIf(ManaParticle::hasArrived);
     }
 }
 
 class GameEndManager implements LevelObserver {
     enum GameEndCase {
-        GERMS_CLEARED(lvl -> lvl.getGermsCount() <= 0, "LEVEL CLEARED !", SoundStream.SoundStore.CLEARED),
+        GERMS_CLEARED(lvl -> lvl.getGermsCount() <= 0, "✨ LEVEL CLEARED ! ✨", SoundStream.SoundStore.CLEARED),
         SPAWN_OVERLAP(lvl -> lvl.controlledCapsules().stream()
           .map(c -> c.atLeastOneVerify(p -> lvl.getGrid().get(p.coordinates())
             .map(o -> !o.isDropping())
             .orElse(false)
           ))
           .reduce(Boolean::logicalOr)
-          .orElse(false), "GAME OVER !", SoundStream.SoundStore.GAME_OVER),
+          .orElse(false), "💀 GAME OVER ! 💀", SoundStream.SoundStore.GAME_OVER),
         ;
 
         private final SoundStream.SoundStore sound;
@@ -341,7 +354,7 @@ class LevelAttackObserver implements LevelObserver {
 
     @Override
     public void onCapsuleFreeze() {
-        level.triggerGermsIfReady();
         level.triggerSidekicksIfReady();
+        level.triggerGermsIfReady();
     }
 }

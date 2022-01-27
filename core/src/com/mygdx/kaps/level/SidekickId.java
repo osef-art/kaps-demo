@@ -12,7 +12,7 @@ public enum SidekickId {
     MIMAPS(Color.COLOR_4, AttackType.FIRE, SidekickAttack::hit3RandomObjects, 15, 2),
     PAINTER(Color.COLOR_5, AttackType.BRUSH, SidekickAttack::paint5RandomObjects, 10, 1, "Paint"),
     XERETH(Color.COLOR_6, AttackType.SLICE, SidekickAttack::hitRandomDiagonals, 25, 1),
-    BOMBER(Color.COLOR_7, AttackType.FIREARM, (sdk, lvl) -> SidekickAttack.injectExplosiveCapsule(lvl), 13, true),
+    BOMBER(Color.COLOR_7, AttackType.FIREARM, (sdk, lvl) -> SidekickAttack.injectExplosiveCapsule(lvl), 15, true),
     JIM(Color.COLOR_10, AttackType.SLICE, SidekickAttack::hitRandomLine, 18, 1),
     UNI(Color.COLOR_11, AttackType.BRUSH, (sdk, lvl) -> SidekickAttack.injectUniformCapsule(lvl), 4, true, "Color"),
     SNIPER(Color.COLOR_12, AttackType.FIREARM, SidekickAttack::hitRandomGerm, 20, 3),

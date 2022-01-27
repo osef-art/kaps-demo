@@ -199,17 +199,16 @@ public class GameView extends ApplicationAdapter {
     }
 
     private void renderStack() {
-        model.getGrid().capsuleStack().forEach(o -> spr.render(o.getSprite(spriteData), dimensions.tileAt(o.coordinates())));
-        model.getGrid().germStack().forEach(germ -> {
-            var corner = dimensions.tileCornerAt(germ.coordinates());
-            germ.ifHasCooldownElse(g -> {
-                  if (!g.isAttacking())
-                      spr.render(g.getSprite(spriteData), dimensions.tileAt(g.coordinates()));
-                  sr.drawArc(corner, 270, 360 * (float) g.gaugeRatio(), new Color(1, 1, 1, .5f));
-                  tr.get(Font.LITTLE).drawText(g.turnsLeft() + "", corner);
-              },
-              g -> spr.render(g.getSprite(spriteData), dimensions.tileAt(g.coordinates()))
+        model.getGrid().stack().forEach(o -> spr.render(o.getSprite(spriteData), dimensions.tileAt(o.coordinates())));
+        model.getGrid().cooldownGermStack().forEach(g -> {
+            var cdn = g.coordinates();
+            var corner = dimensions.tileCornerAt(cdn);
+            if (g.isAttacking()) sr.drawRect(
+              dimensions.tileAt(cdn),
+              cdn.x % 2 == cdn.y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
             );
+            sr.drawArc(corner, 270, 360 * (float) g.gaugeRatio(), new Color(1, 1, 1, .5f));
+            tr.get(Font.LITTLE).drawText(g.turnsLeft() + "", corner);
         });
         sr.drawRoundedGauge(
           dimensions.timeBar, model.refreshingProgression(), new Color(.2f, .2f, .3f, 1f), new Color(.4f, .4f, .5f, 1f)
@@ -280,6 +279,7 @@ public class GameView extends ApplicationAdapter {
             sr.drawCircle(center.x, center.y, 15, p.getTarget().color.value(.4f));
             sr.drawCircle(center.x, center.y, 5, p.getTarget().color.value());
         });
+        model.visualParticles().getGenerationParticles().forEach(p -> spr.render(p.getCurrentSprite(), dimensions.nextBox));
     }
 
     private void renderEndMessage() {
