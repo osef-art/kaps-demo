@@ -151,6 +151,10 @@ public class Level extends ApplicationAdapter {
         return parameters;
     }
 
+    public boolean isPaused() {
+        return parameters.paused;
+    }
+
     /**
      * Executes on each level's capsules matching {@param selection} the code conveyed by {@param action}
      * if {@param condition} is true, else executes {@param alternative} instead

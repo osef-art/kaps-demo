@@ -186,7 +186,7 @@ public class GameView extends ApplicationAdapter {
           dimensions.tileAt(x, y),
           x % 2 == y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
         ));
-        tr.get(Font.MEDIUM).drawText(model.getLabel(), 15, dimensions.screen.height-25);
+        tr.get(Font.MEDIUM).drawText(model.getLabel(), 15, dimensions.screen.height - 25);
     }
 
     private void renderSidekickFocus() {
@@ -283,8 +283,9 @@ public class GameView extends ApplicationAdapter {
         model.visualParticles().getGenerationParticles().forEach(p -> spr.render(p.getCurrentSprite(), dimensions.nextBox));
     }
 
-    private void renderEndMessage() {
+    private void renderGameMessage() {
         model.gameEndManager().ifChecked(model, c -> tr.get(Font.BIG).drawText(c.getMessage(), dimensions.gridZone));
+        if (model.isPaused()) tr.get(Font.BIG).drawText("PAUSED !", dimensions.gridZone);
     }
 
     void updateSprites() {
@@ -299,7 +300,7 @@ public class GameView extends ApplicationAdapter {
         renderStack();
         renderFallingCapsules();
         renderParticles();
-        renderEndMessage();
+        renderGameMessage();
     }
 
     public void dispose() {
