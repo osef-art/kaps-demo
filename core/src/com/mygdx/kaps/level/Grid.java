@@ -63,6 +63,14 @@ public class Grid {
             this(stream.collect(Collectors.toUnmodifiableSet()));
         }
 
+        Color color() {
+            return color;
+        }
+
+        boolean isBig() {
+            return objects.size() >= 5;
+        }
+
         private boolean isMatch(MatchHandler.MatchPattern pattern) {
             return objects.size() >= pattern.relativeTiles.size() && objects.stream().map(GridObject::color).distinct().count() == 1;
         }
@@ -125,15 +133,11 @@ public class Grid {
               .collect(Collectors.toUnmodifiableSet());
         }
 
-        private Map<Color, Set<Match>> allMatchesFoundIn(Grid grid) {
+        private Set<Match> allMatchesFoundIn(Grid grid) {
             return patterns.stream()
               .map(p -> matchesFoundIn(grid, p))
               .flatMap(Collection::stream)
-              .collect(Collectors.toUnmodifiableMap(
-                m -> m.color,
-                m -> Stream.of(m).collect(Collectors.toSet()),
-                (s1, s2) -> Stream.of(s1, s2).flatMap(Collection::stream).collect(Collectors.toSet()))
-              );
+              .collect(Collectors.toUnmodifiableSet());
         }
     }
 
@@ -264,7 +268,7 @@ public class Grid {
     }
 
     // stack operations
-    Map<Color, Set<Match>> getMatches() {
+    Set<Match> getMatches() {
         return matchBrowser.allMatchesFoundIn(this);
     }
 

@@ -269,8 +269,8 @@ public class Level extends ApplicationAdapter {
         var matches = grid.getMatches();
         if (matches.isEmpty()) return;
 
-        matches.values().forEach(s -> s.forEach(
-          m -> m.stream().forEach(o -> hit(o.coordinates(), m.dependingOnSize(1, 2, 3))))
+        matches.forEach(
+          m -> m.stream().forEach(o -> hit(o.coordinates(), m.dependingOnSize(1, 2, 3)))
         );
         observers.forEach(obs -> obs.onMatchPerformed(matches));
         grid.initEveryCapsuleDropping();

@@ -37,7 +37,7 @@ interface LevelObserver {
 
     default void onTileAttack(Coordinates coordinates, AttackType type) {}
 
-    default void onMatchPerformed(Map<Color, Set<Grid.Match>> matches) {}
+    default void onMatchPerformed(Set<Grid.Match> matches) {}
 
     default void onSidekickTriggered(Sidekick triggered) {}
 
@@ -75,9 +75,8 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
-    public void onMatchPerformed(Map<Color, Set<Grid.Match>> matches) {
-        var germs = matches.values().stream()
-          .flatMap(Collection::stream)
+    public void onMatchPerformed(Set<Grid.Match> matches) {
+        var germs = matches.stream()
           .flatMap(Grid.Match::stream)
           .filter(GridObject::isGerm)
           .map(o -> (Germ) o)
@@ -88,7 +87,7 @@ class SoundPlayerObserver implements LevelObserver {
                 mainStream.play(SoundStream.SoundStore.PLOP, 0);
             else if (germs.stream().anyMatch(g -> g.isOfKind(Germ.GermKind.WALL)))
                 mainStream.play(SoundStream.SoundStore.BREAK);
-        } else if (matches.values().stream().anyMatch(s -> s.size() >= 5))
+        } else if (matches.stream().anyMatch(Grid.Match::isBig))
             mainStream.play(SoundStream.SoundStore.MATCH_FIVE);
         else if (!matches.isEmpty()) mainStream.play(SoundStream.SoundStore.IMPACT);
     }
@@ -246,16 +245,16 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
-    public void onMatchPerformed(Map<Color, Set<Grid.Match>> matches) {
-        matches.forEach((color, matchSet) -> matchSet.forEach(m -> {
-            if (!sidekicks.containsKey(color)) return;
-            int bonus = sidekicks.get(color).ifActiveElse(
+    public void onMatchPerformed(Set<Grid.Match> matches) {
+        matches.forEach(m -> {
+            if (!sidekicks.containsKey(m.color())) return;
+            int bonus = sidekicks.get(m.color()).ifActiveElse(
               m.dependingOnSize(0, 1, 3), m.dependingOnSize(0, 1, 2)
             );
             IntStream.range(0, bonus).forEach(
               n -> addManaParticle(Utils.getRandomFrom(m.stream()))
             );
-        }));
+        });
     }
 
     @Override
