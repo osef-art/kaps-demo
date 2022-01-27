@@ -45,6 +45,7 @@ public class Level extends ApplicationAdapter {
 
     private final LevelParameters parameters;
     private final GameView view;
+    private final String label;
 
     private final TaskManager taskManager;
     private final PeriodicTask gridRefresher;
@@ -59,7 +60,8 @@ public class Level extends ApplicationAdapter {
     private final Set<Color> colors;
     private final Grid grid;
 
-    Level(Grid gridModel, Set<SidekickId> sidekickSet) {
+    Level(String label, Grid gridModel, Set<SidekickId> sidekickSet) {
+        this.label = label;
         grid = gridModel;
 
         sidekicks = sidekickSet.stream()
@@ -92,6 +94,10 @@ public class Level extends ApplicationAdapter {
         );
 
         spawnCapsule();
+    }
+
+    public String getLabel() {
+        return label;
     }
 
     Grid getGrid() {

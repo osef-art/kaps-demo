@@ -186,6 +186,7 @@ public class GameView extends ApplicationAdapter {
           dimensions.tileAt(x, y),
           x % 2 == y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
         ));
+        tr.get(Font.MEDIUM).drawText(model.getLabel(), 15, dimensions.screen.height-25);
     }
 
     private void renderSidekickFocus() {

@@ -44,7 +44,7 @@ public class LevelBuilder {
         } while (germNumber > 0);
 
         fillParty();
-        return new Level(grid, sidekicks);
+        return new Level("??? - Bonus", grid, sidekicks);
     }
 
     private Level loadLevelFrom(String filePath) {
@@ -68,7 +68,7 @@ public class LevelBuilder {
         }).collect(Collectors.toList());
 
         fillParty();
-        return new Level(new Grid(rows), sidekicks);
+        return new Level("1 - " + levelNum, new Grid(rows), sidekicks);
     }
 
     public void addSidekick(String name) {
