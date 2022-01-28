@@ -14,10 +14,7 @@ import com.mygdx.kaps.renderer.SpriteData;
 import com.mygdx.kaps.renderer.SpriteRendererAdapter;
 import com.mygdx.kaps.renderer.TextRendererAdaptor;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -203,8 +200,12 @@ public class GameView extends ApplicationAdapter {
         sr.drawCircle(dimensions.nextBox.x + dimensions.nextBox.width / 2, dimensions.nextBox.y + dimensions.nextBox.height,
           dimensions.nextBox.width, new Color(.45f, .45f, .6f, 1f));
 
-        tr.get(Font.BIG).drawText(String.valueOf(model.getGermsCount()), 15,
-          dimensions.scoreZone.y + dimensions.scoreZone.height/2);
+        if (model.getScoreData().currentCombo() > 1)
+            tr.get(Font.LITTLE).drawText("x" + model.getScoreData().currentCombo() + " COMBO !",
+              50 + new Random().nextInt(3),
+              dimensions.scoreZone.y + 10 + new Random().nextInt(3));
+        tr.get(Font.BIG).drawText(String.valueOf(model.getScoreData().totalScore()), 15,
+          dimensions.scoreZone.y + dimensions.scoreZone.height / 2);
 
         spr.render(spriteData.getGerm(Germ.GermKind.BASIC, mainTheme).getCurrentSprite(), dimensions.germCountBox);
         tr.get(Font.MEDIUM).drawText(String.valueOf(model.getGermsCount()), dimensions.germCountTxt);

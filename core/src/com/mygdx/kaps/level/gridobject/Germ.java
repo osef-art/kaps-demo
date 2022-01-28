@@ -85,13 +85,13 @@ public abstract class Germ extends GridObject {
 
     final GermKind kind;
 
-    Germ(Color color, GermKind kind, int mana) {
-        super(new Coordinates(), color, mana);
+    Germ(Color color, GermKind kind, int mana, int score) {
+        super(new Coordinates(), color, mana, score);
         this.kind = kind;
     }
 
     Germ(Color color, GermKind kind) {
-        this(color, kind, 2);
+        this(color, kind, 2, 25);
     }
 
     public static Germ ofSymbol(char symbol) {
@@ -153,7 +153,7 @@ final class WallGerm extends Germ {
     private int health;
 
     WallGerm(Color color, int health) {
-        super(color, GermKind.WALL, 3);
+        super(color, GermKind.WALL, 3, 40);
         if (health <= 0 || maxHealth < health)
             throw new IllegalArgumentException("Invalid health: " + health + " / " + maxHealth);
 
@@ -166,6 +166,11 @@ final class WallGerm extends Germ {
 
     public boolean isDestroyed() {
         return health <= 0;
+    }
+
+    @Override
+    public int getScore() {
+        return isDestroyed() ? super.getScore() : 10;
     }
 
     public void takeHit() {

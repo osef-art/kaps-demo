@@ -23,7 +23,7 @@ interface LevelObserver {
 
     default void onIllegalMove() {}
 
-    default void onCapsuleFreeze() {}
+    default void onCapsuleFreeze(Level level) {}
 
     default void onCapsuleSpawn(Set<Capsule.CapsuleType> types) {}
 
@@ -60,7 +60,7 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
-    public void onCapsuleFreeze() {
+    public void onCapsuleFreeze(Level level) {
         subStream.play(SoundStream.SoundStore.LIGHT_IMPACT);
     }
 
@@ -345,15 +345,48 @@ class GameEndManager implements LevelObserver {
 }
 
 class LevelAttackObserver implements LevelObserver {
-    private final Level level;
+    @Override
+    public void onCapsuleFreeze(Level level) {
+        level.triggerSidekicksIfReady();
+        level.triggerGermsIfReady();
+    }
+}
 
-    LevelAttackObserver(Level level) {
-        this.level = level;
+class ScoreManager implements LevelObserver {
+    private boolean streakMode;
+    private int score = 0;
+    private int combo = 0;
+
+    int totalScore() {
+        return score;
+    }
+
+    public int currentCombo() {
+        return combo;
+    }
+
+    double scoreMultiplier() {
+        return Math.max(1, (combo + 1) / 2.);
     }
 
     @Override
-    public void onCapsuleFreeze() {
-        level.triggerSidekicksIfReady();
-        level.triggerGermsIfReady();
+    public void onCapsuleFreeze(Level level) {
+        if (level.getGrid().getMatches().isEmpty() && !streakMode) combo = 0;
+    }
+
+    @Override
+    public void onObjectHit(GridObject obj) {
+        score += obj.getScore() * scoreMultiplier();
+    }
+
+    @Override
+    public void onMatchPerformed(Set<Grid.Match> matches) {
+        LevelObserver.super.onMatchPerformed(matches);
+        if (matches.isEmpty()) {
+            streakMode = false;
+            return;
+        }
+        streakMode = true;
+        combo++;
     }
 }

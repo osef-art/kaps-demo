@@ -52,6 +52,7 @@ public class Level extends ApplicationAdapter {
     private final List<LevelObserver> observers;
     private final ParticleManager particleManager;
     private final GameEndManager gameEndManager;
+    private final ScoreManager scoreManager;
 
     private final LinkedList<Capsule> upcomingCapsules;
     private final Set<Capsule.CapsuleType> incomingTypes = new HashSet<>();
@@ -89,7 +90,8 @@ public class Level extends ApplicationAdapter {
         observers = Arrays.asList(
           particleManager = new ParticleManager(this.sidekicks),
           gameEndManager = new GameEndManager(),
-          new LevelAttackObserver(this),
+          scoreManager = new ScoreManager(),
+          new LevelAttackObserver(),
           new SoundPlayerObserver()
         );
 
@@ -147,6 +149,10 @@ public class Level extends ApplicationAdapter {
         return gameEndManager;
     }
 
+    ScoreManager getScoreData() {
+        return scoreManager;
+    }
+
     public LevelParameters parameters() {
         return parameters;
     }
@@ -197,7 +203,7 @@ public class Level extends ApplicationAdapter {
             gridRefresher.reset();
         }, c -> {
             acceptAndSpawnNew(c);
-            observers.forEach(LevelObserver::onCapsuleFreeze);
+            observers.forEach(o->o.onCapsuleFreeze(this));
         });
     }
 
@@ -227,7 +233,7 @@ public class Level extends ApplicationAdapter {
 
     private void dipOrFreezeDroppingCapsules() {
         if (grid.dipOrFreezeDroppingCapsules()) {
-            observers.forEach(LevelObserver::onCapsuleFreeze);
+            observers.forEach(o->o.onCapsuleFreeze(this));
             hitMatches();
             controlledCapsules.forEach(this::updatePreview);
         }
@@ -267,12 +273,13 @@ public class Level extends ApplicationAdapter {
 
     void hitMatches() {
         var matches = grid.getMatches();
-        if (matches.isEmpty()) return;
 
         matches.forEach(
           m -> m.stream().forEach(o -> hit(o.coordinates(), m.dependingOnSize(1, 2, 3)))
         );
         observers.forEach(obs -> obs.onMatchPerformed(matches));
+        if (matches.isEmpty()) return;
+
         grid.initEveryCapsuleDropping();
         fastenGridRefreshing();
     }

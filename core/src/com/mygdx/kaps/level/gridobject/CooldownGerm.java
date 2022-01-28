@@ -10,8 +10,8 @@ public abstract class CooldownGerm extends Germ {
     private final Gauge cooldown;
     private boolean attacking;
 
-    public CooldownGerm(Color color, GermKind kind) {
-        super(color, kind);
+    public CooldownGerm(Color color, GermKind kind, int mana, int score) {
+        super(color, kind, mana, score);
         this.cooldown = Gauge.full(kind.getCooldown());
     }
 
@@ -68,12 +68,12 @@ public abstract class CooldownGerm extends Germ {
 
 final class VirusGerm extends CooldownGerm {
     VirusGerm(Color color) {
-        super(color, GermKind.VIRUS);
+        super(color, GermKind.VIRUS, 3, 30);
     }
 }
 
 final class ThornGerm extends CooldownGerm {
     ThornGerm(Color color) {
-        super(color, GermKind.THORN);
+        super(color, GermKind.THORN, 3, 35);
     }
 }

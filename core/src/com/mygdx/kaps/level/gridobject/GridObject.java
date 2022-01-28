@@ -35,18 +35,20 @@ interface IGridObject {
 
 public abstract class GridObject implements IGridObject {
     private final Coordinates coordinates;
+    private final int score;
     private final int mana;
     private boolean destroyed;
     private Color color;
 
-    GridObject(Coordinates coordinates, Color color, int mana) {
+    GridObject(Coordinates coordinates, Color color, int mana, int score) {
         this.coordinates = Objects.requireNonNull(coordinates).copy();
         this.color = color;
+        this.score = score;
         this.mana = mana;
     }
 
     GridObject(Coordinates coordinates, Color color) {
-        this(coordinates, color, 1);
+        this(coordinates, color, 1, 10);
     }
 
     @Override
@@ -68,6 +70,10 @@ public abstract class GridObject implements IGridObject {
 
     public int manaWorth() {
         return mana;
+    }
+
+    public int getScore() {
+        return score;
     }
 
     public void takeHit() {
