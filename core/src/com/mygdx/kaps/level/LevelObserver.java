@@ -56,7 +56,7 @@ class SoundPlayerObserver implements LevelObserver {
 
     @Override
     public void onCapsuleFlipped() {
-        mainStream.play(SoundStream.SoundStore.FLIP);
+        subStream.play(SoundStream.SoundStore.FLIP);
     }
 
     @Override
@@ -99,7 +99,7 @@ class SoundPlayerObserver implements LevelObserver {
 
     @Override
     public void onCapsuleDrop() {
-        mainStream.play(SoundStream.SoundStore.DROP);
+        subStream.play(SoundStream.SoundStore.DROP);
     }
 
     @Override

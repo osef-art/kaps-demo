@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.CapsulePart;
 import com.mygdx.kaps.level.gridobject.Coordinates;
+import com.mygdx.kaps.level.gridobject.Germ;
 import com.mygdx.kaps.renderer.ShapeRendererAdapter;
 import com.mygdx.kaps.renderer.SpriteData;
 import com.mygdx.kaps.renderer.SpriteRendererAdapter;
@@ -55,26 +56,30 @@ public class GameView extends ApplicationAdapter {
         private final List<List<Rectangle>> tileCorners;
         private final Rectangle timeBar;
         private final Map<SidekickId, SidekickZone> sidekickZones = new HashMap<>();
+        private final Rectangle scoreZone;
         private final Rectangle infoZone;
         private final Rectangle nextBox;
+        private final Rectangle nextCaps;
+        private final Rectangle germCountBox;
+        private final Rectangle germCountTxt;
         private final Level level;
 
         private Dimensions(Level lvl, float screenWidth, float screenHeight) {
-            Objects.requireNonNull(lvl);
+            level = Objects.requireNonNull(lvl);
             screen = new Rectangle(0, 0, screenWidth, screenHeight);
-            float topSpaceHeight = screenHeight * .8f;
+            float topSpaceHeight = screenHeight * .75f;
             float gridHeight = topSpaceHeight * .9f;
             float tileSize = gridHeight / lvl.getGrid().getHeight();
             float cornerSize = tileSize / 3;
             float gridWidth = lvl.getGrid().getWidth() * tileSize;
             float timeBarHeight = (topSpaceHeight - gridHeight) / 4;
             float topSpaceMargin = (topSpaceHeight - gridHeight - timeBarHeight) / 3;
-            float infoZoneHeight = (screenHeight - topSpaceHeight) / 2;
+            float infoZoneHeight = (screenHeight - topSpaceHeight) * 2 / 5;
             float sidekickSize = infoZoneHeight * 3 / 4;
-            float nextBoxSize = infoZoneHeight * 5 / 4;
+            float nextBoxSize = (screenHeight - topSpaceHeight) * 7 / 10;
+            float capsWidth = nextBoxSize * 3 / 4;
             float padding = infoZoneHeight * 3 / 32;
 
-            level = lvl;
             gridZone = new Rectangle((screen.width - gridWidth) / 2, topSpaceMargin, gridWidth, gridHeight);
             gridTiles = IntStream.range(0, lvl.getGrid().getHeight()).mapToObj(
                 y -> IntStream.range(0, lvl.getGrid().getWidth()).mapToObj(x -> new Rectangle(
@@ -101,8 +106,14 @@ public class GameView extends ApplicationAdapter {
             sidekickZones.put(lvl.getSidekicks().get(1).id(),
               new SidekickZone(sidekickZones.get(lvl.getSidekicks().get(0).id()), this)
             );
-            infoZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
+            scoreZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
+            infoZone = new Rectangle(0, screen.height - infoZoneHeight / 2, screen.width, infoZoneHeight / 2);
             nextBox = new Rectangle((screen.width - nextBoxSize) / 2, screen.height - nextBoxSize, nextBoxSize, nextBoxSize);
+            nextCaps = new Rectangle(nextBox.x + nextBox.width / 2 - capsWidth / 2, nextBox.y, capsWidth, capsWidth);
+
+            germCountTxt = new Rectangle(screen.width - padding - scoreZone.height / 2, scoreZone.y + scoreZone.height / 4,
+              scoreZone.height / 2, scoreZone.height / 2);
+            germCountBox = new Rectangle(germCountTxt.x - germCountTxt.width, germCountTxt.y, germCountTxt.width, germCountTxt.height);
         }
 
         private static Rectangle lerp(Rectangle from, Rectangle to, double ratio) {
@@ -157,6 +168,7 @@ public class GameView extends ApplicationAdapter {
         LITTLE, MEDIUM, MEDIUM_GREY, BIG, BIG_GREY
     }
 
+    private final com.mygdx.kaps.level.gridobject.Color mainTheme;
     private final SpriteRendererAdapter spr = new SpriteRendererAdapter();
     private final ShapeRendererAdapter sr = new ShapeRendererAdapter();
     private final Map<Font, TextRendererAdaptor> tr = new HashMap<>();
@@ -166,6 +178,7 @@ public class GameView extends ApplicationAdapter {
 
     public GameView(Level lvl) {
         model = Objects.requireNonNull(lvl);
+        mainTheme = lvl.getSidekicks().get(0).color();
         dimensions = new Dimensions(model, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         tr.put(Font.LITTLE, new TextRendererAdaptor(spr, 16, Color.WHITE));
@@ -178,15 +191,29 @@ public class GameView extends ApplicationAdapter {
     private void renderLayout() {
         Gdx.gl.glClearColor(.1f, .1f, .15f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        sr.drawRect(dimensions.infoZone, new Color(.35f, .35f, .45f, 1f));
-        dimensions.sidekickZones.forEach(
-          (sdk, zone) -> sr.drawRect(zone.get(Dimensions.SidekickZone.Zone.ZONE), sdk.color().value(.5f))
-        );
         model.getGrid().forEachTile((x, y) -> sr.drawRect(
           dimensions.tileAt(x, y),
           x % 2 == y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
         ));
+        dimensions.sidekickZones.forEach(
+          (sdk, zone) -> sr.drawRect(zone.get(Dimensions.SidekickZone.Zone.ZONE), sdk.color().value(.5f))
+        );
+        // score & next
+        sr.drawRect(dimensions.scoreZone, new Color(.35f, .35f, .45f, 1f));
+        sr.drawCircle(dimensions.nextBox.x + dimensions.nextBox.width / 2, dimensions.nextBox.y + dimensions.nextBox.height,
+          dimensions.nextBox.width, new Color(.45f, .45f, .6f, 1f));
+
+        tr.get(Font.BIG).drawText(String.valueOf(model.getGermsCount()), 15,
+          dimensions.scoreZone.y + dimensions.scoreZone.height/2);
+
+        spr.render(spriteData.getGerm(Germ.GermKind.BASIC, mainTheme).getCurrentSprite(), dimensions.germCountBox);
+        tr.get(Font.MEDIUM).drawText(String.valueOf(model.getGermsCount()), dimensions.germCountTxt);
+
+        // info
+        sr.drawRect(dimensions.infoZone, new Color(.25f, .25f, .35f, 1f));
         tr.get(Font.MEDIUM).drawText(model.getLabel(), 15, dimensions.screen.height - 25);
+        tr.get(Font.LITTLE).drawText("NEXT", dimensions.nextBox.x, dimensions.infoZone.y - 20, dimensions.nextBox.width,
+          20);
     }
 
     private void renderSidekickFocus() {
@@ -227,8 +254,7 @@ public class GameView extends ApplicationAdapter {
     private void renderCapsule(Capsule caps, Rectangle zone) {
         caps.applyForEach(
           p -> spr.render(p.getSprite(spriteData), zone.x, zone.y + zone.height / 4, zone.width / 2, zone.height / 2),
-          p -> spr.render(p.getSprite(spriteData), zone.x + zone.width / 2, zone.y + zone.height / 4, zone.width / 2,
-            zone.height / 2)
+          p -> spr.render(p.getSprite(spriteData), zone.x + zone.width / 2, zone.y + zone.height / 4, zone.width / 2, zone.height / 2)
         );
     }
 
@@ -240,11 +266,7 @@ public class GameView extends ApplicationAdapter {
     }
 
     private void renderUpcoming() {
-        Rectangle nextBox = dimensions.nextBox;
-        sr.drawCircle(dimensions.nextBox.x + dimensions.nextBox.width / 2, dimensions.nextBox.y + dimensions.nextBox.height,
-          dimensions.nextBox.width, new Color(.45f, .45f, .6f, 1f));
-        renderCapsule(model.upcoming().get(0), nextBox);
-        tr.get(Font.MEDIUM).drawTextWithShadow("NEXT", nextBox.x, nextBox.y + nextBox.height * 7 / 8, nextBox.width, nextBox.height / 8);
+        renderCapsule(model.upcoming().get(0), dimensions.nextCaps);
     }
 
     private void renderSidekick(Sidekick sdk) {
