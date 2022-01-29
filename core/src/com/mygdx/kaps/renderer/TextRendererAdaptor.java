@@ -9,14 +9,16 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFont
 import com.badlogic.gdx.math.Rectangle;
 
 public class TextRendererAdaptor extends ApplicationAdapter {
-    private final SpriteRendererAdapter spra;
+    private final SpriteRendererAdapter spr;
     private final BitmapFont shade;
     private final BitmapFont font;
     private final float fontSize;
+    private final float offset;
 
-    public TextRendererAdaptor(SpriteRendererAdapter spra, int size, Color color) {
-        this.spra = spra;
+    public TextRendererAdaptor(SpriteRendererAdapter spriteRenderer, int size, Color color, Color shade) {
+        spr = spriteRenderer;
         fontSize = size;
+        offset = fontSize / 12;
 
         FreeTypeFontParameter parameter = new FreeTypeFontParameter();
         parameter.color = color;
@@ -27,17 +29,21 @@ public class TextRendererAdaptor extends ApplicationAdapter {
           Gdx.files.internal("android/assets/fonts/Gotham.ttf")
         );
         font = generator.generateFont(parameter);
-        shade = generator.generateFont(parameter);
-        shade.setColor(0, 0, 0, .25f);
+        this.shade = generator.generateFont(parameter);
+        this.shade.setColor(shade);
         generator.dispose();
     }
 
+    public TextRendererAdaptor(SpriteRendererAdapter spriteRenderer, int size, Color color) {
+        this(spriteRenderer, size, color, new Color(0, 0, 0, .25f));
+    }
+
     public void drawText(String txt, float x, float y) {
-        spra.renderText(txt, font, x, y);
+        spr.renderText(txt, font, x, y);
     }
 
     public void drawText(String txt, float x, float y, float width, float height) {
-        spra.renderText(txt, font, x, y + fontSize / 4, width, height - fontSize * 2);
+        spr.renderText(txt, font, x, y + fontSize / 4, width, height - fontSize * 2);
     }
 
     public void drawText(String txt, Rectangle zone) {
@@ -45,7 +51,7 @@ public class TextRendererAdaptor extends ApplicationAdapter {
     }
 
     public void drawTextWithShadow(String txt, float x, float y) {
-        spra.renderText(txt, shade, x, y + fontSize / 4);
+        spr.renderText(txt, shade, x + offset, y + offset);
         drawText(txt, x, y);
     }
 
@@ -54,7 +60,7 @@ public class TextRendererAdaptor extends ApplicationAdapter {
     }
 
     public void drawTextWithShadow(String txt, float x, float y, float width, float height) {
-        spra.renderText(txt, shade, x, y + fontSize / 4, width, height - fontSize * 2);
+        spr.renderText(txt, shade, x, y + fontSize / 4, width, height - fontSize * 2);
         drawText(txt, x, y, width, height);
     }
 

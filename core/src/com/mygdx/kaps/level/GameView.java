@@ -183,7 +183,7 @@ public class GameView extends ApplicationAdapter {
 
         tr.put(Font.LITTLE, new TextRendererAdaptor(spr, 16, Color.WHITE));
         tr.put(Font.MEDIUM, new TextRendererAdaptor(spr, 24, Color.WHITE));
-        tr.put(Font.BIG, new TextRendererAdaptor(spr, 32, Color.WHITE));
+        tr.put(Font.BIG, new TextRendererAdaptor(spr, 32, Color.WHITE, mainTheme.value()));
         tr.put(Font.MEDIUM_GREY, new TextRendererAdaptor(spr, 20, new Color(.5f, .5f, .65f, .3f)));
         tr.put(Font.BIG_GREY, new TextRendererAdaptor(spr, 32, new Color(.5f, .5f, .65f, .5f)));
     }
@@ -209,14 +209,14 @@ public class GameView extends ApplicationAdapter {
 
         if (model.getScoreData().currentCombo() > 1)
             tr.get(Font.LITTLE).drawText("x" + model.getScoreData().currentCombo() + " COMBO !",
-              50 + new Random().nextInt(3),
-              dimensions.scoreZone.y + 10 + new Random().nextInt(3));
-        tr.get(Font.BIG).drawText(String.valueOf(model.getScoreData().totalScore()), 15,
+              50 + new Random().nextInt(3), dimensions.scoreZone.y + 10 + new Random().nextInt(3));
+        tr.get(Font.BIG).drawTextWithShadow(String.valueOf(model.getScoreData().totalScore()), 15,
           dimensions.scoreZone.y + dimensions.scoreZone.height / 2);
 
         // info
-        sr.drawRect(dimensions.infoZone, new Color(.25f, .25f, .35f, 1f));
-        tr.get(Font.MEDIUM_GREY).drawText(model.getLabel(), dimensions.infoZone);
+        sr.drawRect(dimensions.infoZone, Color.BLACK);
+        tr.get(Font.MEDIUM).drawText(model.getLabel(), dimensions.infoZone);
+        sr.drawRect(dimensions.infoZone, mainTheme.value(.4f));
         tr.get(Font.MEDIUM).drawText("NEXT", dimensions.nextBox.x, dimensions.infoZone.y - 28,
           dimensions.nextBox.width, 28);
 
