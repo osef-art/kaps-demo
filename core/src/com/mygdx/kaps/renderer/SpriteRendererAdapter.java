@@ -1,6 +1,7 @@
 package com.mygdx.kaps.renderer;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -9,10 +10,13 @@ import com.badlogic.gdx.math.Rectangle;
 
 import java.util.function.Consumer;
 
-import static com.mygdx.kaps.MainScreen.camera;
-
 public class SpriteRendererAdapter extends ApplicationAdapter {
     private final SpriteBatch batch = new SpriteBatch();
+    private final OrthographicCamera camera;
+
+    public SpriteRendererAdapter(OrthographicCamera cam) {
+        camera = cam;
+    }
 
     private void draw(Consumer<SpriteBatch> action) {
         batch.setProjectionMatrix(camera.combined);

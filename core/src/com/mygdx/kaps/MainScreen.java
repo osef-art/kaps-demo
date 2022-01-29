@@ -2,16 +2,13 @@ package com.mygdx.kaps;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.kaps.controller.InputHandler;
 import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.level.LevelBuilder;
 
 public class MainScreen extends ApplicationAdapter {
-    public static OrthographicCamera camera;
-    private InputHandler inputs;
-
     private final String[] args;
+    private InputHandler inputs;
     private Level game;
 
     public MainScreen(String... args) {
@@ -41,14 +38,8 @@ public class MainScreen extends ApplicationAdapter {
 
     @Override
     public void create() {
-        camera = new OrthographicCamera();
-        camera.setToOrtho(true);
-        camera.translate(0, Gdx.graphics.getHeight());
-
         game = loadedLevel();
-        inputs = new InputHandler(game);
-
-        Gdx.input.setInputProcessor(inputs);
+        Gdx.input.setInputProcessor(inputs = new InputHandler(game));
     }
 
     @Override

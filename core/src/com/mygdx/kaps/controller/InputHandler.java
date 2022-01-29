@@ -32,9 +32,8 @@ public class InputHandler implements InputProcessor {
         }
 
         Key(Consumer<Level> consumer, double hold, int... codes) {
-            Objects.requireNonNull(consumer);
             this.codes = Arrays.stream(codes).boxed().collect(Collectors.toUnmodifiableSet());
-            effect = consumer;
+            effect = Objects.requireNonNull(consumer);
             refreshRate = hold;
         }
 
@@ -51,8 +50,7 @@ public class InputHandler implements InputProcessor {
     private final Level model;
 
     public InputHandler(Level lvl) {
-        Objects.requireNonNull(lvl);
-        model = lvl;
+        model = Objects.requireNonNull(lvl);
     }
 
     public void update() {
@@ -63,7 +61,7 @@ public class InputHandler implements InputProcessor {
     @Override
     public boolean keyDown(int keycode) {
         // debug
-//        System.out.println(keycode);
+        //        System.out.println(keycode);
         Key.ofCode(keycode).ifPresent(key -> {
             key.effect.accept(model);
             if (key.canBeHold())

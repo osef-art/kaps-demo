@@ -5,16 +5,20 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 import java.util.function.Consumer;
 
-import static com.mygdx.kaps.MainScreen.camera;
-
 public class ShapeRendererAdapter extends ApplicationAdapter {
     private final ShapeRenderer rd = new ShapeRenderer();
+    private final OrthographicCamera camera;
+
+    public ShapeRendererAdapter(OrthographicCamera cam) {
+        camera = cam;
+    }
 
     private void draw(Consumer<ShapeRenderer> action, Color color) {
         Gdx.gl.glEnable(GL20.GL_BLEND);

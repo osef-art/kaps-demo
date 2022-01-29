@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.CapsulePart;
@@ -119,10 +120,10 @@ public class GameView extends ApplicationAdapter {
 
         private static Rectangle lerp(Rectangle from, Rectangle to, double ratio) {
             return new Rectangle(
-              Utils.lerp(from.x, to.x, ratio),
-              Utils.lerp(from.y, to.y, ratio),
-              Utils.lerp(from.width, to.width, ratio),
-              Utils.lerp(from.height, to.height, ratio)
+              Utils.easeLerp(from.x, to.x, ratio),
+              Utils.easeLerp(from.y, to.y, ratio),
+              Utils.easeLerp(from.width, to.width, ratio),
+              Utils.easeLerp(from.height, to.height, ratio)
             );
         }
 
@@ -168,11 +169,12 @@ public class GameView extends ApplicationAdapter {
         LITTLE, MEDIUM, MEDIUM_GREY, BIG, BIG_GREY
     }
 
-    private final com.mygdx.kaps.level.gridobject.Color mainTheme;
-    private final SpriteRendererAdapter spr = new SpriteRendererAdapter();
-    private final ShapeRendererAdapter sr = new ShapeRendererAdapter();
     private final Map<Font, TextRendererAdaptor> tr = new HashMap<>();
+    private final SpriteRendererAdapter spr;
+    private final ShapeRendererAdapter sr;
+    private final com.mygdx.kaps.level.gridobject.Color mainTheme;
     private final SpriteData spriteData = new SpriteData();
+    private final OrthographicCamera camera;
     private final Dimensions dimensions;
     private final Level model;
 
@@ -180,6 +182,12 @@ public class GameView extends ApplicationAdapter {
         model = Objects.requireNonNull(lvl);
         mainTheme = lvl.getSidekicks().get(0).color();
         dimensions = new Dimensions(model, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        camera = new OrthographicCamera();
+        camera.setToOrtho(true);
+        camera.translate(0, Gdx.graphics.getHeight());
+        sr = new ShapeRendererAdapter(camera);
+        spr = new SpriteRendererAdapter(camera);
 
         tr.put(Font.LITTLE, new TextRendererAdaptor(spr, 16, Color.WHITE));
         tr.put(Font.MEDIUM, new TextRendererAdaptor(spr, 24, Color.WHITE));
