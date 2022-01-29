@@ -23,6 +23,8 @@ interface LevelObserver {
 
     default void onIllegalMove() {}
 
+    default void onCapsuleHold() {}
+
     default void onCapsuleFreeze(Level level) {}
 
     default void onCapsuleSpawn(Set<Capsule.CapsuleType> types) {}
@@ -37,7 +39,7 @@ interface LevelObserver {
 
     default void onTileAttack(Coordinates coordinates, AttackType type) {}
 
-    default void onMatchPerformed(Set<Grid.Match> matches) {}
+    default void onMatchPerformed(Set<Grid.Match> matches, int combo) {}
 
     default void onSidekickTriggered(Sidekick triggered) {}
 
@@ -65,6 +67,11 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
+    public void onCapsuleHold() {
+        subStream.play(SoundStream.SoundStore.HOLD);
+    }
+
+    @Override
     public void onTileAttack(Coordinates coordinates, AttackType type) {
         mainStream.play(type.sound());
     }
@@ -75,7 +82,7 @@ class SoundPlayerObserver implements LevelObserver {
     }
 
     @Override
-    public void onMatchPerformed(Set<Grid.Match> matches) {
+    public void onMatchPerformed(Set<Grid.Match> matches, int combo) {
         var germs = matches.stream()
           .flatMap(Grid.Match::stream)
           .filter(GridObject::isGerm)
@@ -84,7 +91,7 @@ class SoundPlayerObserver implements LevelObserver {
 
         if (germs.size() > 0) {
             if (germs.stream().anyMatch(GridObject::isDestroyed))
-                mainStream.play(SoundStream.SoundStore.PLOP, 0);
+                mainStream.play(SoundStream.SoundStore.PLOP, Math.max(0, Math.min(3, combo - 1)));
             else if (germs.stream().anyMatch(g -> g.isOfKind(Germ.GermKind.WALL)))
                 mainStream.play(SoundStream.SoundStore.BREAK);
         } else if (matches.stream().anyMatch(Grid.Match::isBig))
@@ -245,7 +252,7 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
-    public void onMatchPerformed(Set<Grid.Match> matches) {
+    public void onMatchPerformed(Set<Grid.Match> matches, int combo) {
         matches.forEach(m -> {
             if (!sidekicks.containsKey(m.color())) return;
             int bonus = sidekicks.get(m.color()).ifActiveElse(
@@ -380,13 +387,13 @@ class ScoreManager implements LevelObserver {
     }
 
     @Override
-    public void onMatchPerformed(Set<Grid.Match> matches) {
-        LevelObserver.super.onMatchPerformed(matches);
+    public void onMatchPerformed(Set<Grid.Match> matches, int combo) {
+        LevelObserver.super.onMatchPerformed(matches, combo);
         if (matches.isEmpty()) {
             streakMode = false;
             return;
         }
         streakMode = true;
-        combo++;
+        this.combo++;
     }
 }

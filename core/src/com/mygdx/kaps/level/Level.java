@@ -3,10 +3,7 @@ package com.mygdx.kaps.level;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.Capsule.CapsuleType;
-import com.mygdx.kaps.level.gridobject.Color;
-import com.mygdx.kaps.level.gridobject.CooldownGerm;
-import com.mygdx.kaps.level.gridobject.Coordinates;
-import com.mygdx.kaps.level.gridobject.GridObject;
+import com.mygdx.kaps.level.gridobject.*;
 import com.mygdx.kaps.sound.SoundStream;
 import com.mygdx.kaps.time.PeriodicTask;
 import com.mygdx.kaps.time.TaskManager;
@@ -54,6 +51,8 @@ public class Level extends ApplicationAdapter {
     private final GameEndManager gameEndManager;
     private final ScoreManager scoreManager;
 
+    private boolean canHold;
+    private Capsule heldCapsule = null;
     private final LinkedList<Capsule> upcomingCapsules;
     private final Set<Capsule.CapsuleType> incomingTypes = new HashSet<>();
     private final List<Capsule> controlledCapsules = new ArrayList<>();
@@ -98,12 +97,16 @@ public class Level extends ApplicationAdapter {
         spawnCapsule();
     }
 
-    public String getLabel() {
+    String getLabel() {
         return label;
     }
 
     Grid getGrid() {
         return grid;
+    }
+
+    boolean capsuleCanBeHeld() {
+        return canHold;
     }
 
     double refreshingProgression() {
@@ -117,10 +120,14 @@ public class Level extends ApplicationAdapter {
     Capsule newRandomCapsule(CapsuleType... types) {
         incomingTypes.addAll(Arrays.asList(types));
         var caps = Capsule.buildRandomInstance(
-          new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1), colors, incomingTypes
+          spawnCoordinates(), colors, incomingTypes
         );
         incomingTypes.clear();
         return caps;
+    }
+
+    private Coordinates spawnCoordinates() {
+        return new Coordinates(getGrid().getWidth() / 2 - 1, getGrid().getHeight() - 1);
     }
 
     List<Capsule> controlledCapsules() {
@@ -129,6 +136,10 @@ public class Level extends ApplicationAdapter {
 
     List<Capsule> upcoming() {
         return upcomingCapsules;
+    }
+
+    Optional<Capsule> getHeldCapsule() {
+        return Optional.ofNullable(heldCapsule);
     }
 
     List<Sidekick> getSidekicks() {
@@ -203,7 +214,7 @@ public class Level extends ApplicationAdapter {
             gridRefresher.reset();
         }, c -> {
             acceptAndSpawnNew(c);
-            observers.forEach(o->o.onCapsuleFreeze(this));
+            observers.forEach(o -> o.onCapsuleFreeze(this));
         });
     }
 
@@ -229,11 +240,21 @@ public class Level extends ApplicationAdapter {
         });
     }
 
-    public void holdCapsule() {}
+    public void holdCapsule() {
+        if (!canHold) return;
+        canHold = false;
+        var toHold = controlledCapsules.get(0);
+        controlledCapsules.remove(toHold);
+        getHeldCapsule().ifPresent(controlledCapsules::add);
+        heldCapsule = toHold.copy(spawnCoordinates(), Orientation.LEFT);
+        spawnCapsuleIfAbsent();
+        gridRefresher.reset();
+        observers.forEach(LevelObserver::onCapsuleHold);
+    }
 
     private void dipOrFreezeDroppingCapsules() {
         if (grid.dipOrFreezeDroppingCapsules()) {
-            observers.forEach(o->o.onCapsuleFreeze(this));
+            observers.forEach(o -> o.onCapsuleFreeze(this));
             hitMatches();
             controlledCapsules.forEach(this::updatePreview);
         }
@@ -277,7 +298,7 @@ public class Level extends ApplicationAdapter {
         matches.forEach(
           m -> m.stream().forEach(o -> hit(o.coordinates(), m.dependingOnSize(1, 2, 3)))
         );
-        observers.forEach(obs -> obs.onMatchPerformed(matches));
+        observers.forEach(obs -> obs.onMatchPerformed(matches, scoreManager.currentCombo()));
         if (matches.isEmpty()) return;
 
         grid.initEveryCapsuleDropping();
@@ -285,7 +306,7 @@ public class Level extends ApplicationAdapter {
     }
 
     private void accept(Capsule capsule) {
-        controlledCapsules.removeIf(c -> c.equals(capsule));
+        controlledCapsules.remove(capsule);
         capsule.applyToBoth(grid::put);
         capsule.startDropping();
         dipOrFreezeDroppingCapsules();
@@ -316,6 +337,7 @@ public class Level extends ApplicationAdapter {
         updatePreview(upcoming);
         observers.forEach(o -> o.onCapsuleSpawn(incomingTypes));
         upcomingCapsules.add(0, newRandomCapsule());
+        canHold = true;
 
         if (upcomingCapsules.size() < 2)
             upcomingCapsules.add(newRandomCapsule());

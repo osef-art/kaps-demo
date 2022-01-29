@@ -27,10 +27,12 @@ public class SoundStream {
         BREAK,
         PAINT,
         PAUSE,
+        VIRUS,
         DROP,
         CANT,
         MANA,
-        VIRUS;
+        HOLD,
+        ;
 
         private final List<String> paths;
 

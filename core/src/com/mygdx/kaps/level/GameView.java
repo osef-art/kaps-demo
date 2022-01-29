@@ -59,6 +59,8 @@ public class GameView extends ApplicationAdapter {
         private final Rectangle nextCaps;
         private final Rectangle germCountBox;
         private final Rectangle germCountTxt;
+        private final Rectangle holdBox;
+        private final Rectangle holdCaps;
         private final Level level;
 
         private Dimensions(Level lvl, float screenWidth, float screenHeight) {
@@ -74,7 +76,8 @@ public class GameView extends ApplicationAdapter {
             float infoZoneHeight = (screenHeight - topSpaceHeight) * 2 / 5;
             float sidekickSize = infoZoneHeight * 3 / 4;
             float nextBoxSize = (screenHeight - topSpaceHeight) * 7 / 10;
-            float capsWidth = nextBoxSize * 3 / 4;
+            float nextHeight = nextBoxSize * 3 / 8;
+            float holdHeight = infoZoneHeight * 3 / 4;
             float padding = infoZoneHeight * 3 / 32;
 
             gridZone = new Rectangle((screen.width - gridWidth) / 2, topSpaceMargin, gridWidth, gridHeight);
@@ -106,10 +109,11 @@ public class GameView extends ApplicationAdapter {
             scoreZone = new Rectangle(0, topSpaceHeight + infoZoneHeight, screen.width, infoZoneHeight);
             infoZone = new Rectangle(0, screen.height - infoZoneHeight / 2, screen.width, infoZoneHeight / 2);
             nextBox = new Rectangle((screen.width - nextBoxSize) / 2, screen.height - nextBoxSize, nextBoxSize, nextBoxSize);
-            nextCaps = new Rectangle(nextBox.x + nextBox.width / 2 - capsWidth / 2, nextBox.y, capsWidth, capsWidth);
+            nextCaps = new Rectangle(screen.width / 2 - nextHeight, nextBox.y + nextHeight / 4, nextHeight * 2, nextHeight);
+            holdBox = symmetrical(padding, scoreZone.y + scoreZone.height / 2 - holdHeight / 2, holdHeight * 2, holdHeight);
+            holdCaps = scaled(holdBox, .7f);
 
-            germCountTxt = new Rectangle(screen.width - padding - scoreZone.height / 2, scoreZone.y + scoreZone.height / 4,
-              scoreZone.height / 2, scoreZone.height / 2);
+            germCountTxt = symmetrical(padding, infoZone.y, infoZone.height, infoZone.height);
             germCountBox = new Rectangle(germCountTxt.x - germCountTxt.width, germCountTxt.y, germCountTxt.width, germCountTxt.height);
         }
 
@@ -126,8 +130,21 @@ public class GameView extends ApplicationAdapter {
             return new Rectangle(rectangle.x + rectangle.width / 2, rectangle.y + rectangle.height / 2, 0, 0);
         }
 
+        private Rectangle symmetrical(float x, float y, float width, float height) {
+            return new Rectangle(screen.width - x - width, y, width, height);
+        }
+
         private Rectangle symmetrical(Rectangle rectangle) {
-            return new Rectangle(screen.width - rectangle.x - rectangle.width, rectangle.y, rectangle.width, rectangle.height);
+            return symmetrical(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+        }
+
+        private static Rectangle scaled(Rectangle rectangle, float scale) {
+            return new Rectangle(
+              rectangle.x - rectangle.width * (scale - 1) / 2,
+              rectangle.y - rectangle.height * (scale - 1) / 2,
+              rectangle.width * scale,
+              rectangle.height * scale
+            );
         }
 
         private Rectangle tileAt(int x, int y) {
@@ -136,20 +153,6 @@ public class GameView extends ApplicationAdapter {
 
         private Rectangle tileAt(Coordinates coordinates) {
             return tileAt(coordinates.x, coordinates.y);
-        }
-
-        private Rectangle tileAt(int x, int y, float scale) {
-            var rect = tileAt(x, y);
-            return new Rectangle(
-              rect.x - rect.width * (scale - 1) / 2,
-              rect.y - rect.height * (scale - 1) / 2,
-              rect.width * scale,
-              rect.height * scale
-            );
-        }
-
-        private Rectangle tileAt(Coordinates coordinates, float scale) {
-            return tileAt(coordinates.x, coordinates.y, scale);
         }
 
         private Rectangle tileCornerAt(int x, int y) {
@@ -181,8 +184,8 @@ public class GameView extends ApplicationAdapter {
         tr.put(Font.LITTLE, new TextRendererAdaptor(spr, 16, Color.WHITE));
         tr.put(Font.MEDIUM, new TextRendererAdaptor(spr, 24, Color.WHITE));
         tr.put(Font.BIG, new TextRendererAdaptor(spr, 32, Color.WHITE));
-        tr.put(Font.MEDIUM_GREY, new TextRendererAdaptor(spr, 20, new Color(.8f, .8f, .9f, 1)));
-        tr.put(Font.BIG_GREY, new TextRendererAdaptor(spr, 32, new Color(.7f, .7f, .8f, 1)));
+        tr.put(Font.MEDIUM_GREY, new TextRendererAdaptor(spr, 20, new Color(.5f, .5f, .65f, .3f)));
+        tr.put(Font.BIG_GREY, new TextRendererAdaptor(spr, 32, new Color(.5f, .5f, .65f, .5f)));
     }
 
     private void renderLayout() {
@@ -190,13 +193,17 @@ public class GameView extends ApplicationAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         model.getGrid().forEachTile((x, y) -> sr.drawRect(
           dimensions.tileAt(x, y),
-          x % 2 == y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
+          x % 2 == y % 2 ? new Color(.275f, .275f, .4f, 1) : new Color(.25f, .25f, .375f, 1)
         ));
         dimensions.sidekickZones.forEach(
           (sdk, zone) -> sr.drawRect(zone.get(Dimensions.SidekickZone.Zone.ZONE), sdk.color().value(.5f))
         );
+
         // score & next
         sr.drawRect(dimensions.scoreZone, new Color(.35f, .35f, .45f, 1f));
+        sr.drawRoundedRect(dimensions.holdBox, new Color(.3f, .3f, .4f, 1f));
+        tr.get(Font.MEDIUM_GREY).drawText("HOLD", dimensions.holdBox);
+
         sr.drawCircle(dimensions.nextBox.x + dimensions.nextBox.width / 2, dimensions.nextBox.y + dimensions.nextBox.height,
           dimensions.nextBox.width, new Color(.45f, .45f, .6f, 1f));
 
@@ -207,14 +214,14 @@ public class GameView extends ApplicationAdapter {
         tr.get(Font.BIG).drawText(String.valueOf(model.getScoreData().totalScore()), 15,
           dimensions.scoreZone.y + dimensions.scoreZone.height / 2);
 
-        spr.render(spriteData.getGerm(Germ.GermKind.BASIC, mainTheme).getCurrentSprite(), dimensions.germCountBox);
-        tr.get(Font.MEDIUM).drawText(String.valueOf(model.getGermsCount()), dimensions.germCountTxt);
-
         // info
         sr.drawRect(dimensions.infoZone, new Color(.25f, .25f, .35f, 1f));
-        tr.get(Font.MEDIUM).drawText(model.getLabel(), 15, dimensions.screen.height - 25);
-        tr.get(Font.LITTLE).drawText("NEXT", dimensions.nextBox.x, dimensions.infoZone.y - 20, dimensions.nextBox.width,
-          20);
+        tr.get(Font.MEDIUM_GREY).drawText(model.getLabel(), dimensions.infoZone);
+        tr.get(Font.MEDIUM).drawText("NEXT", dimensions.nextBox.x, dimensions.infoZone.y - 28,
+          dimensions.nextBox.width, 28);
+
+        spr.render(spriteData.getGerm(Germ.GermKind.BASIC, mainTheme).getCurrentSprite(), dimensions.germCountBox);
+        tr.get(Font.MEDIUM).drawText(String.valueOf(model.getGermsCount()), dimensions.germCountTxt);
     }
 
     private void renderSidekickFocus() {
@@ -252,10 +259,17 @@ public class GameView extends ApplicationAdapter {
         spr.render(part.getSprite(spriteData), dimensions.tileAt(part.coordinates()));
     }
 
+    private void renderCapsule(Capsule caps, Rectangle zone, float alpha) {
+        caps.applyForEach(
+          p -> spr.render(p.getSprite(spriteData), zone.x, zone.y, zone.width / 2, zone.height, alpha),
+          p -> spr.render(p.getSprite(spriteData), zone.x + zone.width / 2, zone.y, zone.width / 2, zone.height, alpha)
+        );
+    }
+
     private void renderCapsule(Capsule caps, Rectangle zone) {
         caps.applyForEach(
-          p -> spr.render(p.getSprite(spriteData), zone.x, zone.y + zone.height / 4, zone.width / 2, zone.height / 2),
-          p -> spr.render(p.getSprite(spriteData), zone.x + zone.width / 2, zone.y + zone.height / 4, zone.width / 2, zone.height / 2)
+          p -> spr.render(p.getSprite(spriteData), zone.x, zone.y, zone.width / 2, zone.height),
+          p -> spr.render(p.getSprite(spriteData), zone.x + zone.width / 2, zone.y, zone.width / 2, zone.height)
         );
     }
 
@@ -268,6 +282,10 @@ public class GameView extends ApplicationAdapter {
 
     private void renderUpcoming() {
         renderCapsule(model.upcoming().get(0), dimensions.nextCaps);
+        if (model.capsuleCanBeHeld())
+            model.getHeldCapsule().ifPresent(c -> renderCapsule(c, dimensions.holdCaps));
+        else
+            model.getHeldCapsule().ifPresent(c -> renderCapsule(c, dimensions.holdCaps, .6f));
     }
 
     private void renderSidekick(Sidekick sdk) {
@@ -293,7 +311,7 @@ public class GameView extends ApplicationAdapter {
 
     private void renderParticles() {
         model.visualParticles().getParticleEffects().forEach(
-          p -> spr.render(p.getSprite(), dimensions.tileAt(p.coordinates(), p.getScale()))
+          p -> spr.render(p.getSprite(), Dimensions.scaled(dimensions.tileAt(p.coordinates()), p.getScale()))
         );
         model.visualParticles().getManaParticles().forEach(p -> {
             Rectangle center = Dimensions.center(Dimensions.lerp(

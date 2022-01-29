@@ -3,6 +3,7 @@ package com.mygdx.kaps.level;
 import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.*;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -16,12 +17,8 @@ class Capsule {
     private Capsule preview;
 
     private Capsule(CapsulePart main, CapsulePart slave, Orientation mainOrientation) {
-        var linked = new LinkedCapsulePart(slave.coordinates(), slave.color(), slave.type());
-        this.main = new LinkedCapsulePart(main.coordinates(), main.color(), main.type(), mainOrientation, linked);
-    }
-
-    private Capsule(LinkedCapsulePart main, LinkedCapsulePart slave) {
-        this(main, slave, main.orientation());
+        var linked = new LinkedCapsulePart(Objects.requireNonNull(slave).coordinates(), slave.color(), slave.type());
+        this.main = new LinkedCapsulePart(Objects.requireNonNull(main).coordinates(), main.color(), main.type(), mainOrientation, linked);
     }
 
     static Capsule buildRandomInstance(Coordinates coordinates, Set<Color> colors, Set<CapsuleType> types) {
@@ -41,8 +38,14 @@ class Capsule {
         );
     }
 
-    Capsule copy() {
-        return new Capsule(main.copy(), main.linked().map(LinkedCapsulePart::copy).orElse(null));
+    private Capsule copy() {
+        return copy(main.coordinates(), main.orientation());
+    }
+
+    Capsule copy(Coordinates coordinates, Orientation orientation) {
+        var copy = main.copy();
+        copy.coordinates().set(coordinates);
+        return new Capsule(copy, main.linked().map(LinkedCapsulePart::copy).orElse(null), orientation);
     }
 
     @Override
