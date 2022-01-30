@@ -63,7 +63,7 @@ class SoundPlayer implements LevelObserver {
 
     @Override
     public void onCapsuleFreeze(Level level) {
-        subStream.play(SoundStream.SoundStore.LIGHT_IMPACT);
+        subStream.play(SoundStream.SoundStore.IMPACT);
     }
 
     @Override
@@ -89,12 +89,12 @@ class SoundPlayer implements LevelObserver {
 
         if (germs.size() > 0) {
             if (germs.stream().anyMatch(GridObject::isDestroyed))
-                mainStream.play(SoundStream.SoundStore.PLOP, Math.max(0, Math.min(3, combo - 1)));
+                mainStream.play(SoundStream.SoundStore.PLOP, combo - 1);
             else if (germs.stream().anyMatch(g -> g.isOfKind(Germ.GermKind.WALL)))
                 mainStream.play(SoundStream.SoundStore.BREAK);
         } else if (matches.stream().anyMatch(Grid.Match::isBig))
-            mainStream.play(SoundStream.SoundStore.MATCH_FIVE);
-        else if (!matches.isEmpty()) mainStream.play(SoundStream.SoundStore.IMPACT);
+            mainStream.play(SoundStream.SoundStore.MATCH_BIG, combo - 1);
+        else if (!matches.isEmpty()) mainStream.play(SoundStream.SoundStore.MATCH, combo - 1);
     }
 
     @Override

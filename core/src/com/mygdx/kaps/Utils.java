@@ -13,6 +13,10 @@ public class Utils {
         return lerp(from, to, ratio * ratio * (3f - 2f * ratio));
     }
 
+    public static int clamp(int min, int value, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
     public static <T> T getRandomFrom(T... elems) {
         return getRandomFrom(Arrays.stream(elems));
     }
