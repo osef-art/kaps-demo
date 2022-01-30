@@ -12,17 +12,17 @@ import java.util.stream.IntStream;
 
 public class SoundStream {
     public enum SoundStore {
-        LIGHT_IMPACT,
-        MATCH_FIVE,
+        MATCH_BIG(5),
         GAME_OVER,
         GENERATED,
+        MATCH(5),
         SLICE(2),
         TRIGGER,
         CLEARED,
         SHOT(3),
         FIRE(2),
         FLIP(3),
-        PLOP(4),
+        PLOP(5),
         IMPACT,
         BREAK,
         PAINT,
@@ -53,7 +53,7 @@ public class SoundStream {
         }
 
         private String getPathOfInstance(int instance) {
-            return paths.get(instance);
+            return paths.get(Utils.clamp(0, instance, paths.size()-1));
         }
     }
 
