@@ -82,6 +82,10 @@ public class Grid {
         Stream<? extends GridObject> stream() {
             return objects.stream();
         }
+
+        Stream<Germ> getGerms() {
+            return stream().filter(GridObject::isGerm).map(o -> (Germ) o);
+        }
     }
 
     private static class MatchHandler {

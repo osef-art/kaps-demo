@@ -52,7 +52,7 @@ interface LevelObserver {
     default void onLevelUpdate(Level level) {}
 }
 
-class SoundPlayerObserver implements LevelObserver {
+class SoundPlayer implements LevelObserver {
     private final SoundStream mainStream = new SoundStream(.5f);
     private final SoundStream subStream = new SoundStream(.25f);
 
@@ -84,9 +84,7 @@ class SoundPlayerObserver implements LevelObserver {
     @Override
     public void onMatchPerformed(Set<Grid.Match> matches, int combo) {
         var germs = matches.stream()
-          .flatMap(Grid.Match::stream)
-          .filter(GridObject::isGerm)
-          .map(o -> (Germ) o)
+          .flatMap(Grid.Match::getGerms)
           .collect(Collectors.toUnmodifiableSet());
 
         if (germs.size() > 0) {
@@ -119,6 +117,41 @@ class SoundPlayerObserver implements LevelObserver {
     @Override
     public void onGermTriggered(CooldownGerm triggered) {
         mainStream.play(triggered.attackSound());
+    }
+}
+
+class ScreenShaker implements LevelObserver {
+    private final List<Timer> episodes = new ArrayList<>();
+
+    List<Timer> currentQuakes() {
+        return episodes;
+    }
+
+    private void shake(int millis, int iterations) {
+        IntStream.range(0, iterations).forEach(n -> episodes.add(Timer.ofMilliseconds(millis)));
+    }
+
+    private void shake(int millis) {
+        shake(millis, 1);
+    }
+
+    @Override
+    public void onTileAttack(Coordinates coordinates, AttackType type) {
+        shake(800);
+    }
+
+    @Override
+    public void onMatchPerformed(Set<Grid.Match> matches, int combo) {
+        if (matches.isEmpty()) return;
+        matches.stream()
+          .filter(m -> m.getGerms().findAny().isPresent())
+          .findFirst()
+          .ifPresentOrElse(g -> shake(300, combo), () -> shake(300, combo + 1));
+    }
+
+    @Override
+    public void onLevelUpdate(Level level) {
+        episodes.removeIf(Timer::isExceeded);
     }
 }
 
@@ -193,7 +226,7 @@ class ParticleManager implements LevelObserver {
         }
 
         boolean hasArrived() {
-            return ratio() >= 1;
+            return progression.isExceeded();
         }
     }
 

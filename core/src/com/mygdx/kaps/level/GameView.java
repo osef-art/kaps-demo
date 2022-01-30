@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
 import com.mygdx.kaps.Utils;
 import com.mygdx.kaps.level.gridobject.CapsulePart;
 import com.mygdx.kaps.level.gridobject.Coordinates;
@@ -175,6 +176,7 @@ public class GameView extends ApplicationAdapter {
     private final com.mygdx.kaps.level.gridobject.Color mainTheme;
     private final SpriteData spriteData = new SpriteData();
     private final OrthographicCamera camera;
+    private final Vector3 camOriginalPos;
     private final Dimensions dimensions;
     private final Level model;
 
@@ -185,7 +187,8 @@ public class GameView extends ApplicationAdapter {
 
         camera = new OrthographicCamera();
         camera.setToOrtho(true);
-        camera.translate(0, Gdx.graphics.getHeight());
+        camera.update();
+        camOriginalPos = camera.position.cpy();
         sr = new ShapeRendererAdapter(camera);
         spr = new SpriteRendererAdapter(camera);
 
@@ -344,6 +347,7 @@ public class GameView extends ApplicationAdapter {
     }
 
     public void render() {
+        shakeScreen();
         renderLayout();
         renderUpcoming();
 
@@ -354,6 +358,14 @@ public class GameView extends ApplicationAdapter {
 
         renderParticles();
         renderGameMessage();
+    }
+
+    private void shakeScreen() {
+        if (model.quakes().isEmpty()) return;
+        camera.position.set(camOriginalPos);
+
+        model.quakes().forEach(q -> camera.position.add(-2 + new Random().nextInt(4), -2 + new Random().nextInt(4), 0));
+        camera.update();
     }
 
     public void dispose() {

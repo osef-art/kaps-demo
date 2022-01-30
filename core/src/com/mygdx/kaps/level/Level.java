@@ -7,6 +7,7 @@ import com.mygdx.kaps.level.gridobject.*;
 import com.mygdx.kaps.sound.SoundStream;
 import com.mygdx.kaps.time.PeriodicTask;
 import com.mygdx.kaps.time.TaskManager;
+import com.mygdx.kaps.time.Timer;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -49,6 +50,7 @@ public class Level extends ApplicationAdapter {
     private final List<LevelObserver> observers;
     private final ParticleManager particleManager;
     private final GameEndManager gameEndManager;
+    private final ScreenShaker screenShaker;
     private final ScoreManager scoreManager;
 
     private boolean canHold;
@@ -91,7 +93,8 @@ public class Level extends ApplicationAdapter {
           gameEndManager = new GameEndManager(),
           scoreManager = new ScoreManager(),
           new LevelAttackObserver(),
-          new SoundPlayerObserver()
+          screenShaker = new ScreenShaker(),
+          new SoundPlayer()
         );
 
         spawnCapsule();
@@ -150,6 +153,10 @@ public class Level extends ApplicationAdapter {
         return sidekicks.stream()
           .filter(s -> !s.equals(sidekick))
           .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public List<Timer> quakes() {
+        return screenShaker.currentQuakes();
     }
 
     ParticleManager visualParticles() {

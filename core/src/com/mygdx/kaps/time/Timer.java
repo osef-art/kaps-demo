@@ -49,7 +49,7 @@ public class Timer {
         return duration;
     }
 
-    boolean isExceeded() {
+    public boolean isExceeded() {
         return ratio() >= 1;
     }
 
