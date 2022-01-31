@@ -161,9 +161,9 @@ public class Grid {
         }
 
         private Set<Match> mergedMatches(Set<Match> matches) {
-            var merged = new HashSet<Match>();
-            matches.forEach(m1 -> matches.forEach(m2 -> merged.add(m1.mergedWith(m2))));
-            return merged;
+            return matches.stream()
+              .flatMap(m -> matches.stream().map(m::mergedWith))
+              .collect(Collectors.toUnmodifiableSet());
         }
 
         private Set<Match> allMatchesFoundIn(Grid grid) {
