@@ -47,20 +47,33 @@ public class Grid {
     }
 
     static class Match {
-        private final Set<? extends GridObject> objects;
+        private final Set<GridObject> objects;
         private final Color color;
         private static final int BIG_SIZE = 5;
         private static final int HUGE_SIZE = 9;
 
-        private Match(Set<? extends GridObject> matched) {
+        private Match(Set<GridObject> matched) {
             objects = Objects.requireNonNull(matched);
             color = matched.stream().findAny().map(GridObject::color).orElseThrow(
               () -> new IllegalArgumentException("Match can't be empty.")
             );
         }
 
-        private Match(Stream<? extends GridObject> stream) {
+        private Match(Stream<GridObject> stream) {
             this(stream.collect(Collectors.toUnmodifiableSet()));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Match)) return false;
+            Match match = (Match) o;
+            return objects.equals(match.objects);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(objects);
         }
 
         Color color() {
@@ -73,6 +86,16 @@ public class Grid {
 
         private boolean isMatch(MatchHandler.MatchPattern pattern) {
             return objects.size() >= pattern.relativeTiles.size() && objects.stream().map(GridObject::color).distinct().count() == 1;
+        }
+
+        private boolean canMergeWith(Match match) {
+            return objects.stream().anyMatch(match.objects::contains);
+        }
+
+        private Match mergedWith(Match match) {
+            return canMergeWith(match) ?
+                     new Match(Stream.of(objects, match.objects).flatMap(Collection::stream)) :
+                     new Match(objects);
         }
 
         <T> T dependingOnSize(T classic, T big, T huge) {
@@ -137,11 +160,17 @@ public class Grid {
               .collect(Collectors.toUnmodifiableSet());
         }
 
+        private Set<Match> mergedMatches(Set<Match> matches) {
+            var merged = new HashSet<Match>();
+            matches.forEach(m1 -> matches.forEach(m2 -> merged.add(m1.mergedWith(m2))));
+            return merged;
+        }
+
         private Set<Match> allMatchesFoundIn(Grid grid) {
-            return patterns.stream()
+            return mergedMatches(patterns.stream()
               .map(p -> matchesFoundIn(grid, p))
               .flatMap(Collection::stream)
-              .collect(Collectors.toUnmodifiableSet());
+              .collect(Collectors.toUnmodifiableSet()));
         }
     }
 
