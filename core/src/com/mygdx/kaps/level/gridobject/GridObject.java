@@ -56,6 +56,19 @@ public abstract class GridObject implements IGridObject {
         return coordinates.toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GridObject)) return false;
+        GridObject that = (GridObject) o;
+        return coordinates.equals(that.coordinates) && color == that.color;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(coordinates, color);
+    }
+
     public Coordinates coordinates() {
         return coordinates;
     }

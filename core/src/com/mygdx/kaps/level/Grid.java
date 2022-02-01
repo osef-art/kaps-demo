@@ -47,10 +47,10 @@ public class Grid {
     }
 
     static class Match {
-        private final Set<GridObject> objects;
-        private final Color color;
         private static final int BIG_SIZE = 5;
         private static final int HUGE_SIZE = 9;
+        private final Set<GridObject> objects;
+        private final Color color;
 
         private Match(Set<GridObject> matched) {
             objects = Objects.requireNonNull(matched);
@@ -64,11 +64,15 @@ public class Grid {
         }
 
         @Override
+        public String toString() {
+            return "(" + objects.size() + ")" + objects;
+        }
+
+        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof Match)) return false;
-            Match match = (Match) o;
-            return objects.equals(match.objects);
+            return ((Match) o).objects.equals(objects);
         }
 
         @Override
@@ -161,9 +165,20 @@ public class Grid {
         }
 
         private Set<Match> mergedMatches(Set<Match> matches) {
-            return matches.stream()
-              .flatMap(m -> matches.stream().map(m::mergedWith))
-              .collect(Collectors.toUnmodifiableSet());
+            var merged = new HashSet<Match>();
+            var result = new HashSet<Match>();
+            matches.forEach(m1 -> matches.stream()
+              .filter(m1::canMergeWith)
+              .filter(Predicate.not(m1::equals))
+              .forEach(m2 -> {
+                  if (merged.contains(m1)) return;
+                  result.add(m1.mergedWith(m2));
+                  merged.add(m1);
+              }));
+            matches.forEach(m -> {
+                if (!merged.contains(m)) result.add(m);
+            });
+            return result;
         }
 
         private Set<Match> allMatchesFoundIn(Grid grid) {
