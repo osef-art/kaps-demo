@@ -98,8 +98,7 @@ public class Grid {
 
         private Match mergedWith(Match match) {
             return canMergeWith(match) ?
-                     new Match(Stream.of(objects, match.objects).flatMap(Collection::stream)) :
-                     new Match(objects);
+                     new Match(Stream.of(objects, match.objects).flatMap(Collection::stream)) : this;
         }
 
         <T> T dependingOnSize(T classic, T big, T huge) {
@@ -119,14 +118,9 @@ public class Grid {
         private static class MatchPattern {
             private final Set<Function<Coordinates, Coordinates>> relativeTiles;
             private static final MatchPattern SQUARE_PATTERN = new MatchPattern(
-              c -> c.addedTo(-1, -1),
-              c -> c.addedTo(-1, 0),
-              c -> c.addedTo(-1, 1),
-              c -> c.addedTo(0, 1),
-              c -> c.addedTo(1, 1),
-              c -> c.addedTo(1, 0),
-              c -> c.addedTo(1, -1),
-              c -> c.addedTo(0, -1)
+              c -> c.addedTo(-1, -1), c -> c.addedTo(-1, 0), c -> c.addedTo(-1, 1),
+              c -> c.addedTo(0, 1), c -> c.addedTo(1, 1), c -> c.addedTo(1, 0),
+              c -> c.addedTo(1, -1), c -> c.addedTo(0, -1)
             );
             private static final MatchPattern COLUMN_PATTERN = new MatchPattern(
               c -> c.addedTo(0, -1),
@@ -165,20 +159,18 @@ public class Grid {
         }
 
         private Set<Match> mergedMatches(Set<Match> matches) {
-            var merged = new HashSet<Match>();
-            var result = new HashSet<Match>();
-            matches.forEach(m1 -> matches.stream()
-              .filter(m1::canMergeWith)
-              .filter(Predicate.not(m1::equals))
-              .forEach(m2 -> {
-                  if (merged.contains(m1)) return;
-                  result.add(m1.mergedWith(m2));
-                  merged.add(m1);
-              }));
-            matches.forEach(m -> {
-                if (!merged.contains(m)) result.add(m);
-            });
-            return result;
+            return Stream.of(
+                // matches that doesn't merge with any other match
+                matches.stream().filter(m -> matches.stream()
+                  .filter(Predicate.not(m::equals))
+                  .noneMatch(m::canMergeWith)),
+                // merged matches
+                matches.stream().flatMap(m1 -> matches.stream()
+                  .filter(Predicate.not(m1::equals))
+                  .filter(m1::canMergeWith)
+                  .map(m1::mergedWith)
+                )).flatMap(Function.identity())
+              .collect(Collectors.toUnmodifiableSet());
         }
 
         private Set<Match> allMatchesFoundIn(Grid grid) {
