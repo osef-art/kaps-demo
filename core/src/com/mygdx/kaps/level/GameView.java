@@ -22,6 +22,24 @@ import java.util.stream.IntStream;
 
 public class GameView extends ApplicationAdapter {
     private static class Dimensions {
+        private static class Tile {
+            private enum Zone {ZONE, LEFT_CORNER, RIGHT_CORNER, HEALTH_BAR}
+
+            private final Map<Tile.Zone, Rectangle> zones = new HashMap<>();
+
+            private Tile(float x, float y, float size) {
+                float cornerSize = size / 3;
+                zones.put(Zone.ZONE, new Rectangle(x, y, size, size));
+                zones.put(Zone.HEALTH_BAR, new Rectangle(x, y, size / 4, size));
+                zones.put(Zone.LEFT_CORNER, new Rectangle(x, y + size - cornerSize, cornerSize, cornerSize));
+                zones.put(Zone.RIGHT_CORNER, new Rectangle(x + size - cornerSize, y + size - cornerSize, cornerSize, cornerSize));
+            }
+
+            private Rectangle get(Tile.Zone zone) {
+                return zones.get(zone);
+            }
+        }
+
         private static class SidekickZone {
             private enum Zone {ZONE, HEAD, GAUGE, BUBBLE, COOLDOWN, COOLDOWN_TXT}
 
@@ -51,8 +69,7 @@ public class GameView extends ApplicationAdapter {
 
         private final Rectangle screen;
         private final Rectangle gridZone;
-        private final List<List<Rectangle>> gridTiles;
-        private final List<List<Rectangle>> tileCorners;
+        private final List<List<Tile>> gridTiles;
         private final Rectangle timeBar;
         private final Map<SidekickId, SidekickZone> sidekickZones = new HashMap<>();
         private final Rectangle scoreZone;
@@ -71,7 +88,6 @@ public class GameView extends ApplicationAdapter {
             float topSpaceHeight = screenHeight * .75f;
             float gridHeight = topSpaceHeight * .9f;
             float tileSize = gridHeight / lvl.getGrid().getHeight();
-            float cornerSize = tileSize / 3;
             float gridWidth = lvl.getGrid().getWidth() * tileSize;
             float timeBarHeight = (topSpaceHeight - gridHeight) / 4;
             float topSpaceMargin = (topSpaceHeight - gridHeight - timeBarHeight) / 3;
@@ -84,16 +100,11 @@ public class GameView extends ApplicationAdapter {
 
             gridZone = new Rectangle((screen.width - gridWidth) / 2, topSpaceMargin, gridWidth, gridHeight);
             gridTiles = IntStream.range(0, lvl.getGrid().getHeight()).mapToObj(
-                y -> IntStream.range(0, lvl.getGrid().getWidth()).mapToObj(x -> new Rectangle(
+                y -> IntStream.range(0, lvl.getGrid().getWidth()).mapToObj(x -> new Tile(
                   gridZone.x + x * tileSize,
                   gridZone.y + ((level.getGrid().getHeight() - 1) - y) * tileSize,
-                  tileSize,
                   tileSize
                 )).collect(Collectors.toUnmodifiableList()))
-              .collect(Collectors.toUnmodifiableList());
-            tileCorners = gridTiles.stream().map(lst -> lst.stream().map(
-                r -> new Rectangle(r.x + r.width - cornerSize, r.y + r.height - cornerSize, cornerSize, cornerSize)
-              ).collect(Collectors.toUnmodifiableList()))
               .collect(Collectors.toUnmodifiableList());
             timeBar = new Rectangle((screen.width - gridWidth) / 2, gridHeight + 2 * topSpaceMargin, gridWidth, timeBarHeight);
 
@@ -149,20 +160,16 @@ public class GameView extends ApplicationAdapter {
             );
         }
 
-        private Rectangle tileAt(int x, int y) {
-            return gridTiles.get(y).get(x);
+        private Rectangle tileAt(int x, int y, Tile.Zone zone) {
+            return gridTiles.get(y).get(x).get(zone);
+        }
+
+        private Rectangle tileAt(Coordinates coordinates, Tile.Zone zone) {
+            return tileAt(coordinates.x, coordinates.y, zone);
         }
 
         private Rectangle tileAt(Coordinates coordinates) {
-            return tileAt(coordinates.x, coordinates.y);
-        }
-
-        private Rectangle tileCornerAt(int x, int y) {
-            return tileCorners.get(y).get(x);
-        }
-
-        private Rectangle tileCornerAt(Coordinates coordinates) {
-            return tileCornerAt(coordinates.x, coordinates.y);
+            return tileAt(coordinates.x, coordinates.y, Tile.Zone.ZONE);
         }
     }
 
@@ -202,9 +209,9 @@ public class GameView extends ApplicationAdapter {
     private void renderLayout() {
         Gdx.gl.glClearColor(.1f, .1f, .15f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        model.getGrid().forEachTile((x, y) -> sr.drawRect(
-          dimensions.tileAt(x, y),
-          x % 2 == y % 2 ? new Color(.275f, .275f, .4f, 1) : new Color(.25f, .25f, .375f, 1)
+        model.getGrid().everyTile().forEach(c -> sr.drawRect(
+          dimensions.tileAt(c),
+          c.x % 2 == c.y % 2 ? new Color(.275f, .275f, .4f, 1) : new Color(.25f, .25f, .375f, 1)
         ));
         dimensions.sidekickZones.forEach(
           (sdk, zone) -> sr.drawRect(zone.get(Dimensions.SidekickZone.Zone.ZONE), sdk.color().value(.5f))
@@ -248,17 +255,14 @@ public class GameView extends ApplicationAdapter {
     private void renderStack() {
         model.getGrid().stack().forEach(o -> o.ifGermElse(
           germ -> germ.ifHasCooldownElse(cg -> {
-                var cdn = cg.coordinates();
-                var corner = dimensions.tileCornerAt(cdn);
-                if (cg.isAttacking()) sr.drawRect(
-                  dimensions.tileAt(cdn),
-                  cdn.x % 2 == cdn.y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
-                );
-                sr.drawArc(corner, 270, 360 * (float) cg.gaugeRatio(), new Color(1, 1, 1, .5f));
-                tr.get(Font.LITTLE).drawText(cg.turnsLeft() + "", corner);
-            },
-            g -> spr.render(g.getSprite(spriteData), dimensions.tileAt(g.coordinates()))
-          ), c -> spr.render(c.getSprite(spriteData), dimensions.tileAt(c.coordinates()))));
+              var corner = dimensions.tileAt(o.coordinates(), Dimensions.Tile.Zone.RIGHT_CORNER);
+              if (!cg.isAttacking())
+                  spr.render(cg.getSprite(spriteData), dimensions.tileAt(cg.coordinates()));
+              sr.drawArc(corner, 270, 360 * (float) cg.gaugeRatio(), new Color(1, 1, 1, .5f));
+              tr.get(Font.LITTLE).drawText(cg.turnsLeft() + "", corner);
+          }, g -> spr.render(g.getSprite(spriteData), dimensions.tileAt(g.coordinates()))),
+          c -> spr.render(c.getSprite(spriteData), dimensions.tileAt(c.coordinates())))
+        );
         sr.drawRoundedGauge(
           dimensions.timeBar, model.refreshingProgression(), new Color(.2f, .2f, .3f, 1f), new Color(.4f, .4f, .5f, 1f)
         );

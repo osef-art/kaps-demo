@@ -3,7 +3,6 @@ package com.mygdx.kaps.level;
 import com.mygdx.kaps.level.gridobject.*;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -200,7 +199,7 @@ public class Grid {
 
         Collections.reverse(rows);
         this.rows = rows;
-        forEachTile((x, y) -> get(x, y).ifPresent(o -> o.coordinates().set(x, y)));
+        everyTile().forEach(c -> get(c).ifPresent(o -> o.coordinates().set(c)));
     }
 
     // getters
@@ -301,10 +300,6 @@ public class Grid {
 
     void repaint(GridObject obj, Color color) {
         get(obj.coordinates()).ifPresent(o -> o.repaint(color));
-    }
-
-    void forEachTile(BiConsumer<Integer, Integer> action) {
-        everyTile().forEach(c -> action.accept(c.x, c.y));
     }
 
     // stack operations
