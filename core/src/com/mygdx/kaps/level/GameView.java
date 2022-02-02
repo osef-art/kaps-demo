@@ -25,8 +25,8 @@ public class GameView extends ApplicationAdapter {
         private static class SidekickZone {
             private enum Zone {ZONE, HEAD, GAUGE, BUBBLE, COOLDOWN, COOLDOWN_TXT}
 
-            private final boolean flipped;
             private final Map<Zone, Rectangle> zones = new HashMap<>();
+            private final boolean flipped;
 
             private SidekickZone(SidekickZone sdkZone, Dimensions dimensions) {
                 sdkZone.zones.forEach((z, rect) -> zones.put(z, dimensions.symmetrical(rect)));
@@ -246,17 +246,19 @@ public class GameView extends ApplicationAdapter {
     }
 
     private void renderStack() {
-        model.getGrid().stack().forEach(o -> spr.render(o.getSprite(spriteData), dimensions.tileAt(o.coordinates())));
-        model.getGrid().cooldownGermStack().forEach(g -> {
-            var cdn = g.coordinates();
-            var corner = dimensions.tileCornerAt(cdn);
-            if (g.isAttacking()) sr.drawRect(
-              dimensions.tileAt(cdn),
-              cdn.x % 2 == cdn.y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
-            );
-            sr.drawArc(corner, 270, 360 * (float) g.gaugeRatio(), new Color(1, 1, 1, .5f));
-            tr.get(Font.LITTLE).drawText(g.turnsLeft() + "", corner);
-        });
+        model.getGrid().stack().forEach(o -> o.ifGermElse(
+          germ -> germ.ifHasCooldownElse(cg -> {
+                var cdn = cg.coordinates();
+                var corner = dimensions.tileCornerAt(cdn);
+                if (cg.isAttacking()) sr.drawRect(
+                  dimensions.tileAt(cdn),
+                  cdn.x % 2 == cdn.y % 2 ? new Color(.225f, .225f, .325f, 1) : new Color(.25f, .25f, .35f, 1)
+                );
+                sr.drawArc(corner, 270, 360 * (float) cg.gaugeRatio(), new Color(1, 1, 1, .5f));
+                tr.get(Font.LITTLE).drawText(cg.turnsLeft() + "", corner);
+            },
+            g -> spr.render(g.getSprite(spriteData), dimensions.tileAt(g.coordinates()))
+          ), c -> spr.render(c.getSprite(spriteData), dimensions.tileAt(c.coordinates()))));
         sr.drawRoundedGauge(
           dimensions.timeBar, model.refreshingProgression(), new Color(.2f, .2f, .3f, 1f), new Color(.4f, .4f, .5f, 1f)
         );
@@ -347,7 +349,7 @@ public class GameView extends ApplicationAdapter {
     }
 
     public void render() {
-        shakeScreen();
+        if (!model.isPaused()) shakeScreen();
         renderLayout();
         renderUpcoming();
 

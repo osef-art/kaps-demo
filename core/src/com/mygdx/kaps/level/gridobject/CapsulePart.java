@@ -91,6 +91,11 @@ public class CapsulePart extends GridObject {
         return dropping;
     }
 
+    @Override
+    public void ifGermElse(Consumer<Germ> germAction, Consumer<CapsulePart> capsAction) {
+        capsAction.accept(this);
+    }
+
     public void initDropping() {
         dropping = true;
     }

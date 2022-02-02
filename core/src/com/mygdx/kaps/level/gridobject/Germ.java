@@ -11,6 +11,7 @@ import com.mygdx.kaps.renderer.SpriteData;
 
 import java.util.Arrays;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class Germ extends GridObject {
@@ -139,6 +140,15 @@ public abstract class Germ extends GridObject {
     @Override
     public AnimatedSprite poppingAnim() {
         return SpriteData.poppingGermAnimation(kind, color());
+    }
+
+    @Override
+    public void ifGermElse(Consumer<Germ> germAction, Consumer<CapsulePart> capsAction) {
+        germAction.accept(this);
+    }
+
+    public void ifHasCooldownElse(Consumer<CooldownGerm> cooldownAction, Consumer<Germ> germAction) {
+        germAction.accept(this);
     }
 }
 

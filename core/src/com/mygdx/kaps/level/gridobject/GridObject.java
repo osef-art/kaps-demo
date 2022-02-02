@@ -6,6 +6,7 @@ import com.mygdx.kaps.renderer.AnimatedSprite;
 import com.mygdx.kaps.renderer.SpriteData;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 interface IGridObject {
     default boolean isGerm() {
@@ -29,6 +30,8 @@ interface IGridObject {
     void takeHit();
 
     void repaint(Color color);
+
+    void ifGermElse(Consumer<Germ> germAction, Consumer<CapsulePart> capsAction);
 
     default void triggerEffect(Level level) {}
 }
