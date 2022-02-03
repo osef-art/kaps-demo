@@ -230,12 +230,36 @@ class ParticleManager implements LevelObserver {
         }
     }
 
+    static class GaugeAnim {
+        private final Timer progression = Timer.ofMilliseconds(750);
+        private final Coordinates coordinates;
+        private final int actualValue;
+        private final int prevValue;
+        private final int max;
+
+        private GaugeAnim(WallGerm germ) {
+            coordinates = germ.coordinates();
+            max = germ.getHealth().getMax();
+            actualValue = germ.getHealth().getValue();
+            prevValue = actualValue + 1;
+        }
+
+        double ratio() {
+            return Utils.easeLerp((float) prevValue / max, (float) actualValue / max, progression.ratio());
+        }
+
+        Coordinates coordinates() {
+            return coordinates;
+        }
+    }
+
+    private final SoundStream stream = new SoundStream(.2f);
     private final List<GridParticleEffect> popping = new ArrayList<>();
     private final List<GridParticleEffect> attacks = new ArrayList<>();
-    private final List<ManaParticle> mana = new ArrayList<>();
     private final List<AnimatedSprite> generated = new ArrayList<>();
+    private final List<ManaParticle> mana = new ArrayList<>();
+    private final List<GaugeAnim> gauges = new ArrayList<>();
     private final Map<Color, Sidekick> sidekicks;
-    private final SoundStream stream = new SoundStream(.2f);
 
     ParticleManager(List<Sidekick> sidekicks) {
         this.sidekicks = sidekicks.stream().collect(
@@ -253,6 +277,10 @@ class ParticleManager implements LevelObserver {
 
     List<ManaParticle> getManaParticles() {
         return mana;
+    }
+
+    List<GaugeAnim> getGaugeAnimations() {
+        return gauges;
     }
 
     private void addManaParticle(GridObject obj) {
@@ -276,6 +304,7 @@ class ParticleManager implements LevelObserver {
     public void onObjectHit(GridObject obj) {
         LevelObserver.super.onObjectHit(obj);
         popping.add(new GridParticleEffect(obj));
+        obj.ifGerm(g -> g.ifWall(w -> gauges.add(new GaugeAnim(w))));
     }
 
     @Override
@@ -330,6 +359,7 @@ class ParticleManager implements LevelObserver {
         popping.removeIf(GridParticleEffect::hasVanished);
         attacks.removeIf(GridParticleEffect::hasVanished);
         generated.removeIf(AnimatedSprite::isFinished);
+        gauges.removeIf(g -> g.progression.isExceeded());
         mana.removeIf(ManaParticle::hasArrived);
     }
 }

@@ -29,8 +29,9 @@ public class GameView extends ApplicationAdapter {
 
             private Tile(float x, float y, float size) {
                 float cornerSize = size / 3;
+                float padding = size / 10;
                 zones.put(Zone.ZONE, new Rectangle(x, y, size, size));
-                zones.put(Zone.HEALTH_BAR, new Rectangle(x, y, size / 4, size));
+                zones.put(Zone.HEALTH_BAR, new Rectangle(x + padding, y - padding, size - padding * 2, size / 5));
                 zones.put(Zone.LEFT_CORNER, new Rectangle(x, y + size - cornerSize, cornerSize, cornerSize));
                 zones.put(Zone.RIGHT_CORNER, new Rectangle(x + size - cornerSize, y + size - cornerSize, cornerSize, cornerSize));
             }
@@ -341,11 +342,23 @@ public class GameView extends ApplicationAdapter {
         model.visualParticles().getGenerationParticles().forEach(
           p -> spr.render(p.getCurrentSprite(), dimensions.nextBox)
         );
+        model.visualParticles().getGaugeAnimations().forEach(g -> sr.drawGauge(
+          dimensions.tileAt(g.coordinates(), Dimensions.Tile.Zone.HEALTH_BAR),
+          g.ratio(), new Color(1, 1, 1, .4f), Color.WHITE
+        ));
     }
 
     private void renderGameMessage() {
         model.gameEndManager().ifChecked(model, c -> tr.get(Font.BIG).drawText(c.getMessage(), dimensions.gridZone));
         if (model.isPaused()) tr.get(Font.BIG).drawText("PAUSED !", dimensions.gridZone);
+    }
+
+    private void shakeScreen() {
+        if (model.quakes().isEmpty()) return;
+        camera.position.set(camOriginalPos);
+
+        model.quakes().forEach(q -> camera.position.add(-2 + new Random().nextInt(4), -2 + new Random().nextInt(4), 0));
+        camera.update();
     }
 
     void updateSprites() {
@@ -364,14 +377,6 @@ public class GameView extends ApplicationAdapter {
 
         renderParticles();
         renderGameMessage();
-    }
-
-    private void shakeScreen() {
-        if (model.quakes().isEmpty()) return;
-        camera.position.set(camOriginalPos);
-
-        model.quakes().forEach(q -> camera.position.add(-2 + new Random().nextInt(4), -2 + new Random().nextInt(4), 0));
-        camera.update();
     }
 
     public void dispose() {

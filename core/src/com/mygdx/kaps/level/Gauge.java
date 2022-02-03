@@ -8,7 +8,7 @@ public class Gauge {
         this(0, max);
     }
 
-    Gauge(int value, int max) {
+    public Gauge(int value, int max) {
         this.max = max;
         this.value = value;
     }
@@ -19,7 +19,7 @@ public class Gauge {
 
     @Override
     public String toString() {
-        return value + " / " + max;
+        return "[ " + value + " / " + max + " ]";
     }
 
     public int getMax() {
@@ -31,7 +31,7 @@ public class Gauge {
     }
 
     boolean isFull() {
-        return value >= max;
+        return ratio() >= 1;
     }
 
     public boolean isEmpty() {
@@ -56,10 +56,6 @@ public class Gauge {
 
     void increaseIfPossible() {
         if (!isFull()) increase();
-    }
-
-    void empty() {
-        value = 0;
     }
 
     public void fill() {

@@ -142,6 +142,9 @@ public abstract class Germ extends GridObject {
         return SpriteData.poppingGermAnimation(kind, color());
     }
 
+    public void ifWall(Consumer<WallGerm> action) {
+    }
+
     @Override
     public void ifGermElse(Consumer<Germ> germAction, Consumer<CapsulePart> capsAction) {
         germAction.accept(this);
@@ -155,46 +158,6 @@ public abstract class Germ extends GridObject {
 final class BasicGerm extends Germ {
     BasicGerm(Color color) {
         super(color, GermKind.BASIC);
-    }
-}
-
-final class WallGerm extends Germ {
-    private static final int maxHealth = 4;
-    private int health;
-
-    WallGerm(Color color, int health) {
-        super(color, GermKind.WALL, 3, 40);
-        if (health <= 0 || maxHealth < health)
-            throw new IllegalArgumentException("Invalid health: " + health + " / " + maxHealth);
-
-        this.health = health;
-    }
-
-    WallGerm(Color color) {
-        this(color, maxHealth);
-    }
-
-    public boolean isDestroyed() {
-        return health <= 0;
-    }
-
-    @Override
-    public int getScore() {
-        return isDestroyed() ? super.getScore() : 10;
-    }
-
-    public void takeHit() {
-        if (health > 0) health--;
-    }
-
-    @Override
-    public Sprite getSprite(SpriteData data) {
-        return data.getWallGerm(health, color()).getCurrentSprite();
-    }
-
-    @Override
-    public AnimatedSprite poppingAnim() {
-        return SpriteData.poppingWallAnimation(health, color());
     }
 }
 

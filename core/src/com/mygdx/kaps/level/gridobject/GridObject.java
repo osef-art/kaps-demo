@@ -31,6 +31,10 @@ interface IGridObject {
 
     void repaint(Color color);
 
+    default void ifGerm(Consumer<Germ> action) {
+        ifGermElse(action, c->{});
+    }
+
     void ifGermElse(Consumer<Germ> germAction, Consumer<CapsulePart> capsAction);
 
     default void triggerEffect(Level level) {}
