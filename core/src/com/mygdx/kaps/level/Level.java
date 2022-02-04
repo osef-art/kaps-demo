@@ -117,7 +117,7 @@ public class Level extends ApplicationAdapter {
     }
 
     long getGermsCount() {
-        return grid.stack().filter(GridObject::isGerm).count();
+        return grid.germStack().count();
     }
 
     Capsule newRandomCapsule(CapsuleType... types) {
@@ -155,7 +155,7 @@ public class Level extends ApplicationAdapter {
           .collect(Collectors.toUnmodifiableSet());
     }
 
-    public List<Timer> quakes() {
+    List<Timer> quakes() {
         return screenShaker.currentQuakes();
     }
 
@@ -175,7 +175,7 @@ public class Level extends ApplicationAdapter {
         return parameters;
     }
 
-    public boolean isPaused() {
+    boolean isPaused() {
         return parameters.paused;
     }
 
@@ -332,13 +332,6 @@ public class Level extends ApplicationAdapter {
         if (parameters.enablePreview) capsule.computePreview(grid);
     }
 
-    void spawnCapsuleIfAbsent() {
-        if (controlledCapsules.isEmpty()) {
-            spawnCapsule();
-            gridRefresher.reset();
-        }
-    }
-
     private void spawnCapsule() {
         var upcoming = upcomingCapsules.removeFirst();
         updatePreview(upcoming);
@@ -349,6 +342,13 @@ public class Level extends ApplicationAdapter {
         if (upcomingCapsules.size() < 2)
             upcomingCapsules.add(newRandomCapsule());
         controlledCapsules.add(upcoming);
+    }
+
+    void spawnCapsuleIfAbsent() {
+        if (controlledCapsules.isEmpty()) {
+            spawnCapsule();
+            gridRefresher.reset();
+        }
     }
 
     void triggerSidekicksIfReady() {

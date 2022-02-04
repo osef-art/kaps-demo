@@ -75,11 +75,11 @@ public abstract class Sidekick implements ISidekick {
     }
 
     void trigger(Level level) {
+        if (isAttacking()) return;
         ifActive(ManaSidekick::setGaugeToMax);
+        tasks.add(PeriodicTask.TaskBuilder.everyMilliseconds(10, this::emptyGauge)
+          .endWhen(this::gaugeIsReset));
         tasks.add(id.attack.apply(this, level).periodicMoves());
-        tasks.add(
-          PeriodicTask.TaskBuilder.everyMilliseconds(10, this::emptyGauge).endWhen(this::gaugeIsReset)
-        );
     }
 
     void updateTasks() {

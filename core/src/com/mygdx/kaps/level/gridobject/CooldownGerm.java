@@ -50,17 +50,13 @@ public abstract class CooldownGerm extends Germ {
         attacking = false;
     }
 
-    public void reset() {
-        cooldown.fill();
-    }
-
     public void decreaseCooldown() {
         cooldown.decreaseIfPossible();
     }
 
     public void trigger(Level level) {
         tasks.add(kind.newAttack(level, this).periodicMoves());
-        reset();
+        cooldown.fill();
     }
 
     public void updateTasks() {

@@ -46,10 +46,8 @@ abstract class LevelAttack {
     }
 
     static Optional<CapsulePart> getRandomCapsule(Level level) {
-        return Utils.getOptionalRandomFrom(level.getGrid().stack()
+        return Utils.getOptionalRandomFrom(level.getGrid().capsuleStack()
           .filter(Predicate.not(GridObject::isDropping))
-          .filter(GridObject::isCapsule)
-          .map(o -> (CapsulePart) o)
         );
     }
 }
