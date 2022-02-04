@@ -21,6 +21,7 @@ public class Utils {
         return Math.max(min, Math.min(max, value));
     }
 
+    @SafeVarargs
     public static <T> T getRandomFrom(T... elems) {
         return getRandomFrom(Arrays.stream(elems));
     }
