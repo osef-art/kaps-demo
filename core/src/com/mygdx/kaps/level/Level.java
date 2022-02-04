@@ -323,7 +323,7 @@ public class Level extends ApplicationAdapter {
         accept(capsule);
         decreaseAllCooldowns();
 
-        if (sidekicks.stream().noneMatch(Sidekick::isAttacking))
+        if (sidekicks.stream().noneMatch(Sidekick::isReady))
             spawnCapsuleIfAbsent();
     }
 
@@ -355,6 +355,7 @@ public class Level extends ApplicationAdapter {
         sidekicks.stream()
           .filter(Sidekick::isReady)
           .forEach(sdk -> {
+              if (sdk.isAttacking()) return;
               sdk.trigger(this);
               observers.forEach(o -> o.onSidekickTriggered(sdk));
           });
@@ -402,8 +403,8 @@ public class Level extends ApplicationAdapter {
 
     public void render() {
         if (!parameters.paused) {
-            observers.forEach(o -> o.onLevelUpdate(this));
             taskManager.update();
+            observers.forEach(o -> o.onLevelUpdate(this));
 
             sidekicks.forEach(Sidekick::updateTasks);
             grid.cooldownGermStack().forEach(CooldownGerm::updateTasks);
