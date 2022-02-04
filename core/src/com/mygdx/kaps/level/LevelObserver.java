@@ -29,7 +29,7 @@ interface LevelObserver {
 
     default void onCapsuleSpawn(Set<Capsule.CapsuleType> types) {}
 
-    default void onObjectHit(GridObject obj) {
+    default void onObjectHit(GridObject obj, int damage) {
         if (obj.isDestroyed()) onObjectDestroyed(obj);
     }
 
@@ -237,15 +237,15 @@ class ParticleManager implements LevelObserver {
         private final int prevValue;
         private final int max;
 
-        private GaugeAnim(WallGerm germ) {
+        private GaugeAnim(WallGerm germ, int damage) {
             coordinates = germ.coordinates();
             max = germ.getHealth().getMax();
             actualValue = germ.getHealth().getValue();
-            prevValue = actualValue + 1;
+            prevValue = actualValue + damage;
         }
 
         double ratio() {
-            return Utils.easeLerp((float) prevValue / max, (float) actualValue / max, progression.ratio());
+            return Utils.easeOutLerp((float) prevValue / max, (float) actualValue / max, progression.ratio());
         }
 
         Coordinates coordinates() {
@@ -301,10 +301,10 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
-    public void onObjectHit(GridObject obj) {
-        LevelObserver.super.onObjectHit(obj);
+    public void onObjectHit(GridObject obj, int damage) {
+        LevelObserver.super.onObjectHit(obj, damage);
         popping.add(new GridParticleEffect(obj));
-        obj.ifGerm(g -> g.ifWall(w -> gauges.add(new GaugeAnim(w))));
+        obj.ifGerm(g -> g.ifWall(w -> gauges.add(new GaugeAnim(w,damage))));
     }
 
     @Override
@@ -445,7 +445,7 @@ class ScoreManager implements LevelObserver {
     }
 
     @Override
-    public void onObjectHit(GridObject obj) {
+    public void onObjectHit(GridObject obj, int damage) {
         score += obj.getScore() * scoreMultiplier();
     }
 

@@ -271,7 +271,7 @@ public class Level extends ApplicationAdapter {
     private void hit(Coordinates coordinates, int damage) {
         grid.hit(coordinates, damage)
           .ifPresent(obj -> {
-              observers.forEach(obs -> obs.onObjectHit(obj));
+              observers.forEach(obs -> obs.onObjectHit(obj, damage));
               obj.triggerEffect(this);
           });
     }

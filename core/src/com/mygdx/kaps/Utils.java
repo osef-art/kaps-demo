@@ -13,6 +13,10 @@ public class Utils {
         return lerp(from, to, ratio * ratio * (3f - 2f * ratio));
     }
 
+    public static float easeOutLerp(float from, float to, double ratio) {
+        return lerp(from, to, 1 - (1 - ratio) * (1 - ratio));
+    }
+
     public static int clamp(int min, int value, int max) {
         return Math.max(min, Math.min(max, value));
     }
