@@ -49,7 +49,7 @@ interface LevelObserver {
 
     default void onGameResumed() {}
 
-    default void onLevelUpdate(Level level) {}
+    default void onLevelUpdate() {}
 }
 
 class SoundPlayer implements LevelObserver {
@@ -150,7 +150,7 @@ class ScreenShaker implements LevelObserver {
     }
 
     @Override
-    public void onLevelUpdate(Level level) {
+    public void onLevelUpdate() {
         episodes.removeIf(Timer::isExceeded);
     }
 }
@@ -347,7 +347,7 @@ class ParticleManager implements LevelObserver {
     }
 
     @Override
-    public void onLevelUpdate(Level level) {
+    public void onLevelUpdate() {
         Stream.of(getParticleEffects().map(p -> p.anim), generated.stream())
           .flatMap(Function.identity())
           .forEach(AnimatedSprite::updateExistenceTime);
@@ -356,6 +356,7 @@ class ParticleManager implements LevelObserver {
             stream.play(SoundStream.SoundStore.MANA);
         });
         popping.stream().filter(GridParticleEffect::hasVanished).forEach(p -> p.finalJob.run());
+
         popping.removeIf(GridParticleEffect::hasVanished);
         attacks.removeIf(GridParticleEffect::hasVanished);
         generated.removeIf(AnimatedSprite::isFinished);
@@ -410,11 +411,6 @@ class GameEndManager implements LevelObserver {
     boolean gameIsOver(Level level) {
         return level.visualParticles().getParticleEffects().findAny().isEmpty() &&
           Arrays.stream(GameEndCase.values()).anyMatch(c -> c.endGameIfChecked(level));
-    }
-
-    @Override
-    public void onLevelUpdate(Level level) {
-        gameIsOver(level);
     }
 }
 

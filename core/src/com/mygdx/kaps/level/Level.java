@@ -408,7 +408,7 @@ public class Level extends ApplicationAdapter {
     public void render() {
         if (!parameters.paused) {
             taskManager.update();
-            observers.forEach(o -> o.onLevelUpdate(this));
+            observers.forEach(LevelObserver::onLevelUpdate);
 
             sidekicks.forEach(Sidekick::updateTasks);
             grid.cooldownGermStack().forEach(CooldownGerm::updateTasks);
