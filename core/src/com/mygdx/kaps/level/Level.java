@@ -175,6 +175,10 @@ public class Level extends ApplicationAdapter {
         return parameters;
     }
 
+    public boolean isOver() {
+        return gameEndManager.gameIsOver(this);
+    }
+
     boolean isPaused() {
         return parameters.paused;
     }

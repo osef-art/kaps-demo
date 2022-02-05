@@ -131,13 +131,13 @@ class ScreenShaker implements LevelObserver {
         IntStream.range(0, iterations).forEach(n -> episodes.add(Timer.ofMilliseconds(millis)));
     }
 
-    private void shake(int millis) {
-        shake(millis, 1);
+    private void shake() {
+        shake(800, 1);
     }
 
     @Override
     public void onTileAttack(Coordinates coordinates, AttackType type) {
-        shake(800);
+        shake();
     }
 
     @Override
@@ -386,14 +386,14 @@ class GameEndManager implements LevelObserver {
             this.sound = sound;
         }
 
-        private void endGameIfChecked(Level level) {
-            if (!condition.test(level)) return;
+        private boolean endGameIfChecked(Level level) {
+            if (!condition.test(level)) return false;
             SoundStream.play(sound, .75f);
             try {
                 Thread.sleep(2500);
             } catch (InterruptedException ignored) {
             }
-            System.exit(0);
+            return true;
         }
 
         public String getMessage() {
@@ -407,10 +407,14 @@ class GameEndManager implements LevelObserver {
           .forEach(action);
     }
 
+    boolean gameIsOver(Level level) {
+        return level.visualParticles().getParticleEffects().findAny().isEmpty() &&
+          Arrays.stream(GameEndCase.values()).anyMatch(c -> c.endGameIfChecked(level));
+    }
+
     @Override
     public void onLevelUpdate(Level level) {
-        if (level.visualParticles().getParticleEffects().findAny().isEmpty())
-            Arrays.stream(GameEndCase.values()).forEach(c -> c.endGameIfChecked(level));
+        gameIsOver(level);
     }
 }
 

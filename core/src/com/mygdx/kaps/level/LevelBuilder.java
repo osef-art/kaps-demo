@@ -7,26 +7,24 @@ import com.mygdx.kaps.level.gridobject.Germ;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class LevelBuilder {
-    private final Set<SidekickId> sidekicks = new HashSet<>();
-    private final static int maxSidekicks = 2;
-    private final static int maxLevels = 20;
-    private int levelNum = -1;
+    private final static Set<SidekickId> sidekicks = new HashSet<>();
+    private final static List<Integer> LEVEL_SEQ = new ArrayList<>();
+    private final static int MAX_SIDEKICKS = 2;
+    private final static int RANDOM_GRID = -1;
+    private final static int MAX_LEVELS = 20;
 
     private void fillParty() {
-        while (sidekicks.size() < maxSidekicks)
+        while (sidekicks.size() < MAX_SIDEKICKS)
             sidekicks.add(Utils.getRandomFrom(SidekickId.values()));
     }
 
-    private Level generateRandomLevel(int width, int height, int germNumber) {
+    private Level generateRandomGrid(int width, int height, int germNumber) {
         if (germNumber > width * Math.min(height, 3))
             throw new IllegalArgumentException("Too many germs for a " + width + "x" + height + " grid: " + germNumber);
 
@@ -47,7 +45,8 @@ public class LevelBuilder {
         return new Level("??? - Bonus", grid, sidekicks);
     }
 
-    private Level loadLevelFrom(String filePath) {
+    private Level loadLevelFromNumber(int lvl) {
+        String filePath = "android/assets/levels/level" + lvl;
         List<String> gridData;
 
         try {
@@ -68,25 +67,35 @@ public class LevelBuilder {
         }).collect(Collectors.toList());
 
         fillParty();
-        return new Level("1 - " + levelNum, new Grid(rows), sidekicks);
+        return new Level("1 - " + lvl, new Grid(rows), sidekicks);
     }
 
     public void addSidekick(String name) {
-        if (sidekicks.size() < maxSidekicks)
+        if (sidekicks.size() < MAX_SIDEKICKS)
             sidekicks.add(SidekickId.ofName(name));
     }
 
-    public void setRandomLevel() {
-        setLevel(new Random().nextInt(maxLevels + 1));
+    public void addRandomGrid() {
+        addLevel(RANDOM_GRID);
     }
 
-    public void setLevel(int lvl) {
-        levelNum = lvl;
+    public void addRandomLevel() {
+        addLevel(new Random().nextInt(MAX_LEVELS + 1));
     }
 
-    public Level build() {
-        return levelNum <= -1 ?
-                 generateRandomLevel(6, 12, 10) :
-                 loadLevelFrom("android/assets/levels/level" + levelNum);
+    public void addLevel(int lvl) {
+        LEVEL_SEQ.add(lvl);
+    }
+
+    public List<Level> buildSequence() {
+        if (LEVEL_SEQ.isEmpty()) addRandomGrid();
+
+        return LEVEL_SEQ.stream().map(
+          lvl -> lvl == RANDOM_GRID ? generateRandomGrid(
+            6 + new Random().nextInt(3),
+            10 + new Random().nextInt(3),
+            10 + new Random().nextInt(3)
+          ) : loadLevelFromNumber(lvl)
+        ).collect(Collectors.toUnmodifiableList());
     }
 }

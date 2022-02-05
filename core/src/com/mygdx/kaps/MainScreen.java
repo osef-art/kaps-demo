@@ -6,16 +6,18 @@ import com.mygdx.kaps.controller.InputHandler;
 import com.mygdx.kaps.level.Level;
 import com.mygdx.kaps.level.LevelBuilder;
 
+import java.util.LinkedList;
+
 public class MainScreen extends ApplicationAdapter {
+    private final LinkedList<Level> levels = new LinkedList<>();
     private final String[] args;
     private InputHandler inputs;
-    private Level game;
 
     public MainScreen(String... args) {
         this.args = args;
     }
 
-    private Level loadedLevel() {
+    private void loadLevelSequence() {
         LevelBuilder lvlBuilder = new LevelBuilder();
         int flags = 0;
 
@@ -26,30 +28,36 @@ public class MainScreen extends ApplicationAdapter {
                         lvlBuilder.addSidekick(args[flags + 1]);
                     break;
                 case "-l":
-                    lvlBuilder.setRandomLevel();
+                    lvlBuilder.addRandomLevel();
                     if (args.length > flags + 1 && args[flags + 1].charAt(0) != '-')
-                        lvlBuilder.setLevel(Integer.parseInt(args[flags + 1]));
+                        lvlBuilder.addLevel(Integer.parseInt(args[flags + 1]));
                     break;
             }
-            flags ++;
+            flags++;
         }
-        return lvlBuilder.build();
+        levels.addAll(lvlBuilder.buildSequence());
     }
 
     @Override
     public void create() {
-        game = loadedLevel();
-        Gdx.input.setInputProcessor(inputs = new InputHandler(game));
+        loadLevelSequence();
+        Gdx.input.setInputProcessor(inputs = new InputHandler(levels.get(0)));
     }
 
     @Override
     public void render() {
         inputs.update();
-        game.render();
+        levels.get(0).render();
+
+        if (levels.get(0).isOver()) {
+            levels.removeFirst();
+            if (levels.isEmpty()) System.exit(0);
+            inputs = new InputHandler(levels.get(0));
+        }
     }
 
     @Override
     public void dispose() {
-        game.dispose();
+        levels.forEach(Level::dispose);
     }
 }
