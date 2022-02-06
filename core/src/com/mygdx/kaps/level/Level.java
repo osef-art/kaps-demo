@@ -366,12 +366,12 @@ public class Level extends ApplicationAdapter {
     }
 
     void triggerGermsIfReady() {
-        grid.cooldownGermStack()
-          .filter(CooldownGerm::isReady)
-          .forEach(g -> {
-              g.trigger(this);
-              observers.forEach(o -> o.onGermTriggered(g));
-          });
+        grid.germStack()
+          .forEach(g -> g.ifHasCooldown(cg -> {
+              if (!cg.isReady()) return;
+              cg.trigger(this);
+              observers.forEach(o -> o.onGermTriggered(cg));
+          }));
     }
 
     private void decreaseAllCooldowns() {
@@ -382,7 +382,8 @@ public class Level extends ApplicationAdapter {
               s.trigger(this);
               observers.forEach(o -> o.onSidekickTriggered(s));
           }));
-        grid.cooldownGermStack().forEach(CooldownGerm::decreaseCooldown);
+        grid.germStack()
+          .forEach(g -> g.ifHasCooldown(CooldownGerm::decreaseCooldown));
     }
 
     private void fastenGridRefreshing() {
@@ -411,7 +412,7 @@ public class Level extends ApplicationAdapter {
             observers.forEach(LevelObserver::onLevelUpdate);
 
             sidekicks.forEach(Sidekick::updateTasks);
-            grid.cooldownGermStack().forEach(CooldownGerm::updateTasks);
+            grid.germStack().forEach(g -> g.ifHasCooldown(CooldownGerm::updateTasks));
             view.updateSprites();
         }
         view.render();

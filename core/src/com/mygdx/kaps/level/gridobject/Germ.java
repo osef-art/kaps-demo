@@ -150,6 +150,10 @@ public abstract class Germ extends GridObject {
         germAction.accept(this);
     }
 
+    public void ifHasCooldown(Consumer<CooldownGerm> cooldownAction) {
+        ifHasCooldownElse(cooldownAction, g->{});
+    }
+
     public void ifHasCooldownElse(Consumer<CooldownGerm> cooldownAction, Consumer<Germ> germAction) {
         germAction.accept(this);
     }

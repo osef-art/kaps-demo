@@ -27,7 +27,7 @@ public class MainScreen extends ApplicationAdapter {
 
         if (args.isBlank()) IntStream.rangeClosed(0, 20).forEach(lvlBuilder::addLevel);
         else Arrays.stream(args.split("-"))
-          .filter(Predicate.not(""::equals))
+          .filter(Predicate.not(String::isBlank))
           .forEach(cmd -> {
               var flag = cmd.charAt(0);
               var args = Arrays.stream(cmd.split(" "))
