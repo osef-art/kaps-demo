@@ -17,19 +17,23 @@ A *'Dr. Mario'-like* colorful mini-game. Match the colored capsules and get rid 
 ...or place yourself in the root directory, open a terminal and launch the command:
 
 ```sh
-java -jar kaps-demo.jar
+> java -jar kaps-demo.jar
 ```
 
 ### COMMANDS ! ⌨
 
 ```sh
-... -l [number]
+> ... -l [number1] [number2] ...
 ```
-Launches level n° `number`
+
+Launches a sequence of levels of n° `number`.  
+If `number` is `?`, generates a random grid !
+
 ```sh
-... -s [name]
+> ... -s [name]
 ```
-Adds the sidekick of name `name` to the team on level start  
+
+Adds the sidekick of name `name` to the team before the level starts.
 
 *More coming soon !*
 
@@ -58,22 +62,22 @@ Destroy tiles of a sidekick's color to fill its **mana gauge** and unleash his a
 ![quick gameplay](android/assets/sprites/screens/KAPS-clip.gif "Quick gameplay")
 
 Smash **every germ** 🦠 of the grid to win !  
-But make sure not to exceed the grid ! Beware, the capsules drop faster over time.
+But make sure not to **submerge** the grid ! Beware, the capsules drop faster over time.
 
 ## SIDEKICKS 🤜‍🤛
 
 | Name | | Mana | Dmg | Power |  
 |---:|:---:|:---:|:---:|:---|   
-| JIM    | ![JIM   ](android/assets/sprites/sidekicks/Jim_0.png "Jim")       | 20| 1| Slices a random object and all tiles on the same line
-| SEAN   | ![SEAN  ](android/assets/sprites/sidekicks/Sean_0.png "Sean")     | 20| 2| Hits a random object and adjacent tiles
-| ZYRAME | ![ZYRAME](android/assets/sprites/sidekicks/Zyrame_0.png "Zyrame") | 20| 2| Slices two random germs
-| PAINT  | ![PAINT ](android/assets/sprites/sidekicks/Paint_0.png "Paint")   | 10       | | Paint 5 random caps
-| COLOR  | ![COLOR ](android/assets/sprites/sidekicks/Color_0.png "Color")   | 4 turns| | Generates a capsule with both caps of same color
-| MIMAPS | ![MIMAPS](android/assets/sprites/sidekicks/Mimaps_0.png "Mimaps") | 15       | 2| Hits 3 random objects
-| BOMBER | ![BOMBER](android/assets/sprites/sidekicks/Bomber_0.png "Bomber") | 13 turns | 1| Generates an explosive capsule
-| SNIPER | ![SNIPER](android/assets/sprites/sidekicks/Sniper_0.png "Sniper") | 15       |3 | Shoots a random germ
-| RED    | ![RED   ](android/assets/sprites/sidekicks/Red_0.png "Red")       | 25| 2| Slices a random object and all tiles on the same column
-| XERETH | ![XERETH](android/assets/sprites/sidekicks/Xereth_0.png "Xereth") | 25| 1| Slices a random object and all tiles on the same diagonals
+| JIM    | ![JIM   ](android/assets/sprites/sidekicks/Jim_0.png "Jim")       | 20       | 1 | Slices a random object and all tiles on the same line
+| SEAN   | ![SEAN  ](android/assets/sprites/sidekicks/Sean_0.png "Sean")     | 20       | 2 | Hits a random object and adjacent tiles
+| ZYRAME | ![ZYRAME](android/assets/sprites/sidekicks/Zyrame_0.png "Zyrame") | 20       | 2 | Slices two random germs
+| PAINT  | ![PAINT ](android/assets/sprites/sidekicks/Paint_0.png "Paint")   | 10       |   | Paints 5 random caps
+| COLOR  | ![COLOR ](android/assets/sprites/sidekicks/Color_0.png "Color")   | 4 turns  |   | Generates a capsule with both caps of same color
+| MIMAPS | ![MIMAPS](android/assets/sprites/sidekicks/Mimaps_0.png "Mimaps") | 15       | 2 | Hits 3 random objects
+| BOMBER | ![BOMBER](android/assets/sprites/sidekicks/Bomber_0.png "Bomber") | 13 turns | 1 | Generates an explosive capsule
+| SNIPER | ![SNIPER](android/assets/sprites/sidekicks/Sniper_0.png "Sniper") | 15       | 3 | Shoots a random germ
+| RED    | ![RED   ](android/assets/sprites/sidekicks/Red_0.png "Red")       | 25       | 2 | Slices a random object and all tiles on the same column
+| XERETH | ![XERETH](android/assets/sprites/sidekicks/Xereth_0.png "Xereth") | 25       | 1 | Slices a random object and all tiles on the same diagonals
 | ???    | *(Coming soon !)* | 5 turns  |   | Paints 3 blank objects in his mate’s color
 | ???    | *(Coming soon !)* | 18       | 1 | Hits a random object with its left and right tiles, and another with its top and bottom tiles
 | ???    | *(Coming soon !)* | 12       |   | Freezes definitively a germ with a cooldown
