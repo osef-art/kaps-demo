@@ -12,16 +12,16 @@ A *'Dr. Mario'-like* colorful mini-game. Match the colored capsules and get rid 
 
 #### WINDOWS
 
-- Click on `launch.bat`
+- Click on `kaps.bat`
 
 #### LINUX
 
-- Execute `./launch.sh`
+- Execute `./kaps.sh`
 
 ...or place yourself in the root directory, open a terminal and launch the command:
 
 ```sh
-> java -jar kaps-demo.jar
+> java -jar bin/kaps-demo.jar
 ```
 
 ### COMMANDS ! ⌨
