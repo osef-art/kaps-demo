@@ -12,7 +12,7 @@ A *'Dr. Mario'-like* colorful mini-game. Match the colored capsules and get rid 
 
 #### WINDOWS
 
-- Click on `kaps.bat`
+- Click on `kaps.exe`
 
 #### LINUX
 
