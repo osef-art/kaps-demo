@@ -90,8 +90,10 @@ class SoundPlayer implements LevelObserver {
         if (germs.size() > 0) {
             if (germs.stream().anyMatch(GridObject::isDestroyed))
                 mainStream.play(SoundStream.SoundStore.PLOP, combo - 1);
-            else if (germs.stream().anyMatch(g -> g.isOfKind(Germ.GermKind.WALL)))
+            else if (germs.stream().anyMatch(g -> g.isOfKind(Germ.GermKind.WALL))) {
                 mainStream.play(SoundStream.SoundStore.BREAK);
+                mainStream.play(SoundStream.SoundStore.MATCH, combo - 1);
+            }
         } else if (matches.stream().anyMatch(Grid.Match::isBig))
             mainStream.play(SoundStream.SoundStore.MATCH_BIG, combo - 1);
         else if (!matches.isEmpty()) mainStream.play(SoundStream.SoundStore.MATCH, combo - 1);
@@ -304,7 +306,7 @@ class ParticleManager implements LevelObserver {
     public void onObjectHit(GridObject obj, int damage) {
         LevelObserver.super.onObjectHit(obj, damage);
         popping.add(new GridParticleEffect(obj));
-        obj.ifGerm(g -> g.ifWall(w -> gauges.add(new GaugeAnim(w,damage))));
+        obj.ifGerm(g -> g.ifWall(w -> gauges.add(new GaugeAnim(w, damage))));
     }
 
     @Override
@@ -365,55 +367,6 @@ class ParticleManager implements LevelObserver {
     }
 }
 
-class GameEndManager implements LevelObserver {
-    enum GameEndCase {
-        GERMS_CLEARED(lvl -> lvl.getGermsCount() <= 0, "✨ LEVEL CLEARED ! ✨", SoundStream.SoundStore.CLEARED),
-        SPAWN_OVERLAP(lvl -> lvl.controlledCapsules().stream()
-          .map(c -> c.atLeastOneVerify(p -> lvl.getGrid().get(p.coordinates())
-            .map(o -> !o.isDropping())
-            .orElse(false)
-          ))
-          .reduce(Boolean::logicalOr)
-          .orElse(false), "💀 GAME OVER ! 💀", SoundStream.SoundStore.GAME_OVER),
-        ;
-
-        private final SoundStream.SoundStore sound;
-        private final Predicate<Level> condition;
-        private final String message;
-
-        GameEndCase(Predicate<Level> condition, String message, SoundStream.SoundStore sound) {
-            this.condition = condition;
-            this.message = message;
-            this.sound = sound;
-        }
-
-        private boolean endGameIfChecked(Level level) {
-            if (!condition.test(level)) return false;
-            SoundStream.play(sound, .75f);
-            try {
-                Thread.sleep(2500);
-            } catch (InterruptedException ignored) {
-            }
-            return true;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-    }
-
-    void ifChecked(Level level, Consumer<GameEndCase> action) {
-        Arrays.stream(GameEndCase.values())
-          .filter(c -> c.condition.test(level))
-          .forEach(action);
-    }
-
-    boolean gameIsOver(Level level) {
-        return level.visualParticles().getParticleEffects().findAny().isEmpty() &&
-          Arrays.stream(GameEndCase.values()).anyMatch(c -> c.endGameIfChecked(level));
-    }
-}
-
 class LevelAttackObserver implements LevelObserver {
     @Override
     public void onCapsuleFreeze(Level level) {
@@ -460,3 +413,54 @@ class ScoreManager implements LevelObserver {
         this.combo++;
     }
 }
+
+class GameEndManager implements LevelObserver {
+    enum GameEndCase {
+        GERMS_CLEARED(lvl -> lvl.getGermsCount() <= 0, "✨ LEVEL CLEARED ! ✨", SoundStream.SoundStore.CLEARED),
+        SPAWN_OVERLAP(lvl -> lvl.controlledCapsules().stream()
+          .map(c -> c.atLeastOneVerify(p -> lvl.getGrid().get(p.coordinates())
+            .map(o -> !o.isDropping())
+            .orElse(false)
+          ))
+          .reduce(Boolean::logicalOr)
+          .orElse(false), "💀 GAME OVER ! 💀", SoundStream.SoundStore.GAME_OVER),
+        ;
+
+        private final SoundStream.SoundStore sound;
+        private final Predicate<Level> condition;
+        private final String message;
+
+        GameEndCase(Predicate<Level> condition, String message, SoundStream.SoundStore sound) {
+            this.condition = condition;
+            this.message = message;
+            this.sound = sound;
+        }
+
+        private boolean endGameIfChecked(Level level) {
+            if (!condition.test(level)) return false;
+            SoundStream.play(sound, .75f);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException ignored) {
+            }
+            if (this == SPAWN_OVERLAP) System.exit(0);
+            return true;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    void ifChecked(Level level, Consumer<GameEndCase> action) {
+        Arrays.stream(GameEndCase.values())
+          .filter(c -> c.condition.test(level))
+          .forEach(action);
+    }
+
+    boolean gameIsOver(Level level) {
+        return level.visualParticles().getParticleEffects().findAny().isEmpty() &&
+                 Arrays.stream(GameEndCase.values()).anyMatch(c -> c.endGameIfChecked(level));
+    }
+}
+
