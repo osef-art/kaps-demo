@@ -17,7 +17,9 @@ public enum Color {
     COLOR_10(new java.awt.Color(100, 110, 170)),
     COLOR_11(new java.awt.Color(50, 180, 180)),
     COLOR_12(new java.awt.Color(235, 150, 140)),
-    COLOR_13(new java.awt.Color(70, 50, 130));
+    COLOR_13(new java.awt.Color(50, 100, 225)),
+//    COLOR_14(new java.awt.Color(175, 225, 235))
+    ;
 
     private final com.badlogic.gdx.graphics.Color gdxColor;
     private final boolean blank;
