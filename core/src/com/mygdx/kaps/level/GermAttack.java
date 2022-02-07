@@ -8,6 +8,7 @@ import com.mygdx.kaps.level.gridobject.GridObject;
 import com.mygdx.kaps.time.PeriodicTask;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.function.Function;
@@ -133,8 +134,9 @@ class SidekickAttack extends LevelAttack {
           .map(GridObject::coordinates)
           .orElse(getRandomTileCoordinates(lvl));
         return new SidekickAttack(lvl, 25, Stream.of(
-            lvl.getGrid().everyTile().filter(c -> c.x - picked.x == c.y - picked.y),
-            lvl.getGrid().everyTile().filter(c -> c.x - picked.x == picked.y - c.y)
+            lvl.getGrid().everyTile().filter(c -> c.x - picked.x == picked.y - c.y),
+            IntStream.range(0, 10).mapToObj(n -> new Coordinates(-1, -1)),
+            lvl.getGrid().everyTile().filter(c -> c.x - picked.x == c.y - picked.y).sorted(Comparator.comparingInt(c -> -c.y))
           )
           .flatMap(Function.identity())
           .map(c -> () -> lvl.attack(c, sdk))
