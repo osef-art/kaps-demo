@@ -1,8 +1,9 @@
-<div style="text-align: center;">    
+<!--suppress HtmlDeprecatedTag -->
+<center>    
 
 # ![>](android/assets/sprites/icons/icon.png "hey") KAPS! ![<](android/assets/sprites/icons/icon.png "you")
 
-</div>
+</center>
 
 A *'Dr. Mario'-like* colorful mini-game. Match the colored capsules and get rid of every germ in the grid ! 🧪
 
