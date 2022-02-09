@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class LevelBuilder {
+public class LevelLoader {
+    private final static LinkedList<Integer> LEVEL_SEQ = new LinkedList<>();
     private final static Set<SidekickId> sidekicks = new HashSet<>();
-    private final static List<Integer> LEVEL_SEQ = new ArrayList<>();
     private final static int MAX_SIDEKICKS = 2;
     private final static int RANDOM_GRID = -1;
     private final static int MAX_LEVELS = 20;
@@ -84,22 +84,22 @@ public class LevelBuilder {
     }
 
     public void addLevel(int lvl) {
-        if (lvl < 0 || MAX_LEVELS < lvl)
+        if (lvl < -1 || MAX_LEVELS < lvl)
             throw new IllegalArgumentException(String.format(
               "Invalid level number: %d (%s)", lvl, lvl < MAX_LEVELS ? "max level is 20" : "negative value")
             );
         LEVEL_SEQ.add(lvl);
     }
 
-    public List<Level> buildSequence() {
-        if (LEVEL_SEQ.isEmpty()) addRandomGrid();
+    public Optional<Level> takeNextLevel() {
+        if (LEVEL_SEQ.isEmpty()) return Optional.empty();
 
-        return LEVEL_SEQ.stream().map(
-          lvl -> lvl == RANDOM_GRID ? generateRandomGrid(
-            6 + new Random().nextInt(3),
-            10 + new Random().nextInt(3),
-            10 + new Random().nextInt(3)
-          ) : loadLevelFromNumber(lvl)
-        ).collect(Collectors.toUnmodifiableList());
+        return Optional.of(LEVEL_SEQ.removeFirst())
+          .map(lvl -> lvl == RANDOM_GRID ? generateRandomGrid(
+              6 + new Random().nextInt(3),
+              10 + new Random().nextInt(3),
+              10 + new Random().nextInt(3)
+            ) : loadLevelFromNumber(lvl)
+          );
     }
 }

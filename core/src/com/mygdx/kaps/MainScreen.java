@@ -4,17 +4,17 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.mygdx.kaps.controller.InputHandler;
 import com.mygdx.kaps.level.Level;
-import com.mygdx.kaps.level.LevelBuilder;
+import com.mygdx.kaps.level.LevelLoader;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MainScreen extends ApplicationAdapter {
-    private final LinkedList<Level> levels = new LinkedList<>();
+    private Level level;
+    private final LevelLoader lvlLoader = new LevelLoader();
     private final String args;
     private InputHandler inputs;
 
@@ -22,10 +22,8 @@ public class MainScreen extends ApplicationAdapter {
         this.args = String.join(" ", args);
     }
 
-    private LevelBuilder loadedLevelSequence() {
-        LevelBuilder lvlBuilder = new LevelBuilder();
-
-        if (args.isBlank()) IntStream.rangeClosed(0, 20).forEach(lvlBuilder::addLevel);
+    private void loadLevelSequence() {
+        if (args.isBlank()) IntStream.rangeClosed(0, 20).forEach(lvlLoader::addLevel);
         else Arrays.stream(args.split("-"))
           .filter(Predicate.not(String::isBlank))
           .forEach(cmd -> {
@@ -37,58 +35,55 @@ public class MainScreen extends ApplicationAdapter {
 
               switch (flag) {
                   case 'l':
-                      if (args.isEmpty()) lvlBuilder.addRandomLevel();
+                      if (args.isEmpty()) lvlLoader.addRandomLevel();
                       else args.forEach(lvl -> {
                           switch (lvl) {
                               case "!":
-                                  lvlBuilder.addRandomGrid();
+                                  lvlLoader.addRandomGrid();
                                   break;
                               case "?":
-                                  lvlBuilder.addRandomLevel();
+                                  lvlLoader.addRandomLevel();
                                   break;
                               default:
                                   if (!lvl.chars().mapToObj(c -> (char) c).allMatch(Character::isDigit))
                                       throw new IllegalArgumentException(String.format("Was expecting a number, found '%s'", lvl));
-                                  lvlBuilder.addLevel(Integer.parseInt(lvl));
+                                  lvlLoader.addLevel(Integer.parseInt(lvl));
                           }
                       });
                       break;
                   case 's':
-                      args.forEach(lvlBuilder::addSidekick);
+                      args.forEach(lvlLoader::addSidekick);
               }
           });
 
-        return lvlBuilder;
     }
 
-    private Level currentLevel() {
-        return levels.get(0);
-    }
-
-    private void bindInputsToCurrentLevel() {
-        Gdx.input.setInputProcessor(inputs = new InputHandler(currentLevel()));
+    private void loadNextLevel() {
+        lvlLoader.takeNextLevel().ifPresentOrElse(lvl -> {
+            level = lvl;
+            Gdx.input.setInputProcessor(inputs = new InputHandler(level));
+        }, ()->System.exit(0));
     }
 
     @Override
     public void create() {
-        levels.addAll(loadedLevelSequence().buildSequence());
-        bindInputsToCurrentLevel();
+        loadLevelSequence();
+        loadNextLevel();
     }
 
     @Override
     public void render() {
         inputs.update();
-        currentLevel().render();
+        level.render();
 
-        if (currentLevel().isOver()) {
-            levels.removeFirst();
-            if (levels.isEmpty()) System.exit(0);
-            bindInputsToCurrentLevel();
+        if (level.isOver()) {
+            level.dispose();
+            loadNextLevel();
         }
     }
 
     @Override
     public void dispose() {
-        levels.forEach(Level::dispose);
+        level.dispose();
     }
 }
