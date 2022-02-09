@@ -39,8 +39,18 @@ public class MainScreen extends ApplicationAdapter {
                   case 'l':
                       if (args.isEmpty()) lvlBuilder.addRandomLevel();
                       else args.forEach(lvl -> {
-                          if (lvl.equals("?")) lvlBuilder.addRandomGrid();
-                          else lvlBuilder.addLevel(Integer.parseInt(lvl));
+                          switch (lvl) {
+                              case "!":
+                                  lvlBuilder.addRandomGrid();
+                                  break;
+                              case "?":
+                                  lvlBuilder.addRandomLevel();
+                                  break;
+                              default:
+                                  if (!lvl.chars().mapToObj(c -> (char) c).allMatch(Character::isDigit))
+                                      throw new IllegalArgumentException(String.format("Was expecting a number, found '%s'", lvl));
+                                  lvlBuilder.addLevel(Integer.parseInt(lvl));
+                          }
                       });
                       break;
                   case 's':

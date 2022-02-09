@@ -26,7 +26,7 @@ public class LevelBuilder {
 
     private Level generateRandomGrid(int width, int height, int germNumber) {
         if (germNumber > width * Math.min(height, 3))
-            throw new IllegalArgumentException("Too many germs for a " + width + "x" + height + " grid: " + germNumber);
+            throw new IllegalArgumentException(String.format("Too many germs for a %dx%d grid: %d", width, height, germNumber));
 
         var grid = new Grid(width, height);
 
@@ -54,7 +54,7 @@ public class LevelBuilder {
             gridData = lines.collect(Collectors.toList());
             lines.close();
         } catch (IOException e) {
-            throw new IllegalArgumentException("An error occurred while parsing file " + filePath + ": " + e);
+            throw new IllegalArgumentException(String.format("An error occurred while parsing file %s: %s", filePath, e));
         }
 
         var rows = gridData.stream().map(line -> {
@@ -84,6 +84,10 @@ public class LevelBuilder {
     }
 
     public void addLevel(int lvl) {
+        if (lvl < 0 || MAX_LEVELS < lvl)
+            throw new IllegalArgumentException(String.format(
+              "Invalid level number: %d (%s)", lvl, lvl < MAX_LEVELS ? "max level is 20" : "negative value")
+            );
         LEVEL_SEQ.add(lvl);
     }
 
