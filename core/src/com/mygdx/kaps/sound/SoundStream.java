@@ -44,7 +44,7 @@ public class SoundStream {
             if (set <= 0) throw new IllegalArgumentException("Invalid set number.");
             paths = IntStream.range(0, set)
               .mapToObj(n -> toString().toLowerCase() + (set > 1 ? n : ""))
-              .map(name -> "android/assets/sounds/" + name + ".wav")
+              .map(name -> String.format("android/assets/sounds/%s.wav", name))
               .collect(Collectors.toUnmodifiableList());
         }
 

@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@SuppressWarnings("DefaultLocale")
 public class GameView extends ApplicationAdapter {
     private static class Dimensions {
         private static class Tile {
@@ -227,7 +228,7 @@ public class GameView extends ApplicationAdapter {
           dimensions.nextBox.width, new Color(.45f, .45f, .6f, 1f));
 
         if (model.getScoreData().currentCombo() > 1)
-            tr.get(Font.LITTLE).drawText("x" + model.getScoreData().currentCombo() + " COMBO !",
+            tr.get(Font.LITTLE).drawText(String.format("x%d COMBO !", model.getScoreData().currentCombo()),
               50 + new Random().nextInt(3), dimensions.scoreZone.y + 10 + new Random().nextInt(3));
         tr.get(Font.BIG).drawTextWithShadow(String.valueOf(model.getScoreData().totalScore()), 15,
           dimensions.scoreZone.y + dimensions.scoreZone.height / 2);

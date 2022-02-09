@@ -50,7 +50,7 @@ class Capsule {
 
     @Override
     public String toString() {
-        return "(" + main + " | " + main.linked().orElse(main) + ")";
+        return String.format("(%s | %s)", main, main.linked().orElse(main));
     }
 
     Optional<Capsule> preview() {

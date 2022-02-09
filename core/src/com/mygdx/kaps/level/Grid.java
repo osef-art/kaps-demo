@@ -63,11 +63,6 @@ public class Grid {
         }
 
         @Override
-        public String toString() {
-            return "(" + objects.size() + ")" + objects;
-        }
-
-        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof Match)) return false;
@@ -255,10 +250,6 @@ public class Grid {
 
     Stream<Germ> germStack() {
         return stack().filter(GridObject::isGerm).map(o -> (Germ) o);
-    }
-
-    Stream<CooldownGerm> cooldownGermStack() {
-        return germStack().filter(Germ::hasCooldown).map(g -> (CooldownGerm) g);
     }
 
     // tiles operations

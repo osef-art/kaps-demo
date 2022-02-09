@@ -1,5 +1,6 @@
 package com.mygdx.kaps.level.gridobject;
 
+import java.util.Locale;
 import java.util.function.Function;
 
 public class Coordinates {
@@ -16,7 +17,7 @@ public class Coordinates {
 
     @Override
     public String toString() {
-        return "(" + x + " , " + y + ")";
+        return String.format(Locale.getDefault(), "(%d , %d)", x, y);
     }
 
     @Override

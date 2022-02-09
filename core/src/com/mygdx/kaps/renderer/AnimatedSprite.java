@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
-import java.util.Objects;
+import java.util.Locale;
 import java.util.stream.IntStream;
 
 public class AnimatedSprite {
@@ -21,7 +21,7 @@ public class AnimatedSprite {
         var frames = new Sprite[nbFrames];
         IntStream.range(0, nbFrames).forEach(n -> {
             var sprite = new Sprite(new Texture(
-              Objects.requireNonNull(path) + (nbFrames >= 9 && n < 10 ? "0" : "") + n + ".png"
+              String.format(Locale.getDefault(), "%s%s%d.png", path, nbFrames >= 9 && n < 10 ? "0" : "", n)
             ));
             sprite.flip(flip, true);
             frames[n] = sprite;
@@ -36,10 +36,6 @@ public class AnimatedSprite {
 
     public void updateExistenceTime() {
         existenceTime += Gdx.graphics.getDeltaTime();
-    }
-
-    public void reset() {
-        existenceTime = 0;
     }
 
     public boolean isFinished() {

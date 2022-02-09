@@ -15,7 +15,7 @@ public final class WallGerm extends Germ {
         super(color, GermKind.WALL, 3, 40);
         this.health = new Gauge(health, maxHealth);
         if (health <= 0 || maxHealth < health)
-            throw new IllegalArgumentException("Invalid health: " + health + " / " + maxHealth);
+            throw new IllegalArgumentException(String.format("Invalid health: %d / %d", health, maxHealth));
     }
 
     WallGerm(Color color) {

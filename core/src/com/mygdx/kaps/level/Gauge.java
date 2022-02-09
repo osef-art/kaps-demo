@@ -1,5 +1,7 @@
 package com.mygdx.kaps.level;
 
+import java.util.Locale;
+
 public class Gauge {
     private final int max;
     private int value;
@@ -19,7 +21,7 @@ public class Gauge {
 
     @Override
     public String toString() {
-        return "[ " + value + " / " + max + " ]";
+        return String.format(Locale.getDefault(), "[ %d / %d ]", value, max);
     }
 
     public int getMax() {

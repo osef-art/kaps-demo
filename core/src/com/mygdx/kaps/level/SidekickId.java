@@ -29,7 +29,7 @@ public enum SidekickId {
     SidekickId(Color color, AttackType type, BiFunction<Sidekick, Level, SidekickAttack> attack,
                int mana, boolean passive, int damage, String... names) {
         var name = names.length > 0 ? names[0] : toString();
-        animPath = "sidekicks/" + name + "_";
+        animPath = String.format("sidekicks/%s_", name);
         this.passive = passive;
         this.attack = attack;
         this.damage = damage;
