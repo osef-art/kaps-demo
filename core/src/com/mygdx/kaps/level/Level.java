@@ -252,15 +252,15 @@ public class Level extends ApplicationAdapter {
     }
 
     public void holdCapsule() {
-        if (!canHold) return;
-        canHold = false;
-        var toHold = controlledCapsules.get(0);
-        controlledCapsules.remove(toHold);
-        getHeldCapsule().ifPresent(controlledCapsules::add);
-        heldCapsule = toHold.copy(spawnCoordinates(), Orientation.LEFT);
-        spawnCapsuleIfAbsent();
-        gridRefresher.reset();
-        observers.forEach(LevelObserver::onCapsuleHold);
+        performIfPossible(c -> canHold, c -> {
+            controlledCapsules.remove(c);
+            getHeldCapsule().ifPresent(controlledCapsules::add);
+            heldCapsule = c.copy(spawnCoordinates(), Orientation.LEFT);
+            spawnCapsuleIfAbsent();
+            gridRefresher.reset();
+            observers.forEach(LevelObserver::onCapsuleHold);
+            canHold = false;
+        });
     }
 
     private void dipOrFreezeDroppingCapsules() {
