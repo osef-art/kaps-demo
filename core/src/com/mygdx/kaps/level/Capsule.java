@@ -39,7 +39,11 @@ class Capsule {
     }
 
     private Capsule copy() {
-        return copy(main.coordinates(), main.orientation());
+        return copy(this);
+    }
+
+    Capsule copy(Capsule caps) {
+        return copy(caps.main.coordinates(), caps.main.orientation());
     }
 
     Capsule copy(Coordinates coordinates, Orientation orientation) {

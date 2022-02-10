@@ -254,7 +254,7 @@ public class Level extends ApplicationAdapter {
     public void holdCapsule() {
         performIfPossible(c -> canHold, c -> {
             controlledCapsules.remove(c);
-            getHeldCapsule().ifPresent(controlledCapsules::add);
+            getHeldCapsule().ifPresent(held -> controlledCapsules.add(held.copy(c)));
             heldCapsule = c.copy(spawnCoordinates(), Orientation.LEFT);
             spawnCapsuleIfAbsent();
             gridRefresher.reset();
