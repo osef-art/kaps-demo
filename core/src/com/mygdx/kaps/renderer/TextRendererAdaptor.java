@@ -68,6 +68,5 @@ public class TextRendererAdaptor extends ApplicationAdapter {
     public void dispose() {
         shade.dispose();
         font.dispose();
-        spr.dispose();
     }
 }

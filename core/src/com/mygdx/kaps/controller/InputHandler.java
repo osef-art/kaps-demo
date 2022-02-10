@@ -10,17 +10,17 @@ import java.util.stream.Collectors;
 
 public class InputHandler implements InputProcessor {
     private enum Key {
-        LEFT_KEY(Level::moveCapsuleLeft, 100.0, 21, 45), // Q, LEFT ARR.
+        LEFT_KEY(Level::moveCapsuleLeft, 100.0, 21, 29, 45), // Q, LEFT ARR.
         RIGHT_KEY(Level::moveCapsuleRight, 100.0, 22, 32), // D, RIGHT ARR.
         DOWN_KEY(Level::dipOrFreezeCapsule, 100.0, 20, 47), // S, DOWN ARR.
-        FLIP_KEY(Level::flipCapsule, 150.0, 19, 54), // Z, UP ARR.
+        FLIP_KEY(Level::flipCapsule, 150.0, 19 ,51, 54), // Z, UP ARR.
         DROP_KEY(Level::dropCapsule, 62), // SPACEBAR
         HOLD_KEY(Level::holdCapsule, 31, 50, 30), // C, V, B
 
         PREVIEW_KEY(l -> l.parameters().togglePreview(), 52), // X
         PAUSE_KEY(l -> l.parameters().togglePause(), 44), // P
 
-        ESCAPE_KEY(l -> System.exit(0), 29, 131, 68), // A, ESC, !
+        ESCAPE_KEY(l -> System.exit(0), 131, 68), // A, ESC, !
         ;
 
         private final Set<Integer> codes;
@@ -61,7 +61,7 @@ public class InputHandler implements InputProcessor {
     @Override
     public boolean keyDown(int keycode) {
         // debug
-        //        System.out.println(keycode);
+//        System.out.println(keycode);
         Key.ofCode(keycode).ifPresent(key -> {
             key.effect.accept(model);
             if (key.canBeHold())
