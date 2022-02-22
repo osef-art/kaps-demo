@@ -73,15 +73,15 @@ But make sure not to **submerge** the grid ! Beware, the capsules drop faster ov
 
 | Name | | Mana | Dmg | Power |  
 |---:|:---:|:---:|:---:|:---|   
-| JIM    | ![JIM   ](android/assets/sprites/sidekicks/Jim_0.png "Jim")       | 20       | 1 | Slices a random object and all tiles on the same line
-| SEAN   | ![SEAN  ](android/assets/sprites/sidekicks/Sean_0.png "Sean")     | 20       | 2 | Hits a random object and adjacent tiles
+| JIM    | ![ JIM  ](android/assets/sprites/sidekicks/Jim_0.png "Jim")       | 20       | 1 | Slices a random object and all tiles on the same line
+| SEAN   | ![ SEAN ](android/assets/sprites/sidekicks/Sean_0.png "Sean")     | 20       | 2 | Hits a random object and adjacent tiles
 | ZYRAME | ![ZYRAME](android/assets/sprites/sidekicks/Zyrame_0.png "Zyrame") | 20       | 2 | Slices two random germs
-| PAINT  | ![PAINT ](android/assets/sprites/sidekicks/Paint_0.png "Paint")   | 10       |   | Paints 5 random caps
+| PAINT  | ![PAINT ](android/assets/sprites/sidekicks/Paint_0.png "Paint")   | 10       |   | Paints 8 random caps
 | COLOR  | ![COLOR ](android/assets/sprites/sidekicks/Color_0.png "Color")   | 4 turns  |   | Generates a capsule with both caps of same color
 | MIMAPS | ![MIMAPS](android/assets/sprites/sidekicks/Mimaps_0.png "Mimaps") | 15       | 2 | Hits 3 random objects
 | BOMBER | ![BOMBER](android/assets/sprites/sidekicks/Bomber_0.png "Bomber") | 13 turns | 1 | Generates an explosive capsule
-| SNIPER | ![SNIPER](android/assets/sprites/sidekicks/Sniper_0.png "Sniper") | 15       | 3 | Shoots a random germ
-| RED    | ![RED   ](android/assets/sprites/sidekicks/Red_0.png "Red")       | 25       | 2 | Slices a random object and all tiles on the same column
+| SNIPER | ![SNIPER](android/assets/sprites/sidekicks/Sniper_0.png "Sniper") | 15       | 3 | Shoots germ with most HP
+| RED    | ![ RED  ](android/assets/sprites/sidekicks/Red_0.png "Red")       | 25       | 2 | Slices a random object and all tiles on the same column
 | XERETH | ![XERETH](android/assets/sprites/sidekicks/Xereth_0.png "Xereth") | 25       | 1 | Slices a random object and all tiles on the same diagonals
 | ???    | *(Coming soon !)* | 5 turns  |   | Paints 3 blank objects in his mate’s color
 | ???    | *(Coming soon !)* | 18       | 1 | Hits a random object with its left and right tiles, and another with its top and bottom tiles
@@ -100,12 +100,12 @@ But make sure not to **submerge** the grid ! Beware, the capsules drop faster ov
 | WALL  | ![WALL ](android/assets/sprites/germs/wall/level4/color2/idle_0.png "Wall")  | - | Needs several hits (4 max.) to be destroyed
 | VIRUS | ![VIRUS](android/assets/sprites/germs/virus/color5/idle_0.png "Virus") | 8 |Turns a random tile into a virus
 | THORN | ![THORN](android/assets/sprites/germs/thorn/color4/idle_0.png "Thorn") | 5 |Destroys a random capsule among tiles around
-| ??? | ? | 6 | Turns a random basic germ into a wall (2 HP), or can heal a random wall (by 1 HP)
-| ??? | ? | | Swaps places with the nearest capsule
-| ??? | ? | | Changes its own color
-| ??? | ? | 10 | Emits fog on a random capsule, hiding its color. Fog disappears if its emitter is destroyed or if hit.
-| ??? | ? | | Surrounds a random germ with a shield of another color, that must be broken for the germ to be hit
-| ??? | ? | | Same as shield, but the protected germ is hidden
+| ??? | *(Coming soon !)* | 6 | Turns a random basic germ into a wall (2 HP), or heals a random wall (by 1 HP)
+| ??? | *(Coming soon !)* | | Swaps places with the nearest capsule
+| ??? | *(Coming soon !)* | | Changes its own color
+| ??? | *(Coming soon !)* | 10 | Emits fog on a random capsule, hiding its color. Fog disappears if its emitter is destroyed or if hit.
+| ??? | *(Coming soon !)* | | Surrounds a random germ with a shield of another color, that must be broken for the germ to be hit
+| ??? | *(Coming soon !)* | | Same as shield, but the protected germ is hidden
 
 ## SPECIAL CAPSULES ✨💊
 
