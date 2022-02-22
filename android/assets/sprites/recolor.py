@@ -15,7 +15,15 @@ sidekicks_rgb = [
     (100, 110, 170),  # JIM
     (50, 180, 180),  # UNI
     (235, 150, 130),  # SNIPER
-    (70, 50, 130),
+    (50, 100, 225),
+    (175, 225, 235),
+    (175, 175, 235),
+    (235, 175, 235),
+    (175, 235, 175),
+    (120, 225, 100),
+    (235, 180, 60),
+    (220, 70, 180),
+    (75, 75, 115),
 ]
 
 
@@ -34,7 +42,7 @@ class ColorSet:
         self.colors['principal'] = rgb
         self.colors['outline'] = (r - 20, g - 20, b - 20)
         self.colors['shade'] = (r - 10, g - 10, b - 10)
-        self.colors['mouth'] = (int(r / 2), int(g / 2), int(b / 2))
+        self.colors['mouth'] = (r // 2, g // 2, b // 2)
 
         self.colors['flash-filling'] = (r + 20, g + 20, b + 20)
         self.colors['flash-outline'] = rgb
@@ -73,7 +81,7 @@ def all_paths_of_set(path: str, color_set: ColorSet):
     # in the [path]/ folder (recursive search)
     paths = []
     for (root, doss, files) in (os.walk("./%s" % path)):
-        if color_set.folder_name() in root:
+        if "" in root.split(color_set.folder_name()):
             for file in files:
                 paths.append(os.path.join(root, file).replace("\\", "/"))
     return paths
@@ -87,7 +95,7 @@ def new_path(path: str, color_set: ColorSet):
     )
 
 
-def replace_colors(pix, set1, set2):
+def replace_colors(pix, set1: ColorSet, set2: ColorSet):
     # replace all pix's pixels of colors from set1 with colors from set2 of same key
     for i in range(64):
         for j in range(64):
@@ -103,24 +111,28 @@ def generate_new_color_folder(set1: ColorSet, set2: ColorSet):
     for i, path in enumerate(paths):
         dst_path = new_path(path, set2)
 
-        im = Image.open(path)
-        pix = im.load()
+        img = Image.open(path)
+        pix = img.load()
 
         replace_colors(pix, set1, set2)
 
         basedir = os.path.dirname(dst_path)
         if not os.path.exists(basedir):
             os.makedirs(basedir)
-        open(dst_path, 'w').close()
-        im.save(dst_path)
 
-        print("[", "{:.1f}".format((i + 1) * 100 / total), "% ", "exported... ]",
-              dst_path, end="\r")
+        open(dst_path, 'w').close()
+        img.save(dst_path)
+
+        print(
+            "[", "{:.1f}".format((i + 1) * 100 / total), "% ", "exported... ]",
+            dst_path, end="\r"
+        )
 
 
 if __name__ == "__main__":
     default = ColorSet(sidekicks_rgb[0], 1)
-    output = [ColorSet(sidekicks_rgb[i], i + 1) for i, sidekick in enumerate(sidekicks_rgb)][1:]
+    output = [ColorSet(sidekicks_rgb[i], i + 1) for i, sidekick
+              in enumerate(sidekicks_rgb)][12:]
 
     for sdk_color_set in output:
         generate_new_color_folder(default, sdk_color_set)
