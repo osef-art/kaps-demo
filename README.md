@@ -1,5 +1,6 @@
-<!--suppress HtmlDeprecatedTag -->
-<center>    
+<!-- CheckImageSize -->
+<!--suppress CheckImageSize -->
+<div style="text-align: center;">    
 
 # ![>](android/assets/sprites/icons/icon.png "hey") KAPS! ![<](android/assets/sprites/icons/icon.png "you")
 
@@ -18,8 +19,8 @@ Déplace et matche les gélules de la grille afin de dégommer toutes les germes
 [💡 PETITS TIPS](#tips-)  
 [🇬🇧 ENGLISH README](README_EN.md)
 
-<img alt="ptite démo (pourquoi ça se lance pas ?)" src="android/assets/footages/kaps-fullgame-sample.gif" title="Quick gameplay footage" width="200"/>
-</center>
+<img alt="ptite démo" src="android/assets/footages/kaps-fullgame-sample.gif" title="Quick gameplay footage" width="200"/>
+</div>
 
 ### UPDATES 🚨
 
@@ -96,7 +97,7 @@ Là aussi, `?` chosis un sidekick au hasard.
 Fais bouger les gélules qui tombent au fur et à mesure dans la grille et réalise des matchs de **4 éléments ou +** de la même couleur pour les détruire.  
 Les éléments détruits libèrent de la **mana✨**, qui remplissent la jauge des sidekicks de leur couleur. Une fois la jauge pleine, l'attaque du sidekick est déclenchée. 💥
 
-![quick gameplay](android/assets/footages/kaps-fullgame-sample.gif "Quick gameplay")
+<img alt="la même démo" src="android/assets/footages/kaps-fullgame-sample.gif" title="Quick gameplay footage" width="200"/>
 
 Le niveau est fini lorsque toutes les germes de la grille ont été dégommées !
 (attention, elles ne subissent pas la gravité)

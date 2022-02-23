@@ -1,5 +1,5 @@
-<!--suppress HtmlDeprecatedTag -->
-<center>    
+<!--suppress CheckImageSize -->
+<div style="text-align: center;">    
 
 # ![>](android/assets/sprites/icons/icon.png "hey") KAPS! ![<](android/assets/sprites/icons/icon.png "you")
 
@@ -16,7 +16,7 @@ A *'Dr. Mario'-like* colorful mini-game. Match the colored capsules and get rid 
 [💡 TIPS](#tips-)
 
 <img alt="game footage" src="android/assets/footages/kaps-fullgame-sample.gif" title="Quick gameplay footage" width="200"/>
-</center>
+</div>
 
 ### NEWS 🚨
 
@@ -59,7 +59,7 @@ If `number` is `?`, generates a random grid !
 > ... -s [name1] [name2] ...
 ```
 
-Adds the sidekick of name `name` to the team before the level starts. 
+Adds the sidekick of name `name` to the team before the level starts.
 *[Go to sidekicks...](#sidekicks-)*  
 If `name` is `?`, chooses a random sidekick to fight with you !
 
@@ -86,7 +86,7 @@ If `name` is `?`, chooses a random sidekick to fight with you !
 Move falling capsules 💊 in the grid and make matches of at least **4 tiles** of the same color to destroy them.  
 Destroy tiles of a sidekick's color to fill its **mana gauge** and unleash his attack !
 
-![quick gameplay](android/assets/footages/kaps-fullgame-sample.gif "Quick gameplay")
+<img alt="same game footage" src="android/assets/footages/kaps-fullgame-sample.gif" title="Quick gameplay footage" width="200"/>
 
 Smash **every germ** 🦠 of the grid to win !  
 But make sure not to **submerge** the grid ! Beware, the capsules drop faster over time.
