@@ -105,8 +105,8 @@ But make sure not to **submerge** the grid ! Beware, the capsules drop faster ov
 | SNIPER   | ![SNIPER](android/assets/sprites/sidekicks/Sniper_0.png "Sniper") | 15       | 3 | Shoots germ with most HP
 | RED      | ![ RED  ](android/assets/sprites/sidekicks/Red_0.png "Red")       | 25       | 2 | Slices a random object and all tiles on the same column
 | XERETH   | ![XERETH](android/assets/sprites/sidekicks/Xereth_0.png "Xereth") | 25       | 1 | Slices a random object and all tiles on the same diagonals
-| SHADOW   (✨new!) | *(Coming soon !)* | 14       |   | Randomly repaints ALL the grid
-| SHUFFLER (✨new!) | *(Coming soon !)* | 10 turns | 1 | Removes all caps of its own color from the grid
+| (✨new!) SHADOW   | *(Coming soon !)* | 14       |   | Randomly repaints ALL the grid
+| (✨new!) SHUFFLER | *(Coming soon !)* | 10 turns | 1 | Removes all caps of its own color from the grid
 | ???      | *(Coming soon !)* | 5 turns  |   | Paints 3 blank objects in his mate’s color
 | ???      | *(Coming soon !)* | 18       | 1 | Hits a random object with its left and right tiles, and another with its top and bottom tiles
 | ???      | *(Coming soon !)* | 12       |   | Freezes definitively a germ with a cooldown

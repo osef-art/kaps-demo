@@ -117,8 +117,8 @@ Fais gaffe par contre à ne pas faire déborder la grille, d'autant plus que le 
 | SNIPER   | ![SNIPER](android/assets/sprites/sidekicks/Sniper_0.png "Sniper") | 15       | 3 | Tire sur la germe qui a le plus de vie
 | RED      | ![ RED  ](android/assets/sprites/sidekicks/Red_0.png "Red")       | 25       | 2 | Découpe toute une colonne au hasard
 | XERETH   | ![XERETH](android/assets/sprites/sidekicks/Xereth_0.png "Xereth") | 25       | 1 | Découpe deux diagonales
-| SHUFFLER  (✨new!) | *(Coming soon !)* | 14       |   | Repeint TOUTE la grille avec des couleurs au pif
-| SHADOW    (✨new!) | *(Coming soon !)* | 10 turns | 1 | Enlève toutes les gélules de sa propre couleur de la grille
+| (✨nouv.!) SHUFFLER | *(Coming soon !)* | 14       |   | Repeint TOUTE la grille avec des couleurs au pif
+| (✨nouv.!) SHADOW   | *(Coming soon !)* | 10 turns | 1 | Enlève toutes les gélules de sa propre couleur de la grille
 | ???      | *(Coming soon !)* | 18       | 1 | Frappe un élément et les cases sur ses côtés (gauche/droite), puis un autre (haut/bas) *(bon j'avoue il est chaud à comprendre lui)*
 | ???      | *(Coming soon !)* | 12       |   | Freeze définitivement une germe avec un cooldown
 | ???      | *(Coming soon !)* | 15       | 3 | Frappe 4 cases au hasard dans la partie basse de la grille
