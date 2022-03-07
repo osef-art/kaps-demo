@@ -78,7 +78,8 @@ je leur ai donné des noms **plus génériques**. C'était imprononçable... *[�
 
 ##### 🖱 SOURIS
 ✨**NOUV.** : **clique** et **drag** la souris depuis n'importe quel endroit de l'écran pour activer le joystick  
-`CLIC`: **tourne** la gélule  
+`CLIC`: **tourne** la gélule (dans le sens **horaire** 🔁)  
+`CLIC DROIT`: **tourne** la gélule (dans le sens **anti-horaire** 🔄)  
 `JOYSTICK ⬅`, `➡`: bouge la gélule à **gauche**/**droite**  
 `JOYSTICK ⬇`: bouge la gélule **EN BAS**
 
