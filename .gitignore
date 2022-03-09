@@ -2,3 +2,6 @@
 *.bat
 
 .idea
+
+android/assets/sprites/gridobj/skin*
+!android/assets/sprites/gridobj/skin0
